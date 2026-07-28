@@ -140,6 +140,33 @@ for it in tornado(seg, 2024, {
 > that driver's real uncertainty: narrow for A-grade hard data, wide for
 > C-grade estimates. (This is why A/B/C grading and sensitivity are linked.)
 
+## Stochastic processes (experimental)
+
+Upgrade uniform-sampling Monte Carlo to **driver-specific stochastic processes** —
+pure stdlib, no numpy. Prices follow geometric Brownian motion; bounded ratios
+(penetration, share) follow a logit-OU process that stays in (0, 1); drivers
+can be correlated via Cholesky.
+
+```python
+from revenue_model.stochastic import (
+    GBMDriver, LogitOUDriver, CorrelatedBundle, simulate_revenue, logit)
+
+price = GBMDriver("ASP", S0=650.0, mu=0.03, sigma=0.10)                # log-normal price
+share = LogitOUDriver("market share", p0=0.14, theta=2.0,
+                      mu_bar=logit(0.18), sigma=0.10)                  # bounded, mean-reverting
+bundle = CorrelatedBundle([price, share], rho=[[1.0, -0.3], [-0.3, 1.0]])
+
+mc = simulate_revenue(segment, 2024, bundle, n=20000, seed=0)         # -> MCResult
+print(mc.median, mc.percentiles["p5"], mc.percentiles["p95"])
+```
+
+See [design principles: stochastic layer](docs/design-principles.md#stochastic-layer)
+for the SDEs and why logit-OU keeps bounded ratios bounded.
+
+> Experimental — the uniform Monte Carlo above remains the default. See
+> [`tests/test_stochastic.py`](tests/test_stochastic.py) for analytic-solution
+> validation (GBM mean, OU stationary variance, induced correlation).
+
 ## Segment extraction (from annual reports)
 
 Automate the tedious part of segment build-up — pull a **segment skeleton**

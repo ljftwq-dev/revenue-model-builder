@@ -236,6 +236,58 @@ asymptote, not exponentially.*
 
 ---
 
+## Stochastic layer
+
+The Monte Carlo in `monte_carlo.py` samples each uncertain driver independently
+from a uniform band. That is deliberately simple and dependency-free, but it
+leaves three financial realities unmodeled:
+
+1. **Distributions are not uniform** — a price is closer to log-normal; a
+   bounded ratio (penetration, share) is closer to a mean-reverting process.
+2. **Drivers are not independent** — a weak market base often coincides with
+   aggressive penetration (competitors chase share).
+3. **Bounded ratios can blow up** — uniform sampling can draw a 130%
+   penetration, which is physically impossible.
+
+`revenue_model.stochastic` (experimental, pure stdlib) addresses all three by
+letting each driver follow its own stochastic differential equation:
+
+| Driver | Process | SDE |
+|---|---|---|
+| price | geometric Brownian motion | $dS = \mu S\,dt + \sigma S\,dW$ |
+| penetration / share | logit-OU (bounded) | $dy = \theta(\bar\mu - y)\,dt + \sigma\,dW,\quad p = \mathrm{sigmoid}(y)$ |
+
+**Why logit-OU for bounded ratios.** The Ornstein-Uhlenbeck process
+$dx=\theta(\mu-x)\,dt+\sigma\,dW$ is the workhorse of mean reversion — it is the
+Vasicek interest-rate model. But it is Gaussian and unbounded, so sampling it
+directly for a penetration can return 1.3 or −0.2. The fix is to run the OU in
+**logit space**: $y=\mathrm{logit}(p)$ reverts toward $\bar\mu=\mathrm{logit}(\text{target})$,
+and $p=\mathrm{sigmoid}(y)$ stays in $(0,1)$ by construction. The process
+naturally slows as it nears 0 or 1 — the S-curve behavior Principle 3 demands,
+now in continuous time.
+
+**Correlation via Cholesky.** Independent standard normals $Z\sim\mathcal N(0,I)$,
+multiplied by the Cholesky factor $L$ of a correlation matrix $\Sigma=LL^\top$,
+become correlated: $LZ\sim\mathcal N(0,\Sigma)$. Each driver then advances with
+its own component of the shared, correlated shock — so a negative base shock
+can coincide with a positive penetration shock.
+
+**Pure-stdlib numerics.** Standard normals come from the Box-Muller transform;
+SDEs advance by Euler-Maruyama,
+$\Delta X = a(X,t)\Delta t + b(X,t)\sqrt{\Delta t}\,Z$;
+the Cholesky factorization is hand-rolled. No numpy — the zero-dependency core
+stays intact, and `tests/test_stochastic.py` verifies every process against its
+closed-form mean/variance ($E[S_T]=S_0 e^{\mu T}$, OU stationary variance
+$\sigma^2/(2\theta)$, induced correlation $\approx\rho$).
+
+> **Status:** experimental. The uniform Monte Carlo remains the default;
+> stochastic processes are an opt-in layer for analysts who want
+> distributionally-realistic drivers. See
+> [docs/plans/2026-07-28-stochastic-revenue-design.md](plans/2026-07-28-stochastic-revenue-design.md)
+> for the full design rationale.
+
+---
+
 ## 中文摘要
 
 - **差额行是结构性设计，绝不反推**：用行业真实渗透率，模型分项必然 ≠ 年报总收入。差额行吸收未建模业务（售后、IoT、定制开发）。反推渗透率看似"对齐"了，实则把失真的参数带进预测期，未来全错。健康差额比例 10–30%，0% 才是危险信号。
