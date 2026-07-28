@@ -1,0 +1,22 @@
+[project]
+name = "revenue-model-builder"
+version = "0.1.0"
+description = "Bottom-up revenue forecasting framework: driver-based modeling with residual alignment."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "ljftwq-dev"}]
+keywords = ["revenue", "forecasting", "financial-modeling", "driver-based", "bottom-up"]
+
+dependencies = []
+
+[project.optional-dependencies]
+excel = ["openpyxl>=3.0"]
+dev = ["pytest>=7"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["revenue_model*"]
