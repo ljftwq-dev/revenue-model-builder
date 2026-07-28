@@ -3,30 +3,45 @@
 [![CI](https://github.com/ljftwq-dev/revenue-model-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/ljftwq-dev/revenue-model-builder/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![Dependencies: zero](https://img.shields.io/badge/dependencies-0-success.svg)](#安装)
 
 **English: [README.md](README.md)**
 
 一个**自下而上的收入预测框架**——把 driver tree
 （`市场基数 × 渗透率 × 市占率 × 单价`）变成**可审计**的收入模型，通过一条
-结构性的差额行（residual）对齐到年报总收入。
-
-> 市面上的开源金融工具几乎都是**交易/回测**（zipline、backtrader、QuantLib、vnpy）。
-> 而卖方分析师、PE 投资经理真正在做的 **driver-based 收入拆解预测**，几乎没有开源实现。
-> 本库用最小、可跑的代码，把这个工作流固化下来。
+结构性的差额行（residual）对齐到年报总收入。核心引擎**零第三方依赖**（纯 Python 标准库），
+蒙特卡洛 + 敏感度分析层也是。
 
 设计上编码了五条踩过坑才总结出的建模铁律（详见
-[设计原则白皮书](docs/design-principles.md)）：**结构性差额行**（吸收未建模业务）、
-**ABC 数据等级**（可追溯）、**增量法**（渗透率预测不用增速法）、**确定性金字塔**
-（预测输入按可知性排序）、**先历史后预测**。
+[设计原则白皮书](docs/design-principles.md)）：**结构性差额行**、**ABC 数据等级**、
+**增量法**、**确定性金字塔**、**先历史后预测**。
 
 ---
 
 ## 为什么需要它
 
-一份卖方收入模型，成败在于你能不能**为每一个数字辩护**——"这个渗透率哪来的？为什么
-不能再高点？" 手工 Excel 用晦涩的批注回答这个问题。`revenue-model-builder` 把它做成
-结构化的：每个 driver 自带可信度等级和来源，差额行是一等公民，对齐校验会在"反推渗透率"
-污染预测期之前就把它拦住。
+市面上的开源金融工具，要么是**交易/回测**（zipline、backtrader、QuantLib），要么是
+**DCF 估值**。而卖方分析师、PE 投资经理真正在做的 **driver-based 收入拆解预测**
+（把收入拆成 `基数 × 渗透率 × 市占率 × 单价`），几乎没有开源实现。
+
+最接近的是给 AI agent 用的 TAM/SAM/SOM **prompt skill**（如 `slgoodrich/agents`、
+`deanpeters/Product-Manager-Skills`）——它们用自然语言描述方法论，但**没有一个是能跑的引擎**。
+本项目就是：把工作流用代码固化、数学由引擎强制执行，而不是交给一段 prompt。
+
+一份卖方收入模型，成败在于你能不能**为每一个数字辩护**——"这个渗透率哪来的？为什么不能再
+高点？" 手工 Excel 用晦涩的批注回答。`revenue-model-builder` 把它做成结构化的：每个 driver
+自带可信度等级和来源，差额行是一等公民，对齐校验会在"反推渗透率"污染预测期之前就拦住。
+
+## 与同类对比
+
+| | revenue-model-builder | market-sizing SKILL | DCF 估值库 |
+|---|---|---|---|
+| 可运行的代码引擎 | ✅ | ❌ 仅 prompt | ✅ |
+| 聚焦点 | 收入拆解 | 市场容量 (TAM/SAM/SOM) | 内在价值 |
+| 对齐年报总收入（差额行）| ✅ 结构性 | ❌ | 不适用 |
+| 每个数字 ABC 分级 | ✅ | ❌ | ❌ |
+| 不确定性（蒙特卡洛 + tornado）| ✅ | ❌ | 部分有 |
+| 核心依赖 | **零** | 不适用 | 通常 numpy + 数据 API |
 
 ## 核心公式
 
@@ -77,24 +92,40 @@ for r in model.validate_all():
 python -m revenue_model.demo
 ```
 
-```
---- 2024 ---
-  舱内-国内      :    218.4 百万元
-  舱内-海外      :    120.0 百万元
-  Σ 分项        :    338.4
-  差额行        :     71.6  (17.5%)
-  总收入        :    410.0
-  [ok] 对齐通过（Σ分项 + 差额 = 总收入）
-```
-
 **渲染成带格式的 .xlsx**（需 `[excel]` extra）：
 
 ```bash
 python -m revenue_model.excel_builder 输出.xlsx
 ```
 
-Excel 输出实现了 ABC 颜色编码（黑/蓝/红）、IF 保护的收入公式、差额行、以及橙色高亮的
-预测区（在历史模型对齐之前留空）。
+## 蒙特卡洛 + 敏感度
+
+把单点预测变成**分布**，并找出**哪个假设最关键**——纯标准库，不用 numpy：
+
+```python
+from revenue_model import simulate_model, tornado
+
+# 收入分布：对不确定的 driver 采样、相乘、重复
+mc = simulate_model(model, 2024, {
+    "市占率": (0.10, 0.18),          # C 级，区间宽
+    "单价": (620, 680),
+}, n=20000, seed=0)
+print(mc.median, mc.percentiles["p5"], mc.percentiles["p95"])   # P5/中位/P95
+
+# Tornado：用每个 driver 各自的区间（不是统一 %）→ 排序摆动
+for it in tornado(seg, 2024, {
+    "中国乘用车销量": (23.5, 24.5),          # A 级，区间窄
+    "DMS 前装渗透率": (0.07, 0.12),          # B 级
+    "市占率": (0.10, 0.18),                  # C 级，区间宽
+    "单价": (620, 680),
+}):
+    print(f"{it.driver:20s} swing {it.swing:.1f}")
+```
+
+> **为什么用每个 driver 各自的区间，而不是统一 ±%？** 收入是个**乘积**
+> （`基数 × 渗透 × 市占 × 单价`），对每个因子用相同的百分比扰动，会得到**完全相同的摆动**——
+> tornado 毫无区分度。只有当每个区间反映该 driver 的真实不确定性（A 级硬数据窄、C 级估算宽），
+> tornado 才有意义。（这也正是 ABC 分级与敏感度分析相互印证的地方。）
 
 ## 五条设计原则
 
@@ -106,7 +137,7 @@ Excel 输出实现了 ABC 颜色编码（黑/蓝/红）、IF 保护的收入公�
 | 4 | **预测确定性金字塔** | 把所有输入当成同样可知 |
 | 5 | **先历史后预测** | 模型还没复现历史就开始预测未来 |
 
-完整推导 + 数值例子：**[docs/design-principles.md](docs/design-principles.md)**。
+外加验证层（三角验证、假设文档化、S 曲线）：**[docs/design-principles.md](docs/design-principles.md)**。
 
 ## API
 
@@ -120,6 +151,12 @@ Segment(name, base, penetration, share, price)
 RevenueModel(company, segments, total_revenue)
 #   .validate(year)  -> YearResult   (分项收入、差额、告警)
 #   .validate_all()  -> list[YearResult]
+
+simulate_segment(segment, year, ranges, n=10000, seed=0) -> MCResult
+simulate_model(model, year, ranges, n=10000, seed=0)     -> MCResult
+#   ranges: {driver名: (low, high)};  MCResult 含 mean/median/stdev/percentiles
+
+tornado(segment, year, ranges) -> list[SensitivityItem]   # 按 swing 排序
 ```
 
 ## 目录结构
@@ -130,9 +167,10 @@ revenue-model-builder/
 │   ├── driver.py        # Driver — 单个因子（基数/渗透/市占/单价）+ ABC 等级
 │   ├── segment.py       # Segment — 收入 = 基数 × 渗透 × 市占 × 单价
 │   ├── model.py         # RevenueModel — 差额行 + 对齐校验
+│   ├── monte_carlo.py   # 收入分布 + tornado 敏感度（纯标准库）
 │   ├── excel_builder.py # 渲染成 .xlsx（ABC 颜色、IF 公式、差额行）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 10 个测试 — 公式、校验、差额不变式
+├── tests/               # 22 个测试 — 公式、校验、差额、蒙特卡洛、tornado
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -140,10 +178,11 @@ revenue-model-builder/
 
 ## 路线图
 
+- [x] 蒙特卡洛收入分布 + 敏感度（tornado）分析
+- [ ] Bear / Base / Bull 情景预设
 - [ ] 多市场数据源适配器（A股 tushare / 美股 yfinance / 港股）
 - [ ] 从年报文本自动抽取 driver
-- [ ] Word 底稿生成器（历史 + 预测叙述，对齐原 skill 的产出）
-- [ ] 强制增量法的预测辅助函数（原则 3）
+- [ ] Word 底稿生成器（历史 + 预测叙述）
 - [ ] PyPI 发布
 
 ## 适用人群

@@ -176,6 +176,66 @@ real data sources, multi-market drivers, and automated driver extraction.
 
 ---
 
+## Validation layer — cross-checks beyond the core five
+
+The five principles above are about *building* the model. Three more are about
+*not trusting it blindly*:
+
+### Triangulation
+
+Forecast the same number **three independent ways** and cross-check:
+
+| Method | Starts from | Formula |
+|---|---|---|
+| **Bottom-up** (this engine) | unit economics | `base × penetration × share × price` |
+| **Top-down** | total market size | `market_size × segment_%` |
+| **Value theory** | value delivered | `(value_per_customer × customers) × capture_%` |
+
+If they disagree by **>2–3×**, your assumptions need scrutiny — not averaging.
+This is why `Driver.source` matters: it records *which method* produced each
+number, so triangulation is auditable instead of hand-waved.
+
+### Assumption documentation
+
+Every `Driver` already carries `source` + `level`. Take the habit further: for
+each C-grade estimate, record not just *where it came from*, but *how wrong it
+could be* (a ± range) and *the revenue impact* if it is wrong. This turns
+sensitivity analysis from an afterthought into a structured discipline — and is
+exactly what the planned Monte Carlo module consumes.
+
+```python
+# target API for the planned sensitivity layer:
+Driver("penetration", PENETRATION, {2024: 0.09}, level="C",
+       source="research institute",
+       range=(0.07, 0.12),        # ± uncertainty, for Monte Carlo
+       impact="direct")            # how it propagates to revenue
+```
+
+### S-curve adoption (the deeper why behind Principle 3)
+
+Principle 3 says "increment, not growth rate." That's the **linear middle** of
+an adoption S-curve. Real adoption is S-shaped — slow start (early adopters),
+near-linear middle (mass market), plateau (saturation toward 100%).
+
+```
+penetration
+  │            ___________  ← plateau (saturation)
+  │           /
+  │          /  ← linear middle (increment rule ≈ this)
+  │         /
+  │    ___/  ← slow start
+  │___
+  └────────────────────── time
+```
+
+For **short** horizons the linear increment is an excellent approximation. For
+**long** horizons (10+ years toward saturation), model penetration as a logistic
+curve `p(t) = L / (1 + e^{-k(t-t0)})` — but **never** as a constant growth rate,
+which explodes past 100%. The invariant: *bounded ratios grow toward an
+asymptote, not exponentially.*
+
+---
+
 ## 中文摘要
 
 - **差额行是结构性设计，绝不反推**：用行业真实渗透率，模型分项必然 ≠ 年报总收入。差额行吸收未建模业务（售后、IoT、定制开发）。反推渗透率看似"对齐"了，实则把失真的参数带进预测期，未来全错。健康差额比例 10–30%，0% 才是危险信号。

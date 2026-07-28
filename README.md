@@ -3,17 +3,15 @@
 [![CI](https://github.com/ljftwq-dev/revenue-model-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/ljftwq-dev/revenue-model-builder/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![Dependencies: zero](https://img.shields.io/badge/dependencies-0-success.svg)](#install)
 
 **中文文档：[README-zh.md](README-zh.md)**
 
 A **bottom-up revenue forecasting framework** — turn a driver tree
 (`market_base × penetration × share × price`) into an **auditable** revenue
-model that aligns to reported totals via a structural residual line.
-
-> Most open-source finance tools cover trading/backtesting (zipline,
-> backtrader, QuantLib). **Driver-based revenue forecasting** — what sell-side
-> analysts and PE associates actually do — has almost no open-source presence.
-> This fills that gap with a minimal, runnable encoding of the workflow.
+model that aligns to reported totals via a structural residual line. Core
+engine has **zero third-party dependencies** (pure Python stdlib), including the
+Monte Carlo + sensitivity layer.
 
 The design encodes five hard-won modeling rules (see
 [design principles](docs/design-principles.md)): a **structural residual** that
@@ -25,12 +23,34 @@ pyramid** for prioritizing forecast inputs, and a **history-first** workflow.
 
 ## Why
 
-A sell-side revenue model lives or dies on whether you can defend *every
-number* — "where did this penetration come from? why isn't it higher?" Manual
+Most open-source finance tooling covers **trading / backtesting** (zipline,
+backtrader, QuantLib) or **DCF valuation**. **Driver-based revenue forecasting**
+— decomposing revenue into `base × penetration × share × price`, what sell-side
+analysts and PE associates actually do — has almost no open-source presence.
+
+The closest neighbors are TAM/SAM/SOM **prompt skills** for AI agents
+(e.g. `slgoodrich/agents`, `deanpeters/Product-Manager-Skills`) — they describe
+the methodology in natural language, but **none is a runnable engine**. This
+project is: a minimal, pip-installable encoding of the workflow with the
+math enforced in code rather than left to a prompt.
+
+A sell-side revenue model lives or dies on whether you can defend *every*
+number — "where did this penetration come from? why isn't it higher?" Manual
 spreadsheets answer that with cryptic comments. `revenue-model-builder` makes
 it structural: every driver carries a credibility grade and a source, the
 residual is a first-class line, and an alignment check catches the classic
 "back-solved penetration" trap before it poisons the forecast.
+
+## How it compares
+
+| | revenue-model-builder | market-sizing SKILLs | DCF valuation libs |
+|---|---|---|---|
+| Runnable code engine | ✅ | ❌ prompt only | ✅ |
+| Focus | revenue build-up | market size (TAM/SAM/SOM) | intrinsic value |
+| Aligns to reported total (residual) | ✅ structural | ❌ | n/a |
+| A/B/C data grading per number | ✅ | ❌ | ❌ |
+| Uncertainty (Monte Carlo + tornado) | ✅ | ❌ | sometimes |
+| Core dependency footprint | **zero** | n/a | usually numpy + data API |
 
 ## Core idea
 
@@ -82,25 +102,43 @@ for r in model.validate_all():
 python -m revenue_model.demo
 ```
 
-```
---- 2024 ---
-  舱内-国内      :    218.4 百万元
-  舱内-海外      :    120.0 百万元
-  Σ 分项        :    338.4
-  差额行        :     71.6  (17.5%)
-  总收入        :    410.0
-  [ok] 对齐通过（Σ分项 + 差额 = 总收入）
-```
-
 **Render the model to a formatted .xlsx** (needs the `[excel]` extra):
 
 ```bash
 python -m revenue_model.excel_builder output.xlsx
 ```
 
-The Excel output implements A/B/C color coding (black/blue/red), IF-protected
-revenue formulas, the residual line, and an orange-tinted forecast area left
-blank until the historical model ties out.
+## Monte Carlo & sensitivity
+
+Turn point forecasts into **distributions** and find out **which assumption
+matters most** — pure stdlib, no numpy:
+
+```python
+from revenue_model import simulate_model, tornado
+
+# Revenue distribution: sample uncertain drivers, multiply, repeat
+mc = simulate_model(model, 2024, {
+    "market share": (0.10, 0.18),      # C-grade, wide band
+    "ASP": (620, 680),
+}, n=20000, seed=0)
+print(mc.median, mc.percentiles["p5"], mc.percentiles["p95"])  # P5/median/P95
+
+# Tornado: per-driver bands (NOT a uniform %) -> ranked swing
+for it in tornado(seg, 2024, {
+    "China passenger car sales": (23.5, 24.5),   # A-grade, narrow
+    "DMS penetration": (0.07, 0.12),             # B-grade
+    "market share": (0.10, 0.18),                # C-grade, wide
+    "ASP": (620, 680),
+}):
+    print(f"{it.driver:28s} swing {it.swing:.1f}")
+```
+
+> **Why per-driver bands, not a uniform ±%?** Revenue is a *product*
+> (`base × pen × share × price`), so perturbing every factor by the same
+> percentage yields **identical swings** — the tornado would have zero
+> discriminating power. A tornado is only meaningful when each band reflects
+> that driver's real uncertainty: narrow for A-grade hard data, wide for
+> C-grade estimates. (This is why A/B/C grading and sensitivity are linked.)
 
 ## Design principles
 
@@ -112,7 +150,8 @@ blank until the historical model ties out.
 | 4 | **Forecast certainty pyramid** | Treating all inputs as equally knowable |
 | 5 | **History first, then forecast** | Forecasting before the model reproduces history |
 
-Full reasoning + numerical examples: **[docs/design-principles.md](docs/design-principles.md)**.
+Plus a validation layer (triangulation, assumption documentation, S-curves):
+**[docs/design-principles.md](docs/design-principles.md)**.
 
 ## API
 
@@ -126,6 +165,12 @@ Segment(name, base, penetration, share, price)
 RevenueModel(company, segments, total_revenue)
 #   .validate(year)  -> YearResult   (segment_revenues, residual, warnings)
 #   .validate_all()  -> list[YearResult]
+
+simulate_segment(segment, year, ranges, n=10000, seed=0) -> MCResult
+simulate_model(model, year, ranges, n=10000, seed=0)     -> MCResult
+#   ranges: {driver_name: (low, high)};  MCResult has mean/median/stdev/percentiles
+
+tornado(segment, year, ranges) -> list[SensitivityItem]   # ranked by swing
 ```
 
 ## Project structure
@@ -136,9 +181,10 @@ revenue-model-builder/
 │   ├── driver.py        # Driver — one factor (base/pen/share/price) + ABC grade
 │   ├── segment.py       # Segment — revenue = base × pen × share × price
 │   ├── model.py         # RevenueModel — residual + alignment validation
+│   ├── monte_carlo.py   # revenue distribution + tornado sensitivity (pure stdlib)
 │   ├── excel_builder.py # render to .xlsx (ABC colors, IF formulas, residual)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 10 tests — formula, validation, residual invariants
+├── tests/               # 22 tests — formula, validation, residual, MC, tornado
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -146,10 +192,11 @@ revenue-model-builder/
 
 ## Roadmap
 
+- [x] Monte Carlo revenue distribution + sensitivity (tornado) analysis
+- [ ] Bear / Base / Bull scenario presets
 - [ ] Multi-market data source adapters (A股 tushare / US yfinance / HK)
 - [ ] Automated driver extraction from annual-report text
-- [ ] Word memo builder (historical + forecast narrative, as the original skill does)
-- [ ] Forecast helper enforcing incremental-penetration (Principle 3)
+- [ ] Word memo builder (historical + forecast narrative)
 - [ ] PyPI release
 
 ## Who is this for
