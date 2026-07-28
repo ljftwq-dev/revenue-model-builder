@@ -58,3 +58,25 @@ class RevenueModel:
 
     def validate_all(self) -> List[YearResult]:
         return [self.validate(y) for y in self.years()]
+
+    @classmethod
+    def from_report(cls, text: str, *, api_key: str = None, llm=None,
+                    year: int = None, **extract_kwargs) -> "RevenueModel":
+        """Build a model straight from annual-report text (end-to-end pipeline).
+
+        Runs segment extraction (LLM) -> skeleton -> ``Segment`` placeholders
+        -> model. Driver **values** are placeholders (0.0) tagged with the
+        LLM's hints as ``source``; filling real C-grade values is the next,
+        human step (see ``docs/proposal-segment-extraction.md`` §7).
+
+        Load ``api_key`` via your secrets manager (never hardcode); pass
+        ``llm`` (a ``messages -> content`` callable) for offline/testing.
+        """
+        from .extractor import extract_segments
+        from .pipeline import parsed_to_segments
+        parsed = extract_segments(text, api_key=api_key, llm=llm, **extract_kwargs)
+        yr = year or parsed.get("fiscal_year") or 2024
+        segments = parsed_to_segments(parsed, yr)
+        total_yuan = float(parsed.get("total_revenue") or 0)
+        total = {yr: total_yuan / 1e6} if total_yuan else {}
+        return cls(parsed.get("company", "Unknown"), segments, total_revenue=total)
