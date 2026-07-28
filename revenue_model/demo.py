@@ -47,8 +47,8 @@ def build_novatech() -> RevenueModel:
     )
 
 
-def main():
-    model = build_novatech()
+def print_validation(model: RevenueModel) -> None:
+    """对齐校验：Σ(分项) + 差额行 = 总收入，逐年打印告警。"""
     print(f"=== {model.company} 收入模型 ===\n")
     for r in model.validate_all():
         print(f"--- {r.year} ---")
@@ -64,7 +64,9 @@ def main():
             print(f"  [ok] 对齐通过（Σ分项 + 差额 = 总收入）")
         print()
 
-    # --- Monte Carlo: point forecast -> distribution ---
+
+def print_simulation(model: RevenueModel) -> None:
+    """蒙特卡洛收入分布 + Bear/Base/Bull 情景 + tornado 敏感度（基于 NovaTech demo 参数）。"""
     print("=" * 52)
     print("蒙特卡洛：2024 建模收入分布（市占率 ±不确定）")
     print("=" * 52)
@@ -78,26 +80,30 @@ def main():
     print(f"  P5 {p['p5']:8.1f} | P25 {p['p25']:7.1f} | P75 {p['p75']:7.1f} | P95 {p['p95']:7.1f}")
     print(f"  90% 置信区间宽度: {p['p95'] - p['p5']:7.1f}")
 
-    # --- Bear / Base / Bull: scenarios sliced from the distribution ---
     print()
     print("情景（Bear/Base/Bull = 蒙特卡洛分布的 P10/中位/P90）")
     print("-" * 52)
     for sc in scenarios(mc):
         print(f"  {sc.name:5s}: {sc.revenue:8.1f} 百万元  (P{sc.percentile * 100:.0f})")
 
-    # --- Tornado: which driver matters most? ---
     print()
     print("敏感度（tornado）：舱内-国内 2024，各 driver 按自身不确定性区间摆动")
     print("-" * 52)
     sens_ranges = {
-        "中国乘用车销量": (23.5, 24.5),            # A 级年报数据，区间窄
-        "DMS 前装渗透率（国内）": (0.07, 0.12),       # B 级第三方，区间中
-        "NovaTech 国内市占率": (0.10, 0.18),         # C 级估算，区间宽
-        "DMS 套件单价（国内）": (620, 680),           # C 级估算
+        "中国乘用车销量": (23.5, 24.5),
+        "DMS 前装渗透率（国内）": (0.07, 0.12),
+        "NovaTech 国内市占率": (0.10, 0.18),
+        "DMS 套件单价（国内）": (620, 680),
     }
     for it in tornado(model.segments[0], 2024, sens_ranges):
         print(f"  {it.driver:30s} swing {it.swing:7.1f}  "
               f"(low {it.low_revenue:7.1f} / high {it.high_revenue:7.1f})")
+
+
+def main():
+    model = build_novatech()
+    print_validation(model)
+    print_simulation(model)
 
 
 if __name__ == "__main__":
