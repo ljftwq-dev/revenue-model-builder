@@ -140,6 +140,28 @@ for it in tornado(seg, 2024, {
 > that driver's real uncertainty: narrow for A-grade hard data, wide for
 > C-grade estimates. (This is why A/B/C grading and sensitivity are linked.)
 
+## Segment extraction (from annual reports)
+
+Automate the tedious part of segment build-up — pull a **segment skeleton**
+(business lines, revenue, share, YoY, margin, a driver-type tag, driver hints)
+out of an annual report's "main business analysis" text via an LLM. Pure stdlib
+HTTP (no SDK); the LLM call is injectable, so tests/CI need no API key.
+
+```python
+from revenue_model import extract_segments, alignment_check
+
+# text = the "main business analysis" section (extracted upstream via PyMuPDF)
+parsed = extract_segments(text, api_key="<your-llm-key>")   # load via secrets manager
+print(parsed["segments"])                                   # segment skeletons
+print(alignment_check(parsed))                             # Σ + residual ≈ reported total
+```
+
+The output matches the schema in
+[docs/proposal-segment-extraction.md](docs/proposal-segment-extraction.md) §4.
+Filling concrete driver *values* (C-grade estimates) remains a human step — see
+the proposal's semi-automated boundary (§7). **Real-company data must not enter
+the repo** (see [DISCLAIMER.md](DISCLAIMER.md)); demos use the fictional NovaTech.
+
 ## Design principles
 
 | # | Principle | What it prevents |
@@ -171,6 +193,9 @@ simulate_model(model, year, ranges, n=10000, seed=0)     -> MCResult
 #   ranges: {driver_name: (low, high)};  MCResult has mean/median/stdev/percentiles
 
 tornado(segment, year, ranges) -> list[SensitivityItem]   # ranked by swing
+
+extract_segments(text, *, api_key=None, llm=None) -> dict  # segment skeleton from annual report
+alignment_check(parsed) -> dict                            # Σ + residual ≈ reported total
 ```
 
 ## Project structure
@@ -182,9 +207,10 @@ revenue-model-builder/
 │   ├── segment.py       # Segment — revenue = base × pen × share × price
 │   ├── model.py         # RevenueModel — residual + alignment validation
 │   ├── monte_carlo.py   # revenue distribution + tornado sensitivity (pure stdlib)
+│   ├── extractor.py     # annual-report text -> segment skeleton (LLM, pure stdlib)
 │   ├── excel_builder.py # render to .xlsx (ABC colors, IF formulas, residual)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 22 tests — formula, validation, residual, MC, tornado
+├── tests/               # 29 tests — formula, validation, residual, MC, tornado, extractor
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -193,6 +219,8 @@ revenue-model-builder/
 ## Roadmap
 
 - [x] Monte Carlo revenue distribution + sensitivity (tornado) analysis
+- [x] Segment skeleton extraction from annual-report text (LLM)
+- [ ] Driver value estimation (C-grade, from industry data)
 - [ ] Bear / Base / Bull scenario presets
 - [ ] Multi-market data source adapters (A股 tushare / US yfinance / HK)
 - [ ] Automated driver extraction from annual-report text

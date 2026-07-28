@@ -127,6 +127,25 @@ for it in tornado(seg, 2024, {
 > tornado 毫无区分度。只有当每个区间反映该 driver 的真实不确定性（A 级硬数据窄、C 级估算宽），
 > tornado 才有意义。（这也正是 ABC 分级与敏感度分析相互印证的地方。）
 
+## 主营业务抽取（从年报）
+
+把 segment build-up 里最繁琐的部分自动化——用 LLM 从年报「主营业务分析」文本里抽出
+**segment 骨架**（业务线、收入、占比、YoY、毛利率、driver_type 标签、driver 线索）。纯标准库
+HTTP（无 SDK）；LLM 调用可注入，测试/CI 不需要 API key。
+
+```python
+from revenue_model import extract_segments, alignment_check
+
+# text = 「主营业务分析」章节文本（上游用 PyMuPDF 从年报 PDF 抽取）
+parsed = extract_segments(text, api_key="<your-llm-key>")   # 经 secrets 管理器加载
+print(parsed["segments"])                                   # segment 骨架列表
+print(alignment_check(parsed))                             # Σ + 差额 ≈ 年报总收入
+```
+
+输出 schema 见 [docs/proposal-segment-extraction.md](docs/proposal-segment-extraction.md) §4。
+填入 driver 的**具体数值**（C 级估算）仍是人工步骤——见提案的半自动边界（§7）。
+**真实公司数据不入库**（见 [DISCLAIMER.md](DISCLAIMER.md)）；demo 用虚构 NovaTech。
+
 ## 五条设计原则
 
 | # | 原则 | 防止什么 |
@@ -157,6 +176,9 @@ simulate_model(model, year, ranges, n=10000, seed=0)     -> MCResult
 #   ranges: {driver名: (low, high)};  MCResult 含 mean/median/stdev/percentiles
 
 tornado(segment, year, ranges) -> list[SensitivityItem]   # 按 swing 排序
+
+extract_segments(text, *, api_key=None, llm=None) -> dict  # 从年报抽 segment 骨架
+alignment_check(parsed) -> dict                            # Σ + 差额 ≈ 年报总收入
 ```
 
 ## 目录结构
@@ -168,9 +190,10 @@ revenue-model-builder/
 │   ├── segment.py       # Segment — 收入 = 基数 × 渗透 × 市占 × 单价
 │   ├── model.py         # RevenueModel — 差额行 + 对齐校验
 │   ├── monte_carlo.py   # 收入分布 + tornado 敏感度（纯标准库）
+│   ├── extractor.py     # 年报文本 → segment 骨架（LLM，纯标准库）
 │   ├── excel_builder.py # 渲染成 .xlsx（ABC 颜色、IF 公式、差额行）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 22 个测试 — 公式、校验、差额、蒙特卡洛、tornado
+├── tests/               # 29 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -179,6 +202,8 @@ revenue-model-builder/
 ## 路线图
 
 - [x] 蒙特卡洛收入分布 + 敏感度（tornado）分析
+- [x] 从年报文本抽 segment 骨架（LLM）
+- [ ] driver 数值估算（C 级，来自行业数据）
 - [ ] Bear / Base / Bull 情景预设
 - [ ] 多市场数据源适配器（A股 tushare / 美股 yfinance / 港股）
 - [ ] 从年报文本自动抽取 driver

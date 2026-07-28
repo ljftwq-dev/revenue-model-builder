@@ -14,6 +14,9 @@ from .monte_carlo import (
     MCResult, SensitivityItem,
     simulate_segment, simulate_model, tornado,
 )
+from .extractor import (
+    DRIVER_TYPES, build_prompt, parse_segments, extract_segments, alignment_check,
+)
 
 __all__ = [
     "Driver", "Segment", "RevenueModel", "YearResult",
@@ -21,4 +24,6 @@ __all__ = [
     "LEVEL_A", "LEVEL_B", "LEVEL_C",
     "MCResult", "SensitivityItem",
     "simulate_segment", "simulate_model", "tornado",
+    "DRIVER_TYPES", "build_prompt", "parse_segments",
+    "extract_segments", "alignment_check",
 ]
