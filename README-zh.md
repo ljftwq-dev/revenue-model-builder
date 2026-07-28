@@ -190,6 +190,7 @@ revenue-model-builder/
 卖方研究、PE/VC 投资团队、股票分析师，以及正在学基本面分析的同学——想要一个
 **可复用、可审计**的收入建模脚手架，而不是每次都手工重建同样的 Excel 结构。
 
-## 许可证
+## 许可证与免责声明
 
-MIT — 见 [LICENSE](LICENSE)。
+MIT — 见 [LICENSE](LICENSE)。本项目是**研究/教育工具，非投资建议**——完整声明见
+[DISCLAIMER.md](DISCLAIMER.md)。

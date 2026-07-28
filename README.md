@@ -205,6 +205,7 @@ Sell-side research, PE/VC investment teams, equity analysts, and students of
 fundamental analysis who want a **reusable, auditable** revenue-modeling
 scaffold rather than rebuilding the same spreadsheet structure by hand.
 
-## License
+## License & disclaimer
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). This is a **research/education tool, not investment
+advice** — full statement in [DISCLAIMER.md](DISCLAIMER.md).
