@@ -10,9 +10,15 @@ Core abstraction:
 from .driver import Driver, BASE, PENETRATION, SHARE, PRICE, LEVEL_A, LEVEL_B, LEVEL_C
 from .segment import Segment
 from .model import RevenueModel, YearResult
+from .monte_carlo import (
+    MCResult, SensitivityItem,
+    simulate_segment, simulate_model, tornado,
+)
 
 __all__ = [
     "Driver", "Segment", "RevenueModel", "YearResult",
     "BASE", "PENETRATION", "SHARE", "PRICE",
     "LEVEL_A", "LEVEL_B", "LEVEL_C",
+    "MCResult", "SensitivityItem",
+    "simulate_segment", "simulate_model", "tornado",
 ]
