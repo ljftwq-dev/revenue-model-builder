@@ -6,7 +6,7 @@ All data is fabricated for illustration. No real company financials.
 from .driver import Driver, BASE, PENETRATION, SHARE, PRICE, LEVEL_A, LEVEL_B, LEVEL_C
 from .segment import Segment
 from .model import RevenueModel
-from .monte_carlo import simulate_model, tornado
+from .monte_carlo import simulate_model, tornado, scenarios
 
 
 def build_novatech() -> RevenueModel:
@@ -77,6 +77,13 @@ def main():
     print(f"  均值 {mc.mean:8.1f}   中位 {mc.median:8.1f}   σ {mc.stdev:7.1f}（百万元）")
     print(f"  P5 {p['p5']:8.1f} | P25 {p['p25']:7.1f} | P75 {p['p75']:7.1f} | P95 {p['p95']:7.1f}")
     print(f"  90% 置信区间宽度: {p['p95'] - p['p5']:7.1f}")
+
+    # --- Bear / Base / Bull: scenarios sliced from the distribution ---
+    print()
+    print("情景（Bear/Base/Bull = 蒙特卡洛分布的 P10/中位/P90）")
+    print("-" * 52)
+    for sc in scenarios(mc):
+        print(f"  {sc.name:5s}: {sc.revenue:8.1f} 百万元  (P{sc.percentile * 100:.0f})")
 
     # --- Tornado: which driver matters most? ---
     print()

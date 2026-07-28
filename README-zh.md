@@ -204,7 +204,7 @@ revenue-model-builder/
 - [x] 蒙特卡洛收入分布 + 敏感度（tornado）分析
 - [x] 从年报文本抽 segment 骨架（LLM）
 - [ ] driver 数值估算（C 级，来自行业数据）
-- [ ] Bear / Base / Bull 情景预设
+- [x] Bear / Base / Bull 情景（从蒙特卡洛分布切片）
 - [ ] 多市场数据源适配器（A股 tushare / 美股 yfinance / 港股）
 - [ ] 从年报文本自动抽取 driver
 - [ ] Word 底稿生成器（历史 + 预测叙述）

@@ -221,7 +221,7 @@ revenue-model-builder/
 - [x] Monte Carlo revenue distribution + sensitivity (tornado) analysis
 - [x] Segment skeleton extraction from annual-report text (LLM)
 - [ ] Driver value estimation (C-grade, from industry data)
-- [ ] Bear / Base / Bull scenario presets
+- [x] Bear / Base / Bull scenarios (sliced from the Monte Carlo distribution)
 - [ ] Multi-market data source adapters (A股 tushare / US yfinance / HK)
 - [ ] Automated driver extraction from annual-report text
 - [ ] Word memo builder (historical + forecast narrative)

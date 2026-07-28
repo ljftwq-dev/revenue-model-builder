@@ -172,3 +172,34 @@ def _revenue_with(segment: Segment, year: int, driver_name: str,
     for d in segment.drivers():
         prod *= override if d.name == driver_name else d.get(year)
     return prod
+
+
+@dataclass
+class Scenario:
+    """One of Bear / Base / Bull, derived from a Monte Carlo distribution."""
+    name: str
+    revenue: float
+    percentile: float
+
+
+def scenarios(mc: MCResult, *, bear_p: float = 0.10, bull_p: float = 0.90) -> List[Scenario]:
+    """Derive Bear / Base / Bull from a Monte Carlo revenue distribution.
+
+    A free byproduct of the distribution: Bear = P(bear_p), Base = median,
+    Bull = P(bull_p). This avoids hand-setting three parameter sets — the
+    scenarios fall straight out of the uncertainty you already modeled in
+    :func:`simulate_segment` / :func:`simulate_model`.
+
+    Default bands P10 / median / P90; tighten or widen via ``bear_p`` / ``bull_p``.
+    """
+    s = mc.samples
+    n = len(s)
+
+    def q(p: float) -> float:
+        return s[min(max(int(round(p * n)), 0), n - 1)]
+
+    return [
+        Scenario("Bear", q(bear_p), bear_p),
+        Scenario("Base", mc.median, 0.50),
+        Scenario("Bull", q(bull_p), bull_p),
+    ]

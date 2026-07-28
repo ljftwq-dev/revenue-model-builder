@@ -11,8 +11,8 @@ from .driver import Driver, BASE, PENETRATION, SHARE, PRICE, LEVEL_A, LEVEL_B, L
 from .segment import Segment
 from .model import RevenueModel, YearResult
 from .monte_carlo import (
-    MCResult, SensitivityItem,
-    simulate_segment, simulate_model, tornado,
+    MCResult, SensitivityItem, Scenario,
+    simulate_segment, simulate_model, tornado, scenarios,
 )
 from .extractor import (
     DRIVER_TYPES, build_prompt, parse_segments, extract_segments, alignment_check,
@@ -22,8 +22,8 @@ __all__ = [
     "Driver", "Segment", "RevenueModel", "YearResult",
     "BASE", "PENETRATION", "SHARE", "PRICE",
     "LEVEL_A", "LEVEL_B", "LEVEL_C",
-    "MCResult", "SensitivityItem",
-    "simulate_segment", "simulate_model", "tornado",
+    "MCResult", "SensitivityItem", "Scenario",
+    "simulate_segment", "simulate_model", "tornado", "scenarios",
     "DRIVER_TYPES", "build_prompt", "parse_segments",
     "extract_segments", "alignment_check",
 ]

@@ -6,7 +6,7 @@ from revenue_model.driver import Driver, BASE, PENETRATION, SHARE, PRICE
 from revenue_model.segment import Segment
 from revenue_model.model import RevenueModel
 from revenue_model.monte_carlo import (
-    simulate_segment, simulate_model, tornado,
+    simulate_segment, simulate_model, tornado, scenarios,
 )
 from revenue_model.demo import build_novatech
 
@@ -113,3 +113,27 @@ def test_mc_missing_year_raises():
     seg = _seg(10.0, 0.5, 0.2, 100, year=2024)
     with pytest.raises(KeyError):
         simulate_segment(seg, 2099, {"b": (8, 12)}, n=100)
+
+
+def test_scenarios_ordered_bear_base_bull():
+    seg = _seg(10.0, 0.5, 0.2, 100)
+    mc = simulate_segment(seg, 2024, {"b": (5, 15), "p": (0.3, 0.7)}, n=8000, seed=1)
+    rev = {s.name: s.revenue for s in scenarios(mc)}
+    assert rev["Bear"] < rev["Base"] < rev["Bull"]
+
+
+def test_scenarios_base_is_median():
+    seg = _seg(10.0, 0.5, 0.2, 100)
+    mc = simulate_segment(seg, 2024, {"b": (8, 12)}, n=5000, seed=2)
+    base = next(s for s in scenarios(mc) if s.name == "Base")
+    assert base.revenue == pytest.approx(mc.median)
+    assert base.percentile == 0.50
+
+
+def test_scenarios_custom_bands_widen():
+    seg = _seg(10.0, 0.5, 0.2, 100)
+    mc = simulate_segment(seg, 2024, {"b": (5, 15)}, n=8000, seed=3)
+    wide = {s.name: s.revenue for s in scenarios(mc, bear_p=0.05, bull_p=0.95)}
+    narrow = {s.name: s.revenue for s in scenarios(mc, bear_p=0.40, bull_p=0.60)}
+    assert wide["Bear"] < narrow["Bear"]      # wider band => lower bear
+    assert wide["Bull"] > narrow["Bull"]      # wider band => higher bull
