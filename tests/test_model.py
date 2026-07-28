@@ -3,7 +3,7 @@
 import pytest
 
 from revenue_model.driver import Driver, BASE, PENETRATION, SHARE, PRICE
-from revenue_model.segment import Segment
+from revenue_model.segment import Segment, implied_driver
 from revenue_model.model import RevenueModel
 from revenue_model.demo import build_novatech
 
@@ -84,3 +84,28 @@ def test_negative_residual_warns():
 def test_driver_kind_validation():
     with pytest.raises(ValueError):
         Driver("x", "bogus", {2020: 1})
+
+
+def test_implied_driver_solves_price():
+    seg = _seg(10.0, 0.5, 0.2, 100, year=2020)   # revenue = 100
+    # target 200, solve PRICE -> 200 / (10*0.5*0.2) = 200
+    assert implied_driver(seg, 2020, 200.0, PRICE) == pytest.approx(200.0)
+
+
+def test_implied_driver_round_trip():
+    seg = _seg(10.0, 0.5, 0.2, 100, year=2020)
+    rev = seg.revenue(2020)  # 100
+    # solving any driver kind and substituting back recovers the target revenue
+    for kind in (BASE, PENETRATION, SHARE, PRICE):
+        v = implied_driver(seg, 2020, rev, kind)
+        factors = {d.kind: (v if d.kind == kind else d.get(2020)) for d in seg.drivers()}
+        product = factors[BASE] * factors[PENETRATION] * factors[SHARE] * factors[PRICE]
+        assert product == pytest.approx(rev)
+
+
+def test_implied_driver_aligns_to_reported():
+    # Analyst workflow: know base/pen/share, align price to reported revenue
+    seg = _seg(24.0, 0.09, 0.14, 650, year=2024)   # revenue = 196.56
+    reported = 196.56
+    implied_price = implied_driver(seg, 2024, reported, PRICE)
+    assert implied_price == pytest.approx(650.0, rel=1e-3)

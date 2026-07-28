@@ -8,7 +8,7 @@ Core abstraction:
 """
 
 from .driver import Driver, BASE, PENETRATION, SHARE, PRICE, LEVEL_A, LEVEL_B, LEVEL_C
-from .segment import Segment
+from .segment import Segment, implied_driver
 from .model import RevenueModel, YearResult
 from .monte_carlo import (
     MCResult, SensitivityItem, Scenario,
@@ -19,7 +19,7 @@ from .extractor import (
 )
 
 __all__ = [
-    "Driver", "Segment", "RevenueModel", "YearResult",
+    "Driver", "Segment", "RevenueModel", "YearResult", "implied_driver",
     "BASE", "PENETRATION", "SHARE", "PRICE",
     "LEVEL_A", "LEVEL_B", "LEVEL_C",
     "MCResult", "SensitivityItem", "Scenario",

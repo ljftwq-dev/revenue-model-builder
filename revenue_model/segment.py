@@ -38,3 +38,26 @@ class Segment:
 
     def drivers(self) -> List[Driver]:
         return [self.base, self.penetration, self.share, self.price]
+
+
+def implied_driver(segment: Segment, year: int, target_revenue: float,
+                   solve_kind: str) -> float:
+    """Given ``target_revenue`` and the other three drivers, solve for the driver
+    of ``solve_kind``. An analyst's calibration tool: anchor the three drivers
+    you have data for, then align the fourth to a known revenue figure (e.g. the
+    segment revenue reported in the annual report).
+
+    Example: you know market base, penetration, and share from industry data,
+    plus the reported segment revenue -> the implied unit price.
+
+    .. caution::
+        Avoid ``solve_kind=PENETRATION``. Back-solving penetration to force the
+        model to tie out is exactly the trap design Principle 1 warns against:
+        the distorted value then poisons the forecast. Prefer solving PRICE or
+        BASE — the ones you can anchor to external data.
+    """
+    prod = 1.0
+    for d in segment.drivers():
+        if d.kind != solve_kind:
+            prod *= d.get(year)
+    return target_revenue / prod
