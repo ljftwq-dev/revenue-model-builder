@@ -4,7 +4,7 @@
 > modeling rules that sell-side analysts and PE associates apply by hand.
 > This document explains *why* each rule exists and what goes wrong without it.
 >
-> 中文要点见文末 [中文摘要](#中文摘要)。
+> 中文要点见文末 **中文摘要** 小节。
 
 Driver-based (bottom-up) revenue forecasting decomposes a company's revenue
 into product-level drivers, then rebuilds the total:

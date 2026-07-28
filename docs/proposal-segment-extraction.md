@@ -174,7 +174,7 @@ segment 骨架 JSON：[{name, revenue_history, share, yoy, gross_margin, driver_
 ### 8.1 合规方案（真实 A 股年报可用 — 已调研）
 
 经法律调研（大成律所《证券投资咨询业务合规问题研究》+ 证监会《2001》207 号文 + 刑法 225
-条），真实年报**可用**，守住三条边界即可。完整声明见 [../DISCLAIMER.md](../DISCLAIMER.md)。
+条），真实年报**可用**，守住三条边界即可。完整声明见 [DISCLAIMER.md](https://github.com/ljftwq-dev/revenue-model-builder/blob/main/DISCLAIMER.md)。
 
 **两层风险**：
 - **著作权（低）**：年报财务数据是**事实**，不受著作权保护，可抽取、存储、开源；叙述文字

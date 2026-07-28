@@ -1,0 +1,57 @@
+site_name: revenue-model-builder
+site_description: Bottom-up revenue forecasting framework — driver-based modeling with residual alignment
+site_url: https://ljftwq-dev.github.io/revenue-model-builder/
+repo_url: https://github.com/ljftwq-dev/revenue-model-builder
+repo_name: ljftwq-dev/revenue-model-builder
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Design Principles: design-principles.md
+  - Segment Extraction Proposal: proposal-segment-extraction.md
+  - Design Plans:
+      - Stochastic Revenue (v0.2 to v0.3): plans/2026-07-28-stochastic-revenue-design.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ljftwq-dev/revenue-model-builder

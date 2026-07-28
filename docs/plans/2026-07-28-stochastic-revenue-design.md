@@ -3,7 +3,7 @@
 > 状态：**Brainstorming 定稿，待实现**
 > 日期：2026-07-28
 > 决策来源：5 轮 brainstorming（开源目标 / 投入节奏 / 杀手锏 / 三阶段编排 / 有界性方案）
-> 关联：[design-principles.md](../design-principles.md)、[proposal-segment-extraction.md](proposal-segment-extraction.md)
+> 关联：[design-principles.md](../design-principles.md)、[proposal-segment-extraction.md](../proposal-segment-extraction.md)
 
 ---
 
@@ -172,7 +172,7 @@ StochasticDriver.simulate(years, n)
 ### B1 · 最小真实 demo（合规与工作量双控）
 - 选 1 家业务清晰、主营披露颗粒度好的 A 股（消费电子/软件/半导体类）
 - **仅历史对齐**（不做预测）——把非法荐股风险降到最低
-- 守 [DISCLAIMER.md](../DISCLAIMER.md) 三道防线：免费开源、不出买卖建议/目标价/评级、引用标来源+页码
+- 守 [DISCLAIMER.md](https://github.com/ljftwq-dev/revenue-model-builder/blob/main/DISCLAIMER.md) 三道防线：免费开源、不出买卖建议/目标价/评级、引用标来源+页码
 - 真实数据**不进主仓**（建议子仓或 release 附件），主仓保持虚构 NovaTech
 
 ---
