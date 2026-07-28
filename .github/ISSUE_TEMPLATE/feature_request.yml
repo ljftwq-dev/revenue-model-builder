@@ -1,0 +1,40 @@
+name: ✨ Feature request
+description: Suggest a new capability or improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: The use case or pain point. "As a <role>, I want <X> so that <Y>."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What you'd like to see. API sketches welcome.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dep-boundary
+    attributes:
+      label: Would this add a core dependency?
+      description: |
+        The core engine is deliberately zero-dependency (pure stdlib).
+        Features needing third-party packages go behind an extra.
+      options:
+        - "No — pure stdlib"
+        - "Yes — behind a new optional extra"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false

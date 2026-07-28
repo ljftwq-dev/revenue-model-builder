@@ -1,0 +1,54 @@
+name: 🐛 Bug report
+description: Report something that's broken or behaves wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. A minimal reproducible example
+        helps a lot.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, expected vs. actual behavior. Code blocks welcome.
+      placeholder: |
+        1. ran `python -m revenue_model build`
+        2. expected ...
+        3. got ...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: "`pip show revenue-model-builder` or the commit you're on"
+      placeholder: "0.1.0 / main @ <sha>"
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS and Python version.
+      placeholder: "Windows 11, Python 3.12"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Core engine (Driver / Segment / RevenueModel)
+        - Monte Carlo / tornado / scenarios
+        - Segment extraction (LLM)
+        - Excel builder
+        - CLI
+        - Documentation / mkdocs
+        - Other
+    validations:
+      required: false
