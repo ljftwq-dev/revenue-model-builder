@@ -184,6 +184,10 @@ Driver(name, kind, values, level="C", unit="", source="")
 Segment(name, base, penetration, share, price)
 #   .revenue(year) -> float  (million yuan)
 
+implied_driver(segment, year, target_revenue, solve_kind) -> float
+#   calibrate one driver to a known revenue (e.g. reported segment revenue);
+#   prefer solve_kind=PRICE/BASE over PENETRATION (avoids the back-solve trap)
+
 RevenueModel(company, segments, total_revenue)
 #   .validate(year)  -> YearResult   (segment_revenues, residual, warnings)
 #   .validate_all()  -> list[YearResult]
@@ -193,6 +197,8 @@ simulate_model(model, year, ranges, n=10000, seed=0)     -> MCResult
 #   ranges: {driver_name: (low, high)};  MCResult has mean/median/stdev/percentiles
 
 tornado(segment, year, ranges) -> list[SensitivityItem]   # ranked by swing
+
+scenarios(mc, *, bear_p=0.10, bull_p=0.90) -> list[Scenario]  # Bear/Base/Bull from the distribution
 
 extract_segments(text, *, api_key=None, llm=None) -> dict  # segment skeleton from annual report
 alignment_check(parsed) -> dict                            # Σ + residual ≈ reported total
@@ -210,7 +216,7 @@ revenue-model-builder/
 │   ├── extractor.py     # annual-report text -> segment skeleton (LLM, pure stdlib)
 │   ├── excel_builder.py # render to .xlsx (ABC colors, IF formulas, residual)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 29 tests — formula, validation, residual, MC, tornado, extractor
+├── tests/               # 35 tests — formula, validation, residual, MC, tornado, extractor
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml

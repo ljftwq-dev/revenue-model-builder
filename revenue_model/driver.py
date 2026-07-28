@@ -1,16 +1,19 @@
 """Driver — a single revenue driver factor (market base / penetration / share / price)."""
 
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Literal
 
-BASE = "base"
-PENETRATION = "penetration"
-SHARE = "share"
-PRICE = "price"
+DriverKind = Literal["base", "penetration", "share", "price"]
+DataLevel = Literal["A", "B", "C"]
 
-LEVEL_A = "A"
-LEVEL_B = "B"
-LEVEL_C = "C"
+BASE: DriverKind = "base"
+PENETRATION: DriverKind = "penetration"
+SHARE: DriverKind = "share"
+PRICE: DriverKind = "price"
+
+LEVEL_A: DataLevel = "A"
+LEVEL_B: DataLevel = "B"
+LEVEL_C: DataLevel = "C"
 
 _KIND_LABELS = {
     BASE: "市场基数",
@@ -23,9 +26,9 @@ _KIND_LABELS = {
 @dataclass
 class Driver:
     name: str
-    kind: str
+    kind: DriverKind
     values: Dict[int, float]
-    level: str = LEVEL_C
+    level: DataLevel = LEVEL_C
     unit: str = ""
     source: str = ""
 

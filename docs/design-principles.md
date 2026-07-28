@@ -92,13 +92,13 @@ exactly what an investment committee or a buy-side client demands.
 
 This is the subtlety almost no textbook mentions.
 
-**Wrong:** forecast penetration as `p_{n} = p_{n-1} × (1 + g)` with a constant
-growth rate `g`.
+**Wrong:** forecast penetration as $p_{n} = p_{n-1} \times (1 + g)$ with a constant
+growth rate $g$.
 
-**Right:** forecast as `p_{n} = p_{n-1} + Δp` with a constant **increment** `Δp`.
+**Right:** forecast as $p_{n} = p_{n-1} + \Delta p$ with a constant **increment** $\Delta p$.
 
 Why? Because penetration is a **bounded** variable (it approaches 100%). A
-constant growth rate `g` produces *exponential* growth — penetration rockets
+constant growth rate $g$ produces *exponential* growth — penetration rockets
 past physical limits within a few years. A constant increment produces
 *linear* growth that naturally decelerates in rate terms as the base grows,
 which matches real adoption curves (S-curves are nearly linear in the middle).
@@ -230,7 +230,7 @@ penetration
 
 For **short** horizons the linear increment is an excellent approximation. For
 **long** horizons (10+ years toward saturation), model penetration as a logistic
-curve `p(t) = L / (1 + e^{-k(t-t0)})` — but **never** as a constant growth rate,
+curve $p(t) = \dfrac{L}{1 + e^{-k(t-t_0)}}$ — but **never** as a constant growth rate,
 which explodes past 100%. The invariant: *bounded ratios grow toward an
 asymptote, not exponentially.*
 

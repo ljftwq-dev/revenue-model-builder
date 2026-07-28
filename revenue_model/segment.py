@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from .driver import Driver, BASE, PENETRATION, SHARE, PRICE
+from .driver import Driver, DriverKind, BASE, PENETRATION, SHARE, PRICE
 
 
 @dataclass
@@ -41,7 +41,7 @@ class Segment:
 
 
 def implied_driver(segment: Segment, year: int, target_revenue: float,
-                   solve_kind: str) -> float:
+                   solve_kind: DriverKind) -> float:
     """Given ``target_revenue`` and the other three drivers, solve for the driver
     of ``solve_kind``. An analyst's calibration tool: anchor the three drivers
     you have data for, then align the fourth to a known revenue figure (e.g. the

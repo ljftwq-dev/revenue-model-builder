@@ -167,6 +167,9 @@ Driver(name, kind, values, level="C", unit="", source="")
 Segment(name, base, penetration, share, price)
 #   .revenue(year) -> float  (百万元)
 
+implied_driver(segment, year, target_revenue, solve_kind) -> float
+#   把某个 driver 对齐到已知收入（如年报分项收入）；优先解 PRICE/BASE，避免解 PENETRATION（反推陷阱）
+
 RevenueModel(company, segments, total_revenue)
 #   .validate(year)  -> YearResult   (分项收入、差额、告警)
 #   .validate_all()  -> list[YearResult]
@@ -176,6 +179,8 @@ simulate_model(model, year, ranges, n=10000, seed=0)     -> MCResult
 #   ranges: {driver名: (low, high)};  MCResult 含 mean/median/stdev/percentiles
 
 tornado(segment, year, ranges) -> list[SensitivityItem]   # 按 swing 排序
+
+scenarios(mc, *, bear_p=0.10, bull_p=0.90) -> list[Scenario]  # 从分布切片 Bear/Base/Bull
 
 extract_segments(text, *, api_key=None, llm=None) -> dict  # 从年报抽 segment 骨架
 alignment_check(parsed) -> dict                            # Σ + 差额 ≈ 年报总收入
@@ -193,7 +198,7 @@ revenue-model-builder/
 │   ├── extractor.py     # 年报文本 → segment 骨架（LLM，纯标准库）
 │   ├── excel_builder.py # 渲染成 .xlsx（ABC 颜色、IF 公式、差额行）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 29 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取
+├── tests/               # 35 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml

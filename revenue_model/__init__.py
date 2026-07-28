@@ -7,7 +7,10 @@ Core abstraction:
                  line that absorbs un-modeled business and an alignment check.
 """
 
-from .driver import Driver, BASE, PENETRATION, SHARE, PRICE, LEVEL_A, LEVEL_B, LEVEL_C
+from .driver import (
+    Driver, BASE, PENETRATION, SHARE, PRICE,
+    LEVEL_A, LEVEL_B, LEVEL_C, DriverKind, DataLevel,
+)
 from .segment import Segment, implied_driver
 from .model import RevenueModel, YearResult
 from .monte_carlo import (
@@ -22,6 +25,7 @@ __all__ = [
     "Driver", "Segment", "RevenueModel", "YearResult", "implied_driver",
     "BASE", "PENETRATION", "SHARE", "PRICE",
     "LEVEL_A", "LEVEL_B", "LEVEL_C",
+    "DriverKind", "DataLevel",
     "MCResult", "SensitivityItem", "Scenario",
     "simulate_segment", "simulate_model", "tornado", "scenarios",
     "DRIVER_TYPES", "build_prompt", "parse_segments",
