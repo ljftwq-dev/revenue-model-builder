@@ -68,23 +68,74 @@ def build_luxun() -> RevenueModel:
     return RevenueModel("立讯精密", [ce, auto, comm], total_revenue=TOTAL)
 
 
+FORECAST_YEARS = [2026, 2027, 2028]
+
+
+def _trend_ext(driver, years):
+    """Replace a driver with its OLS-trend extrapolation (C-grade, sourced)."""
+    return driver.fit_trend(driver.years()).extrapolate(years)
+
+
+def _hold(driver, years):
+    """Hold the last historical value into forecast years — for structural
+    drivers, or ones distorted by a one-off (e.g. an acquisition)."""
+    last_yr = max(driver.values)
+    last_val = driver.values[last_yr]
+    new_vals = dict(driver.values)
+    for y in years:
+        new_vals[y] = last_val
+    return Driver(driver.name, driver.kind, new_vals, level="C",
+                  unit=driver.unit, source=f"held at {last_yr} value (no clean trend)")
+
+
+def add_forecast(model):
+    """Fill 2026-2028E drivers via Principle-3 extrapolation.
+
+    - ``base`` (market size): OLS trend — the market follows its path.
+    - ``penetration``: held (structural).
+    - ``share``/``price``: trend where history is a clean trend; held where a
+      one-off (Luxun's 2025 Leoni acquisition) distorts the series.
+    """
+    for seg in model.segments:
+        seg.base = _trend_ext(seg.base, FORECAST_YEARS)
+        seg.penetration = _hold(seg.penetration, FORECAST_YEARS)
+    ce, auto, comm = model.segments
+    # consumer: share & price both on a clean rising trend
+    ce.share = _trend_ext(ce.share, FORECAST_YEARS)
+    ce.price = _trend_ext(ce.price, FORECAST_YEARS)
+    # automotive: Leoni acquisition (2025) is a one-off -> hold share & price
+    auto.share = _hold(auto.share, FORECAST_YEARS)
+    auto.price = _hold(auto.price, FORECAST_YEARS)
+    # comms: share stable, price volatile (no clean trend) -> hold
+    comm.share = _hold(comm.share, FORECAST_YEARS)
+    comm.price = _hold(comm.price, FORECAST_YEARS)
+
+
 def main():
     model = build_luxun()
-    print("Luxun Precision (002475) — real historical alignment 2023-2025")
+    add_forecast(model)
+    print("Luxun Precision (002445) — historical alignment + forecast")
     print("=" * 64)
     for seg in model.segments:
         print(f"\n[{seg.name}]")
         for d in seg.drivers():
-            print(f"  {d.kind_label():12s}[{d.level}] {dict(d.values)}  — {d.source}")
-        for yr in YEARS:
-            print(f"  {yr}: {seg.revenue(yr)/100:.1f}亿", end="  ")
+            print(f"  {d.kind_label():12s}[{d.level}] {dict(d.values)}")
+            print(f"               — {d.source}")
+        print("  revenue:", end="")
+        for yr in YEARS + FORECAST_YEARS:
+            tag = "E" if yr in FORECAST_YEARS else ""
+            print(f"  {yr}{tag}={seg.revenue(yr)/100:.0f}亿", end="")
         print()
-    print("\n" + "=" * 64 + "\nvalidate_all:")
+    print("\n" + "=" * 64 + "\nvalidate_all (history only):")
     for r in model.validate_all():
         print(f"  {r.year}: Σ={r.segment_sum/100:.0f}亿  residual={r.residual_ratio:.1%}  ({len(r.warnings)} warning)")
+    print("\nforecast revenue (driver-driven, no reported total to align):")
+    for yr in FORECAST_YEARS:
+        total = sum(seg.revenue(yr) for seg in model.segments)
+        print(f"  {yr}E: Σ segments = {total/100:.0f}亿")
     out = os.path.join(HERE, "立讯精密_收入模型.xlsx")
-    build_excel(model, out, forecast_years=[2026, 2027, 2028])
-    print(f"\nExcel -> {out}")
+    build_excel(model, out, forecast_years=FORECAST_YEARS)
+    print(f"\nExcel -> {out}  (2026-2028E columns now filled)")
 
 
 if __name__ == "__main__":
