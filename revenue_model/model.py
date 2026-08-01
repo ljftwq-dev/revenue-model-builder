@@ -51,9 +51,16 @@ class RevenueModel:
                 f"residual ratio {ratio:.0%} too high: un-modeled business dominates, "
                 f"consider adding segments")
         if 0 < ratio < 0.05:
-            warnings.append(
-                f"residual ratio {ratio:.0%} suspiciously small: penetration may have "
-                f"been back-solved (should keep industry-realistic values)")
+            if ratio < 0.01:
+                warnings.append(
+                    f"residual ratio {ratio:.1%} near zero: penetration was likely "
+                    f"back-solved to force alignment (base/pen/share should use "
+                    f"industry-realistic values, not fitted)")
+            else:
+                warnings.append(
+                    f"residual ratio {ratio:.0%} small: usually fine when few "
+                    f"segments cover most revenue (e.g. after a caliber change); "
+                    f"only a concern if penetration was fitted")
         return YearResult(year, seg_rev, s, total, resid, ratio, warnings)
 
     def validate_all(self) -> List[YearResult]:

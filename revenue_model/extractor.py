@@ -68,7 +68,7 @@ e.g. 0.1617 = 16.17%):
       "confidence": "A | B | C"
     }
   ],
-  "unmodeled": {"name": "misc / not separately modeled", "revenue": <yuan>, "share": <decimal>, "note": "goes to residual line"}
+  "unmodeled": {"name": "misc / not separately modeled", "revenue": <yuan>, "share": <decimal>, "note": "comma-separated names of ALL sub-5% items combined here"}
 }
 
 driver_type controlled vocabulary (pick exactly one per segment):
@@ -77,9 +77,12 @@ driver_type controlled vocabulary (pick exactly one per segment):
 Rules:
 1. Extract segments by product line where possible (most representative); fall
    back to industry if the report only discloses by industry.
-2. Items below ~5% or of unclear nature go to 'unmodeled' (residual), not a
-   segment. Aim for 3-5 core segments covering 70-80% (the 80/20 rule).
-3. Share must sum to ~1: Σ(segments.share) + unmodeled.share ≈ 1.
+2. Items below ~5% or of unclear nature ALL go to 'unmodeled' (residual), not
+   segments. SUM every such item's revenue into unmodeled.revenue and its share
+   into unmodeled.share; list each item name in unmodeled.note. NEVER drop a
+   business line. Aim for 3-5 core segments covering 70-80%.
+3. Revenue and share both reconcile: Σ(segments.revenue) + unmodeled.revenue
+   ≈ total_revenue, and Σ(segments.share) + unmodeled.share ≈ 1.
 4. Every number must trace to 'evidence' (a verbatim snippet). No fabrication.
 5. confidence: A = hard data from the report (revenue/margin); C = estimates
    (most driver_hints are C).

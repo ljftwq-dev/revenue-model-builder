@@ -109,3 +109,26 @@ def test_implied_driver_aligns_to_reported():
     reported = 196.56
     implied_price = implied_driver(seg, 2024, reported, PRICE)
     assert implied_price == pytest.approx(650.0, rel=1e-3)
+
+
+def test_validate_near_zero_warns_backsolve():
+    seg = _seg(10.0, 1.0, 1.0, 10.0)                 # revenue = 100
+    model = RevenueModel("x", [seg], {2020: 100.5})  # residual 0.5% (<1%)
+    r = model.validate(2020)
+    assert any("near zero" in w for w in r.warnings)
+
+
+def test_validate_small_residual_caliber_note():
+    seg = _seg(10.0, 1.0, 1.0, 10.0)                 # revenue = 100
+    model = RevenueModel("x", [seg], {2020: 103.0})  # residual 2.9% (1-5%)
+    r = model.validate(2020)
+    assert any("small" in w and "cover most revenue" in w for w in r.warnings)
+    assert not any("near zero" in w for w in r.warnings)
+
+
+def test_validate_no_small_warning_above_threshold():
+    seg = _seg(10.0, 1.0, 1.0, 10.0)                 # revenue = 100
+    model = RevenueModel("x", [seg], {2020: 120.0})  # residual 16.7% (>5%)
+    r = model.validate(2020)
+    assert not any("near zero" in w for w in r.warnings)
+    assert not any("small" in w and "cover most revenue" in w for w in r.warnings)
