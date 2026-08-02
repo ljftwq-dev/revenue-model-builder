@@ -215,6 +215,8 @@ revenue-model-builder/
 - [ ] 从年报文本自动抽取 driver
 - [ ] Word 底稿生成器（历史 + 预测叙述）
 - [x] PyPI 发布
+- [x] 可视化图表（分布 / 龙卷风 / 瀑布 / 历史+预测趋势）
+- [x] 交互式 Streamlit app（driver 滑块 → 图实时变）
 
 ## 适用人群
 

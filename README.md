@@ -260,6 +260,8 @@ revenue-model-builder/
 - [ ] Automated driver extraction from annual-report text
 - [ ] Word memo builder (historical + forecast narrative)
 - [x] PyPI release
+- [x] Visualization charts (distribution / tornado / waterfall / forecast)
+- [x] Interactive Streamlit app (driver sliders -> live charts)
 
 ## Who is this for
 

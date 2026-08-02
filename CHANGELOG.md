@@ -4,6 +4,30 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-08-02
+
+### Added
+- **Visualization module** (`revenue_model.viz`, extra `viz`): four matplotlib
+  charts that turn model output into pictures, each returning an `Axes` so it
+  embeds anywhere (notebooks, reports, the Streamlit app):
+  - `plot_revenue_distribution` — Monte Carlo histogram with P5/P25/median/P75/
+    P95 markers and Bear/Base/Bull bands.
+  - `plot_tornado` — ranked sensitivity bars around the base case.
+  - `plot_waterfall` — cumulative "upside bridge" as each driver is moved.
+  - `plot_forecast` — historical (solid) vs forecast (same-color dashed)
+    trajectory per segment, with a reported-vs-forecast (Σ segments) total line.
+  - `plot_dashboard` — a 2×2 panel combining all four for one segment.
+  Headless (Agg) smoke tests; CJK glyph fallback so Chinese names render.
+- **Interactive Streamlit app** (`examples/streamlit_app.py`, extra `app`):
+  load a model (default: the Luxun real A-share demo), drag driver-range
+  sliders in the sidebar, watch all four charts + metric cards recompute live.
+  Ships a startup guard that prints the correct `streamlit run` command if the
+  script is launched with plain `python`.
+
+### Notes
+- The core engine stays **zero-dependency** — `viz` and `app` are optional
+  extras, and `viz` is lazy-imported (never triggered by `import revenue_model`).
+
 ## [0.3.0] - 2026-08-02
 
 ### Added
