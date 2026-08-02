@@ -1,6 +1,6 @@
 [project]
 name = "revenue-model-builder"
-version = "0.4.0"
+version = "0.5.0"
 description = "Bottom-up revenue forecasting framework: driver-based modeling with residual alignment."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -31,6 +31,8 @@ excel = ["openpyxl>=3.0"]
 dev = ["pytest>=7"]
 viz = ["matplotlib>=3.5"]
 app = ["streamlit>=1.30", "matplotlib>=3.5"]
+backtest = ["statsmodels>=0.14"]
+data = ["akshare>=1.14"]
 
 [project.scripts]
 revenue-model = "revenue_model.__main__:main"

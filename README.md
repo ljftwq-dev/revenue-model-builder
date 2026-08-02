@@ -69,6 +69,7 @@ returns million yuan by construction.
 pip install -e .                  # core engine only (pure stdlib, zero deps)
 pip install -e ".[excel]"         # + openpyxl, to render .xlsx output
 pip install -e ".[dev]"           # + pytest, to run the test suite
+pip install -e ".[backtest]"      # + statsmodels, for Holt/ARIMA backtesting
 ```
 
 ## Quick start
@@ -167,6 +168,54 @@ for the SDEs and why logit-OU keeps bounded ratios bounded.
 > [`tests/test_stochastic.py`](tests/test_stochastic.py) for analytic-solution
 > validation (GBM mean, OU stationary variance, induced correlation).
 
+## Backtesting
+
+How accurate is a revenue forecast, really? The `backtest` extra answers that
+with **honest out-of-sample evaluation** — fit on history, predict the next
+year, slide the window forward, and never let a method see the value it must
+predict.
+
+Five methods head-to-head: **Naive** (random walk — the benchmark to beat),
+**Linear** trend, **CAGR** (log-linear / constant-growth), **Holt** exponential
+smoothing, and **ARIMA**. Pure-stdlib metrics (`sMAPE` / `MAPE` / `MAE` / `RMSE`
+/ R² / directional accuracy); `sMAPE` is the headline number because it stays
+robust across companies of very different sizes. `Naive` / `Linear` / `CAGR`
+need nothing; `Holt` / `ARIMA` lazy-import statsmodels.
+
+```python
+from revenue_model.backtest import (
+    Naive, LinearTrend, LogLinearCAGR, HoltLinear, ARIMA,
+    rolling_backtest, evaluate, score_table,
+)
+
+steps = rolling_backtest(
+    years, values,
+    [Naive(), LinearTrend(), LogLinearCAGR(), HoltLinear(), ARIMA()],
+    min_train=8, horizon=1)
+print(score_table(evaluate(steps)))
+```
+
+Real A-share data loads through the `data` extra (akshare, cached as CSV for
+reproducibility). **Ten companies spanning six growth regimes**:
+
+| method | avg sMAPE | wins (best / 10) |
+|---|---|---|
+| **Holt / ARIMA** (adaptive) | **~14%** | **10 / 10** |
+| Naive | 21% | 0 |
+| Linear / CAGR (fixed trend) | 36% / 31% | 0 |
+
+![sMAPE heatmap — company × method](examples/backtest_demo/heatmap_smape.png)
+
+> **What this teaches about the framework itself.** On the revenue *total*
+> level, adaptive statistical methods dominate fixed trends — high-growth
+> names grow exponentially, so a linear fit systematically under-predicts and
+> even gets the *direction* wrong. The value of the **driver decomposition**
+> is therefore *not* "guess the total more accurately" (statistics does that
+> better) but **locating structure**: which segment rides a trend and which
+> rides a one-off event (e.g. Luxun's 2025 Leoni acquisition — invisible to any
+> aggregate method). Accuracy and interpretability are complements, not
+> substitutes. See [`examples/backtest_demo/`](examples/backtest_demo/).
+
 ## Segment extraction (from annual reports)
 
 Automate the tedious part of segment build-up — pull a **segment skeleton**
@@ -242,8 +291,9 @@ revenue-model-builder/
 │   ├── monte_carlo.py   # revenue distribution + tornado sensitivity (pure stdlib)
 │   ├── extractor.py     # annual-report text -> segment skeleton (LLM, pure stdlib)
 │   ├── excel_builder.py # render to .xlsx (ABC colors, IF formulas, residual)
+│   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 72 tests — formula, validation, residual, MC, tornado, extractor
+├── tests/               # 102 tests — formula, validation, residual, MC, tornado, extractor, backtest
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -262,6 +312,7 @@ revenue-model-builder/
 - [x] PyPI release
 - [x] Visualization charts (distribution / tornado / waterfall / forecast)
 - [x] Interactive Streamlit app (driver sliders -> live charts)
+- [x] Backtesting — out-of-sample method comparison (Naive / Linear / CAGR / Holt / ARIMA)
 
 ## Who is this for
 

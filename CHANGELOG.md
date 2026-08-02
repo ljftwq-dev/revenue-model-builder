@@ -4,6 +4,37 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-08-02
+
+### Added
+- **Backtesting module** (`revenue_model.backtest`, extras `backtest` +
+  `data`): honest out-of-sample evaluation of revenue forecasts.
+  - `metrics` — pure-stdlib forecast-accuracy metrics (MAE / RMSE / MAPE /
+    **sMAPE** / R² / directional accuracy). sMAPE is the headline: bounded in
+    [0, 2] and robust across companies of very different revenue scales.
+  - `methods` — five forecasters behind one protocol: `Naive` (random-walk
+    benchmark), `LinearTrend`, `LogLinearCAGR`, `HoltLinear`, `ARIMA`.
+    Naive/Linear/CAGR are stdlib; Holt/ARIMA lazy-import statsmodels.
+  - `rolling` — expanding/fixed-window backtest engine; a method never sees
+    the value it must predict. `evaluate()` aggregates per-method metrics;
+    `score_table()` renders a CLI-friendly table.
+  - `data` — akshare annual-revenue loader with on-disk CSV cache (B-grade,
+    sourced from 同花顺 annual abstracts; million-yuan units to match the engine).
+- **Two demo experiments** (`examples/backtest_demo/`): a Luxun driver
+  hold-out (build from 2023-24, predict 2025 vs reported) and a ten-company
+  cross-method comparison spanning six growth regimes, with heatmap + ranking
+  charts (`heatmap_smape.png`, `ranking.png`).
+- **Methodological finding** (documented in README): on revenue *totals*,
+  adaptive methods (Holt/ARIMA, ~14% sMAPE) dominate fixed trends (Linear/CAGR,
+  31–36%) and win all 10 companies; the driver decomposition's value is
+  locating structure (trend vs one-off event), not beating statistics on
+  aggregate accuracy.
+
+### Changed
+- `pyproject.toml`: new optional extras `backtest = [statsmodels>=0.14]` and
+  `data = [akshare>=1.14]`. Core stays zero-dependency.
+- README (EN/ZH): new Backtesting section, roadmap entry, test count 72 → 102.
+
 ## [0.4.0] - 2026-08-02
 
 ### Added

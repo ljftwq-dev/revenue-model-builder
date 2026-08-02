@@ -75,6 +75,21 @@ mc = simulate_model(model, 2024, {"market share": (0.10, 0.18)}, n=20000, seed=0
 print(mc.median, mc.percentiles["p5"], mc.percentiles["p95"])
 ```
 
+## Backtesting
+
+How accurate is the forecast, really? The `backtest` extra runs **honest
+out-of-sample** evaluation — five methods (Naive / Linear / CAGR / Holt /
+ARIMA), pure-stdlib metrics (`sMAPE` as the headline, robust across scales),
+and real A-share data via the `data` extra (akshare, CSV-cached). Across ten
+companies spanning six growth regimes, adaptive methods (Holt / ARIMA) win all
+ten at ~14% sMAPE.
+
+The finding sharpens the framework's positioning: on revenue **totals**,
+statistics wins — but the **driver decomposition** uniquely *locates structure*
+(which segment rides a trend vs a one-off event like Luxun's 2025 Leoni
+acquisition, invisible to any aggregate method). See
+[`examples/backtest_demo/`](https://github.com/ljftwq-dev/revenue-model-builder/tree/main/examples/backtest_demo).
+
 ---
 
 *Research / education tool, not investment advice. See

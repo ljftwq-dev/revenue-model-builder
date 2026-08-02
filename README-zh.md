@@ -59,6 +59,7 @@
 pip install -e .                  # 仅核心引擎（纯标准库，零依赖）
 pip install -e ".[excel]"         # + openpyxl，用于输出 .xlsx
 pip install -e ".[dev]"           # + pytest，用于跑测试
+pip install -e ".[backtest]"      # + statsmodels，用于 Holt/ARIMA 回测
 ```
 
 ## 快速上手
@@ -126,6 +127,46 @@ for it in tornado(seg, 2024, {
 > （`基数 × 渗透 × 市占 × 单价`），对每个因子用相同的百分比扰动，会得到**完全相同的摆动**——
 > tornado 毫无区分度。只有当每个区间反映该 driver 的真实不确定性（A 级硬数据窄、C 级估算宽），
 > tornado 才有意义。（这也正是 ABC 分级与敏感度分析相互印证的地方。）
+
+## 回测
+
+一份收入预测到底准不准？`backtest` extra 用**诚实的样本外评估**回答——
+用历史拟合、预测下一年、滑动窗口前进，绝不让方法看到它要预测的那个值。
+
+五种方法正面交锋：**Naive**（随机游走，要击败的基准）、**Linear** 趋势、
+**CAGR**（对数线性/恒定增速）、**Holt** 指数平滑、**ARIMA**。纯标准库指标
+（`sMAPE` / `MAPE` / `MAE` / `RMSE` / R² / 方向命中率）；`sMAPE` 是主指标，因为它在
+体量差异极大的公司间依然稳健。Naive/Linear/CAGR 零依赖；Holt/ARIMA 惰性导入 statsmodels。
+
+```python
+from revenue_model.backtest import (
+    Naive, LinearTrend, LogLinearCAGR, HoltLinear, ARIMA,
+    rolling_backtest, evaluate, score_table,
+)
+
+steps = rolling_backtest(
+    years, values,
+    [Naive(), LinearTrend(), LogLinearCAGR(), HoltLinear(), ARIMA()],
+    min_train=8, horizon=1)
+print(score_table(evaluate(steps)))
+```
+
+真实 A 股数据通过 `data` extra（akshare）加载，缓存为 CSV 保证可复现。
+**十家公司覆盖六种增长模式**：
+
+| 方法 | 平均 sMAPE | 最优次数 (10 家中) |
+|---|---|---|
+| **Holt / ARIMA**（自适应） | **~14%** | **10 / 10** |
+| Naive | 21% | 0 |
+| Linear / CAGR（固定趋势） | 36% / 31% | 0 |
+
+![sMAPE 热力图 — 公司 × 方法](examples/backtest_demo/heatmap_smape.png)
+
+> **这对框架本身的启示。** 在收入**总量**层面，自适应统计方法碾压固定趋势——
+> 高成长股是指数级增长，线性拟合会系统性低估，连**方向**都判错。所以 **driver 分解**
+> 的价值**不在于"把总量猜得更准"**（统计方法做得更好），而在于**定位结构**：哪块业务
+> 靠趋势、哪块靠一次性事件（如立讯 2025 年收购 Leoni——任何总量方法都看不见）。精度
+> 与可解释性是互补，不是替代。见 [`examples/backtest_demo/`](examples/backtest_demo/)。
 
 ## 主营业务抽取（从年报）
 
@@ -197,8 +238,9 @@ revenue-model-builder/
 │   ├── monte_carlo.py   # 收入分布 + tornado 敏感度（纯标准库）
 │   ├── extractor.py     # 年报文本 → segment 骨架（LLM，纯标准库）
 │   ├── excel_builder.py # 渲染成 .xlsx（ABC 颜色、IF 公式、差额行）
+│   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 72 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取
+├── tests/               # 102 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -217,6 +259,7 @@ revenue-model-builder/
 - [x] PyPI 发布
 - [x] 可视化图表（分布 / 龙卷风 / 瀑布 / 历史+预测趋势）
 - [x] 交互式 Streamlit app（driver 滑块 → 图实时变）
+- [x] 回测 — 样本外方法对比（Naive / Linear / CAGR / Holt / ARIMA）
 
 ## 适用人群
 
