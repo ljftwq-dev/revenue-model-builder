@@ -4,6 +4,37 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-08-02
+
+### Added
+- **Driver extrapolation API** (`Driver.extrapolate_*`): turn a driver's history
+  into a defensible forward path. Every extrapolated point is a new C-grade,
+  sourced value — the original driver is never mutated (immutable semantics).
+  - `extrapolate_incremental(years, delta_pp)` — bounded incremental forecasts
+    (e.g. penetration *+X percentage points/year*), auto-clamped to [0, 1].
+    Encodes Principle 3 (incremental, not growth-rate) directly as an API.
+  - `extrapolate_logistic(years, L, k, t0)` — logistic S-curve for long-horizon
+    saturation of bounded ratios.
+  - `fit_trend(years).extrapolate(years)` — OLS least-squares trend projection
+    (pure stdlib) for price / base drivers.
+- **Real A-share demo** (`examples/`, Luxun Precision / 002475): a fully
+  documented historical-alignment case on a real company. Consumer / comms /
+  automotive segments reconstructed from the annual report, reconciled to
+  reported totals (residual ≈ 1.3%), plus a 2026–2028E forecast column. The
+  fictional NovaTech demo is retained as a zero-knowledge quickstart.
+
+### Fixed
+- **Extractor**: small segments (< 5% of revenue, e.g. Luxun's PC-interconnect
+  line) are now accumulated into `unmodeled` instead of being dropped, so the
+  reported total is preserved.
+- **Validation warnings**: tiered residual logic — `< 1%` warns about genuine
+  back-solving, `1–5%` hints at a possible scope change / missing segment.
+  Fixes a false positive on the Luxun demo (口径变化 misread as back-solve).
+
+### Changed
+- README roadmap: marked PyPI release and driver extrapolation as done;
+  corrected test count (35 → 72).
+
 ## [0.2.0] - 2026-07-28
 
 ### Added

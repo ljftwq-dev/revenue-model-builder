@@ -198,7 +198,7 @@ revenue-model-builder/
 │   ├── extractor.py     # 年报文本 → segment 骨架（LLM，纯标准库）
 │   ├── excel_builder.py # 渲染成 .xlsx（ABC 颜色、IF 公式、差额行）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 35 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取
+├── tests/               # 72 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -208,12 +208,13 @@ revenue-model-builder/
 
 - [x] 蒙特卡洛收入分布 + 敏感度（tornado）分析
 - [x] 从年报文本抽 segment 骨架（LLM）
+- [x] driver 外推 API（增量法 / logistic / 趋势拟合）
 - [ ] driver 数值估算（C 级，来自行业数据）
 - [x] Bear / Base / Bull 情景（从蒙特卡洛分布切片）
 - [ ] 多市场数据源适配器（A股 tushare / 美股 yfinance / 港股）
 - [ ] 从年报文本自动抽取 driver
 - [ ] Word 底稿生成器（历史 + 预测叙述）
-- [ ] PyPI 发布
+- [x] PyPI 发布
 
 ## 适用人群
 

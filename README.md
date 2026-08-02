@@ -243,7 +243,7 @@ revenue-model-builder/
 │   ├── extractor.py     # annual-report text -> segment skeleton (LLM, pure stdlib)
 │   ├── excel_builder.py # render to .xlsx (ABC colors, IF formulas, residual)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 35 tests — formula, validation, residual, MC, tornado, extractor
+├── tests/               # 72 tests — formula, validation, residual, MC, tornado, extractor
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -253,12 +253,13 @@ revenue-model-builder/
 
 - [x] Monte Carlo revenue distribution + sensitivity (tornado) analysis
 - [x] Segment skeleton extraction from annual-report text (LLM)
+- [x] Driver extrapolation API (incremental / logistic / trend-fit)
 - [ ] Driver value estimation (C-grade, from industry data)
 - [x] Bear / Base / Bull scenarios (sliced from the Monte Carlo distribution)
 - [ ] Multi-market data source adapters (A股 tushare / US yfinance / HK)
 - [ ] Automated driver extraction from annual-report text
 - [ ] Word memo builder (historical + forecast narrative)
-- [ ] PyPI release
+- [x] PyPI release
 
 ## Who is this for
 
