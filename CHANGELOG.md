@@ -4,6 +4,31 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-08-09
+
+### Added
+- **NVIDIA driver demo** (`examples/nvda_demo/`): the first **U.S.-equity** demo
+  and the sharpest possible test of the driver-tree method's boundary. One
+  company, two segments, the same `base × penetration × share × price` tree and
+  the same engine — Gaming hold-out **sMAPE 1.0%** (trend market) vs Data Center
+  **60%** (AI regime shift, actual $115.2B vs forecast $18.4B). Includes a
+  **scenario close-out**: a Monte Carlo over honestly-uncertain C-grade Data
+  Center drivers whose Bull tail frames the actual breakout — the point forecast
+  collapsed, the scenario band captured the truth. Ships `build_model.py`,
+  `backtest_nvda.py`, `plot_results.py` (→ `nvda_backtest.png`), `findings.md`,
+  and an ABC-graded `data/sources.md`.
+- **Flagship methodology doc** (`docs/industry-fit-analysis.md`): generalizes
+  the NVIDIA result into a practitioner framework — an industry-fit matrix
+  (strong / adapt / avoid), five techniques for event-driven growth (scenarios,
+  leading indicators, S-curves, causal models, Bayesian updating), and why the
+  library chooses honesty over false precision. Linked from the docs nav.
+
+### Notes
+- Core engine unchanged; the demo exercises existing `backtest` + Monte Carlo
+  `scenarios` APIs. NVIDIA segment revenue is A-grade (official disclosures via
+  Our World in Data); drivers are B/C-grade estimates, as documented per ABC
+  principle. Not investment advice.
+
 ## [0.5.0] - 2026-08-02
 
 ### Added

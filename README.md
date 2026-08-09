@@ -216,6 +216,23 @@ reproducibility). **Ten companies spanning six growth regimes**:
 > aggregate method). Accuracy and interpretability are complements, not
 > substitutes. See [`examples/backtest_demo/`](examples/backtest_demo/).
 
+## NVIDIA demo — where driver trees work, and where they break
+
+The first **U.S.-equity** demo. NVIDIA is a deliberately two-faced test: **same
+company, same `base × penetration × share × price` tree, same engine** — Gaming
+hold-out **sMAPE 1.0%** (mature trend market) vs Data Center **60%** (AI regime
+shift; FY2025 actual $115.2B vs forecast $18.4B). The demo then closes the loop
+with a Monte Carlo scenario band whose Bull tail frames the actual where the
+point forecast collapsed.
+
+![NVIDIA Gaming vs Data Center — actual vs driver extrapolation](examples/nvda_demo/nvda_backtest.png)
+
+> Accuracy is a property of the **industry**, not the model. See
+> [`examples/nvda_demo/`](examples/nvda_demo/) and the flagship methodology doc
+> [`docs/industry-fit-analysis.md`](docs/industry-fit-analysis.md) — the
+> industry-fit matrix, five techniques for event-driven growth, and why this
+> library chooses honesty over false precision.
+
 ## Segment extraction (from annual reports)
 
 Automate the tedious part of segment build-up — pull a **segment skeleton**
@@ -235,8 +252,10 @@ print(alignment_check(parsed))                             # Σ + residual ≈ r
 The output matches the schema in
 [docs/proposal-segment-extraction.md](docs/proposal-segment-extraction.md) §4.
 Filling concrete driver *values* (C-grade estimates) remains a human step — see
-the proposal's semi-automated boundary (§7). **Real-company data must not enter
-the repo** (see [DISCLAIMER.md](DISCLAIMER.md)); demos use the fictional NovaTech.
+the proposal's semi-automated boundary (§7). **Proprietary / non-public
+company data must not enter the repo**; real-company demos (Luxun, NVIDIA) use
+only public disclosures (see [DISCLAIMER.md](DISCLAIMER.md)). The fictional
+NovaTech is the zero-real-data default.
 
 ## Design principles
 

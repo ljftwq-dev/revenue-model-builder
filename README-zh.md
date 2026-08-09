@@ -168,6 +168,21 @@ print(score_table(evaluate(steps)))
 > 靠趋势、哪块靠一次性事件（如立讯 2025 年收购 Leoni——任何总量方法都看不见）。精度
 > 与可解释性是互补，不是替代。见 [`examples/backtest_demo/`](examples/backtest_demo/)。
 
+## NVIDIA demo —— driver tree 在哪准、在哪崩
+
+第一个**美股** demo。NVIDIA 是一个刻意的"双面测试"：**同一公司、同一套
+`base × penetration × share × price` 公式、同一引擎**——Gaming hold-out
+**sMAPE 1.0%**（成熟趋势市场）vs Data Center **60%**（AI 范式跳变；FY2025 真实
+$115.2B vs 预测 $18.4B）。demo 接着闭环：用 Monte Carlo 情景分布的 Bull 尾把
+真实爆发框住——点预测崩了，但情景带兜住了真相。
+
+![NVIDIA Gaming vs Data Center —— 真实 vs driver 外推](examples/nvda_demo/nvda_backtest.png)
+
+> 准确性是**行业**的属性，不是模型的属性。见
+> [`examples/nvda_demo/`](examples/nvda_demo/) 与旗舰方法论文档
+> [`docs/industry-fit-analysis.md`](docs/industry-fit-analysis.md)——行业适配性矩阵、
+> 事件驱动增长的五招、以及为什么本库选择诚实而非虚假精度。
+
 ## 主营业务抽取（从年报）
 
 把 segment build-up 里最繁琐的部分自动化——用 LLM 从年报「主营业务分析」文本里抽出
@@ -185,7 +200,9 @@ print(alignment_check(parsed))                             # Σ + 差额 ≈ 年
 
 输出 schema 见 [docs/proposal-segment-extraction.md](docs/proposal-segment-extraction.md) §4。
 填入 driver 的**具体数值**（C 级估算）仍是人工步骤——见提案的半自动边界（§7）。
-**真实公司数据不入库**（见 [DISCLAIMER.md](DISCLAIMER.md)）；demo 用虚构 NovaTech。
+**专有/非公开的
+公司数据不入库**；真实公司 demo（立讯、NVIDIA）只用公开披露数据（见
+[DISCLAIMER.md](DISCLAIMER.md)）。虚构的 NovaTech 是零真实数据的默认示例。
 
 ## 五条设计原则
 
