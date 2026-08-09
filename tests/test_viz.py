@@ -6,11 +6,12 @@ returns the advertised matplotlib object (``Axes`` / ``Figure``). The Agg
 backend is forced before pyplot is imported anywhere, so the suite is
 CI-friendly and needs no display.
 """
-import matplotlib
+import pytest
+
+matplotlib = pytest.importorskip("matplotlib")
 matplotlib.use("Agg")  # must precede any pyplot import
 
 import matplotlib.pyplot as plt
-import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
