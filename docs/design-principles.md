@@ -192,10 +192,15 @@ reconstructed from estimates. This is Principle 5 (history first) and Principle 
 *back-solving penetration* is a red flag — the distorted value poisons the
 forecast. A residual of ~0 from *reported segment revenue* is the opposite: the
 company's own segments add up to its own total by construction (caliber
-consistency). The `validate()` near-zero warning targets the former — its guard
-is `0 < ratio < 0.05`, so a reported-anchor residual of *exactly* 0 (ratio 0.0)
-is correctly **not** flagged. The two cases look similar numerically but are
-opposite in meaning: one is honest alignment, the other is dishonest fitting.
+consistency). The `validate()` near-zero warning targets the former. It now
+consults `Segment.revenue_source(year)`: when every segment is an A-grade
+reported anchor, a residual within rounding tolerance (reported figures are
+whole-millions, so ~`N+1`M of noise for `N` segments) is recognized as caliber
+consistency and does **not** trip the warning — in either direction (a Σ of
+`total−1` no longer cries "back-solved"; `total+1` no longer cries "structure
+wrong"). Only genuine driver-layer near-zero residuals (back-solved penetration)
+are flagged. The two cases look similar numerically but are opposite in meaning:
+one is honest alignment, the other is dishonest fitting.
 
 **Where the anchors come from.** SEC EDGAR's XBRL exposes `total_revenue` cleanly,
 but segment tags vary per issuer, so `sec_adapter` fills only the total and

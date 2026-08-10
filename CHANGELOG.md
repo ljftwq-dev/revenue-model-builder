@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.12.1] - 2026-08-10
+
+### Fixed
+- **`validate()` false-positive on reported-anchor models** (C1): when every
+  segment carries an A-grade reported anchor, a residual within rounding
+  tolerance (~`N+1` million, since reported figures are whole-millions) is now
+  recognized as caliber consistency, not the back-solve trap. Previously a Σ vs
+  total difference of just ±1 would falsely emit "penetration back-solved"
+  (positive) or "model structure wrong" (negative) — the exact warnings
+  Principle 1 exists to catch, misfired on the flagship history-first feature.
+  Driver-layer back-solve detection is unchanged (Principle 1 intact). New
+  `tests/test_reported_anchor_validate.py` covers the rounding case in both
+  directions plus the driver-back-solve and large-residual guards.
+
 ## [0.12.0] - 2026-08-10
 
 ### Added

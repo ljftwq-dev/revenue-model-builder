@@ -41,8 +41,19 @@ class RevenueModel:
         total = self.total_revenue[year]
         resid = total - s
         ratio = resid / total if total else 0.0
+        # When every segment carries an A-grade reported anchor, a near-zero
+        # residual reflects caliber consistency (the company's own segments sum
+        # to its own total), NOT the back-solve trap (Principle 1). Allow a
+        # rounding tolerance — reported figures are whole-millions, so a Σ vs
+        # total difference of ±(N+1) is rounding noise, not a smell. Without
+        # this, every real reported-anchor model would falsely trip
+        # "penetration back-solved" / "model structure wrong".
+        all_reported = bool(seg_rev) and all(
+            seg.revenue_source(year) == "reported" for seg in self.segments)
+        rounding_tol = float(len(self.segments) + 1)  # ~1M per segment + total
+        ties_out = all_reported and abs(resid) <= rounding_tol
         warnings: List[str] = []
-        if resid < -1e-6:
+        if resid < -1e-6 and not ties_out:
             warnings.append(
                 f"residual negative ({resid:.1f}): segments exceed total revenue, "
                 f"model structure is wrong")
@@ -50,7 +61,7 @@ class RevenueModel:
             warnings.append(
                 f"residual ratio {ratio:.0%} too high: un-modeled business dominates, "
                 f"consider adding segments")
-        if 0 < ratio < 0.05:
+        if 0 < ratio < 0.05 and not ties_out:
             if ratio < 0.01:
                 warnings.append(
                     f"residual ratio {ratio:.1%} near zero: penetration was likely "
