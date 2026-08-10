@@ -160,6 +160,53 @@ half-entered garbage revenue numbers.
 
 ---
 
+## Reported-revenue anchor — history-first, taken to the segment level
+
+Principle 5 says "history first." The strongest form of history is the
+**reported segment revenue** a company discloses in its 10-K / earnings
+supplemental — an A-grade figure (Principle 2), not a driver estimate. When you
+have it, you should not have to back into it through `base × penetration × share × price`.
+
+`Segment.reported_revenue: Dict[int, float]` lets a segment carry that anchor.
+`Segment.revenue(year)` returns the reported figure when present, and falls back
+to the driver product only for years without one (the forecast layer):
+
+```python
+def revenue(self, year):
+    if year in self.reported_revenue:
+        return self.reported_revenue[year]        # A-grade, history
+    return base * penetration * share * price     # drivers, forecast
+```
+
+`.revenue_source(year)` reports which layer a year's figure came from, so a
+reviewer is never left guessing.
+
+**Why this does not break the driver philosophy.** The drivers are not removed —
+they stay as the *forecast* layer for years beyond the reported history, and as
+the *explanation* a human fills to justify the forecast. What changes is that
+**historical years are anchored to the company's own disclosure**, not
+reconstructed from estimates. This is Principle 5 (history first) and Principle 2
+(A-grade data) applied at the segment level.
+
+**Why this is not the back-solve trap (Principle 1).** A residual of ~0 from
+*back-solving penetration* is a red flag — the distorted value poisons the
+forecast. A residual of ~0 from *reported segment revenue* is the opposite: the
+company's own segments add up to its own total by construction (caliber
+consistency). The `validate()` near-zero warning targets the former — its guard
+is `0 < ratio < 0.05`, so a reported-anchor residual of *exactly* 0 (ratio 0.0)
+is correctly **not** flagged. The two cases look similar numerically but are
+opposite in meaning: one is honest alignment, the other is dishonest fitting.
+
+**Where the anchors come from.** SEC EDGAR's XBRL exposes `total_revenue` cleanly,
+but segment tags vary per issuer, so `sec_adapter` fills only the total and
+leaves segments as placeholder templates. The segment-level anchors come from
+sources that publish a clean segment table — `sa_adapter` pulls them from
+stockanalysis.com's "Revenue by Segment" table (needs the `[scrape]` extra;
+`table_extractor` injectable, offline-testable). Filling concrete driver
+*values* for the forecast years remains a human step, exactly as in `from_report`.
+
+---
+
 ## Why this is rare on GitHub
 
 Most open-source finance tools cover **trading / backtesting** (zipline,
@@ -295,5 +342,6 @@ $\sigma^2/(2\theta)$, induced correlation $\approx\rho$).
 - **渗透率用增量法不用增速法**：有界变量（趋近100%）用「+X个百分点」线性外推，符合S曲线中段；用增速法会指数爆炸、不可信。
 - **预测方法论优先级（确定性金字塔）**：法规政策催化 > 行业锚点 > 历史趋势 > 产品时间线 > 竞品对标。冲突时高确定性优先，并在 source 字段记录依据。
 - **先历史后预测**：历史列必须先对齐（输入+公式），预测列保留结构留空（橙色），直到历史 tie out。收入公式用 IF 保护，避免半填数据产生垃圾结果。
+- **reported segment 收入锚点（history-first 到 segment 级）**：`Segment.reported_revenue` 直接用公司披露的分部收入（A 级），`revenue()` 优先用它，driver 退为预测层。这不破坏 driver 哲学（历史锚用真实披露，预测年才用 driver），也不是 back-solve 陷阱（公司自己的 segment 加起来本就等于 total，residual=0 是口径一致，不是反推失真——`validate` 的近零警告守的是 `0 < ratio < 0.05`，恰好 0 不会被误报）。锚点来源：`sec_adapter` 只抓 total（XBRL segment tag 各家不同），`sa_adapter` 从 stockanalysis 抓 segment 表。
 
 这些是卖方分析师和 PE 投资经理手工建模时的硬核 know-how，踩过坑才写得出来——也正是本库区别于市面量化回测工具的核心价值。
