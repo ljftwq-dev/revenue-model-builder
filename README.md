@@ -163,6 +163,27 @@ python -m revenue_model tushare 002405.SZ --token ... --years 2020 2021 2022
 Verified end-to-end on 德赛西威 (002405.SZ): 20 years of real revenue pulled
 and aligned as the residual anchor.
 
+**US equities via SEC EDGAR** (no key needed — SEC is public):
+
+```python
+from revenue_model.sec_adapter import build_model_from_sec
+model = build_model_from_sec("NVDA")   # US ticker
+```
+
+**HK equities via AKShare** (needs the `[data]` extra):
+
+```python
+from revenue_model.akshare_adapter import build_model_from_akshare
+model = build_model_from_akshare("01211")   # HK code, e.g. 比亚迪股份
+```
+
+Or via CLI: `python -m revenue_model sec NVDA` / `akshare 01211`.
+
+All three adapters (`tushare` / `sec` / `akshare`) fill `total_revenue` from
+structured official sources and seed intelligent-driving segment drivers as
+placeholders — the machine gives the anchor + structure, the analyst fills
+driver values. Verified: NVDA FY26 $216B, 比亚迪股份 2025 ¥804B.
+
 ## Monte Carlo & sensitivity
 
 Turn point forecasts into **distributions** and find out **which assumption
@@ -367,7 +388,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
 │   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 133 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare adapter
+├── tests/               # 148 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare adapters
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -380,7 +401,7 @@ revenue-model-builder/
 - [x] Driver extrapolation API (incremental / logistic / trend-fit)
 - [ ] Driver value estimation (C-grade, from industry data)
 - [x] Bear / Base / Bull scenarios (sliced from the Monte Carlo distribution)
-- [~] Multi-market data source adapters — A股 tushare ✅ (NEV / intelligent-driving) / US yfinance / HK pending
+- [x] Multi-market data source adapters (A股 tushare / 美股 SEC EDGAR / 港股 AKShare)
 - [ ] Automated driver extraction from annual-report text
 - [x] Word memo builder (.docx research memo, bilingual, with embedded charts)
 - [x] PyPI release

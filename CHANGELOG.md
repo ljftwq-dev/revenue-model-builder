@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] - 2026-08-10
+
+### Added
+- **US-equity SEC adapter** (`revenue_model.sec_adapter`): the US-market
+  counterpart to `tushare_adapter`. `build_model_from_sec(ticker)` pulls annual
+  revenue from SEC EDGAR's XBRL `companyconcept` API → auto-fills
+  `total_revenue` (million USD). Solves the data-cleaning Yahoo couldn't:
+  filters full-year rows from quarter-only rows (period ≥ 350d) and falls back
+  from `Revenues` to the ASC 606 `RevenueFromContractWithCustomer...` element.
+  No token/key (SEC is public; only a `User-Agent`). `http_get` injectable.
+- **HK-equity AKShare adapter** (`revenue_model.akshare_adapter`, `[data]`
+  extra): the HK-market counterpart. `build_model_from_akshare(code)` pulls
+  "营业额" from AKShare's `stock_financial_hk_report_em`. `ak` injectable. HK
+  intelligent-driving names are sparse — the template is a starting point.
+- **CLI**: new `sec` and `akshare` subcommands; `tushare` / `sec` / `akshare`
+  now form a three-market adapter suite (A-share / US / HK).
+- End-to-end verified: NVDA (FY26 $216B, AI surge), 比亚迪股份 01211 (2025 ¥804B).
+
+### Changed
+- README (EN/ZH): US + HK adapter sections, test count 133 → 148, roadmap
+  multi-market ✅ (A-share / US / HK all via structured official sources).
+
 ## [0.8.0] - 2026-08-10
 
 ### Added

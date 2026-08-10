@@ -145,6 +145,24 @@ python -m revenue_model tushare 002405.SZ --token ... --years 2020 2021 2022
 
 已在德赛西威（002405.SZ）端到端验证：拉取 20 年真实收入并对齐为差额锚点。
 
+**美股（SEC EDGAR，无需 key，SEC 公开）**：
+
+```python
+from revenue_model.sec_adapter import build_model_from_sec
+model = build_model_from_sec("NVDA")   # 美股代码
+```
+
+**港股（AKShare，需 `[data]` extra）**：
+
+```python
+from revenue_model.akshare_adapter import build_model_from_akshare
+model = build_model_from_akshare("01211")   # 港股代码，如比亚迪股份
+```
+
+或 CLI：`python -m revenue_model sec NVDA` / `akshare 01211`。
+
+三个 adapter（`tushare` / `sec` / `akshare`）都从结构化官方源填 `total_revenue`，并预填智能驾驶 segment driver 占位符——机器给锚点+结构，分析师填 driver 值。已验证：NVDA FY26 $216B、比亚迪股份 2025 ¥804B。
+
 ## 蒙特卡洛 + 敏感度
 
 把单点预测变成**分布**，并找出**哪个假设最关键**——纯标准库，不用 numpy：
@@ -304,7 +322,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # 渲染成 .docx 研究底稿（双语、ABC、嵌图）
 │   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 133 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare adapter
+├── tests/               # 148 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare 多市场 adapter
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -317,7 +335,7 @@ revenue-model-builder/
 - [x] driver 外推 API（增量法 / logistic / 趋势拟合）
 - [ ] driver 数值估算（C 级，来自行业数据）
 - [x] Bear / Base / Bull 情景（从蒙特卡洛分布切片）
-- [~] 多市场数据源适配器 — A股 tushare ✅（新能源汽车 / 智能驾驶）/ 美股 yfinance / 港股 待做
+- [x] 多市场数据源适配器（A股 tushare / 美股 SEC EDGAR / 港股 AKShare）
 - [ ] 从年报文本自动抽取 driver
 - [x] Word 底稿生成器（.docx 研究底稿，双语，嵌图）
 - [x] PyPI 发布
