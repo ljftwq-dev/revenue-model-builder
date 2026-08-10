@@ -126,6 +126,25 @@ Excel **工作底稿**的**叙述版**。两个诚实缺省：`ranges=None` 时�
 ±10% 区间并标注"仅示意"；`forecast_years=None` 时只生成历史底稿（传了但没填则
 弹出 `[预测 driver 未填充]` 告警）——绝不静默。
 
+**从 tushare 构建模型（A股，新能源汽车 / 智能驾驶）**：
+
+结构化数据 adapter：自动从 tushare 利润表填 `total_revenue`（锚点），并用智能驾驶行业模板预填 segment driver（智能驾驶 / 智能座舱；值是 `[adapter]` 占位符，待你填——机器给锚点+结构，分析师填 C 级 driver 值）。
+
+```python
+from revenue_model.tushare_adapter import build_model_from_tushare
+# token 用你的密钥管理器加载，绝不硬编码
+model = build_model_from_tushare("002405.SZ", token=TUSHARE_TOKEN)
+```
+
+或用 CLI：
+
+```bash
+TUSHARE_TOKEN=... python -m revenue_model tushare 002405.SZ
+python -m revenue_model tushare 002405.SZ --token ... --years 2020 2021 2022
+```
+
+已在德赛西威（002405.SZ）端到端验证：拉取 20 年真实收入并对齐为差额锚点。
+
 ## 蒙特卡洛 + 敏感度
 
 把单点预测变成**分布**，并找出**哪个假设最关键**——纯标准库，不用 numpy：
@@ -285,7 +304,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # 渲染成 .docx 研究底稿（双语、ABC、嵌图）
 │   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 120 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n
+├── tests/               # 133 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare adapter
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -298,7 +317,7 @@ revenue-model-builder/
 - [x] driver 外推 API（增量法 / logistic / 趋势拟合）
 - [ ] driver 数值估算（C 级，来自行业数据）
 - [x] Bear / Base / Bull 情景（从蒙特卡洛分布切片）
-- [ ] 多市场数据源适配器（A股 tushare / 美股 yfinance / 港股）
+- [~] 多市场数据源适配器 — A股 tushare ✅（新能源汽车 / 智能驾驶）/ 美股 yfinance / 港股 待做
 - [ ] 从年报文本自动抽取 driver
 - [x] Word 底稿生成器（.docx 研究底稿，双语，嵌图）
 - [x] PyPI 发布

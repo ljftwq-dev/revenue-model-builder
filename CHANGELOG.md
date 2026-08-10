@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-08-10
+
+### Added
+- **A-share tushare adapter** (`revenue_model.tushare_adapter`, NEV /
+  intelligent-driving focus): the project's first **structured-data** source.
+  `build_model_from_tushare(ts_code, token=...)` pulls real annual-report
+  revenue from tushare `income` → auto-fills `total_revenue` (the Principle-1
+  anchor, in million yuan), and seeds intelligent-driving segment drivers
+  (智能驾驶 / 智能座舱) from an industry template — each driver's
+  name/unit/source/source_url is pre-filled (CAAM, 高工产业研究院), values are
+  `[adapter]` placeholders for a human, mirroring `extractor`'s semi-automated
+  boundary: the machine gives the anchor + structure, the analyst fills the
+  C-grade driver values.
+  - **Pure stdlib** (urllib); no tushare SDK. Token is a runtime argument (load
+    via your secrets manager; never hardcode) or `TUSHARE_TOKEN` env var.
+  - **`http_get` injectable** → test suite / CI need no network and no token.
+  - CLI: `python -m revenue_model tushare 002405.SZ` (德赛西威 demo).
+  - End-to-end verified on 德赛西威 (002405.SZ): 20 years of real revenue.
+
+### Changed
+- README (EN/ZH): new tushare adapter section, test count 124 → 133.
+
 ## [0.7.0] - 2026-08-10
 
 ### Added

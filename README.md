@@ -139,6 +139,30 @@ Two honest defaults: `ranges=None` flags the default ±10% Monte Carlo bands as
 illustrative; `forecast_years=None` produces a historical-only memo (or a
 `[not yet populated]` alarm if passed unfilled) — never silent.
 
+**Build a model from tushare (A-share, NEV / intelligent-driving)**:
+
+The structured-data adapter auto-fills `total_revenue` from tushare's income
+statement and seeds intelligent-driving segment drivers from an industry
+template (智能驾驶 / 智能座舱; values are `[adapter]` placeholders for you to
+fill — the machine gives the anchor + structure, the analyst fills the
+C-grade driver values).
+
+```python
+from revenue_model.tushare_adapter import build_model_from_tushare
+# load token via your secrets manager; never hardcode
+model = build_model_from_tushare("002405.SZ", token=TUSHARE_TOKEN)
+```
+
+Or via CLI:
+
+```bash
+TUSHARE_TOKEN=... python -m revenue_model tushare 002405.SZ
+python -m revenue_model tushare 002405.SZ --token ... --years 2020 2021 2022
+```
+
+Verified end-to-end on 德赛西威 (002405.SZ): 20 years of real revenue pulled
+and aligned as the residual anchor.
+
 ## Monte Carlo & sensitivity
 
 Turn point forecasts into **distributions** and find out **which assumption
@@ -343,7 +367,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
 │   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 120 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n
+├── tests/               # 133 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare adapter
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -356,7 +380,7 @@ revenue-model-builder/
 - [x] Driver extrapolation API (incremental / logistic / trend-fit)
 - [ ] Driver value estimation (C-grade, from industry data)
 - [x] Bear / Base / Bull scenarios (sliced from the Monte Carlo distribution)
-- [ ] Multi-market data source adapters (A股 tushare / US yfinance / HK)
+- [~] Multi-market data source adapters — A股 tushare ✅ (NEV / intelligent-driving) / US yfinance / HK pending
 - [ ] Automated driver extraction from annual-report text
 - [x] Word memo builder (.docx research memo, bilingual, with embedded charts)
 - [x] PyPI release
