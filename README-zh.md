@@ -181,6 +181,8 @@ dc_annual = fiscal_year_rollup(data["Data Center"])   # 季度 -> 财年
 
 季度颗粒度 + 子市场细分，年度 adapter 拿不到。市场平台口径 ≠ 业务分部口径，所以这个 adapter 是**数据层**（无 `build_model_*`）—— 见 `examples/web_scraping/`。
 
+**缓存** —— 网络 adapter（`sec` / `sa` / `q4cdn`）会把原始抓取结果缓存到磁盘（默认 `~/.cache/rmb/`；用 `RMB_CACHE_DIR` 覆盖，如 `RMB_CACHE_DIR=D:\rmb_cache`）。重复调用读缓存不再抓（更快、少请求、缓存命中时断网也能跑）；`refresh=True` 强制重抓。注入式 getter 绕过缓存，测试保持离线。
+
 ## 蒙特卡洛 + 敏感度
 
 把单点预测变成**分布**，并找出**哪个假设最关键**——纯标准库，不用 numpy：
@@ -340,7 +342,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # 渲染成 .docx 研究底稿（双语、ABC、嵌图）
 │   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 162 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare/sa/q4cdn 多市场 adapter
+├── tests/               # 170 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare/sa/q4cdn 多市场 adapter + 缓存
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml

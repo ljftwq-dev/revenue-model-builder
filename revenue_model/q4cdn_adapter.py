@@ -159,18 +159,28 @@ def fetch_market_platform(
     pdf_text_getter: Callable[[str], str] = None,
     user_agent: str = DEFAULT_UA,
     timeout: int = 60,
+    use_cache: bool = True,
+    refresh: bool = False,
 ) -> Tuple[Dict[str, Dict[Quarter, float]], List[Quarter]]:
     """Download + parse a 'Revenue by Market Platform' PDF from a q4cdn URL.
 
     ``pdf_text_getter`` injectable (``url -> text``); default downloads via
     urllib and extracts with PyMuPDF. Returns
-    ``({line_item: {(fy, q): million_USD}}, quarter_columns)``.
+    ``({line_item: {(fy, q): million_USD}}, quarter_columns)``. When the default
+    getter is used, the extracted PDF text is cached to disk
+    (``RMB_CACHE_DIR``, default ``~/.cache/rmb/``); ``refresh=True`` re-downloads.
     """
-    if pdf_text_getter is None:
-        pdf_text_getter = lambda u: _default_pdf_text_getter(
-            u, user_agent=user_agent, timeout=timeout)
-    text = pdf_text_getter(url)
-    return _extract_market_platform(text)
+    if pdf_text_getter is None and use_cache:
+        from . import cache
+        key = cache.cache_key("q4cdn", url)
+        hit, text = cache.cache_get(key, refresh)
+        if not hit:
+            text = _default_pdf_text_getter(url, user_agent=user_agent, timeout=timeout)
+            cache.cache_set(key, text)
+        return _extract_market_platform(text)
+    getter = pdf_text_getter or (lambda u: _default_pdf_text_getter(
+        u, user_agent=user_agent, timeout=timeout))
+    return _extract_market_platform(getter(url))
 
 
 def fiscal_year_rollup(

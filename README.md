@@ -205,6 +205,8 @@ Quarterly granularity and sub-market detail the annual adapters can't reach. The
 market-platform caliber differs from the business-segment caliber, so this adapter
 is a **data layer** (no `build_model_*`) — see `examples/web_scraping/`.
 
+**Caching** — the network adapters (`sec` / `sa` / `q4cdn`) cache their raw fetches to disk (default `~/.cache/rmb/`; override via `RMB_CACHE_DIR`, e.g. `RMB_CACHE_DIR=D:\rmb_cache`). Repeat calls read the cache instead of re-fetching (faster, fewer requests, warm-cache works offline); `refresh=True` forces a re-fetch. Injectable getters bypass the cache so tests stay offline.
+
 ## Monte Carlo & sensitivity
 
 Turn point forecasts into **distributions** and find out **which assumption
@@ -409,7 +411,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
 │   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 162 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa/q4cdn adapters
+├── tests/               # 170 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa/q4cdn adapters + cache
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml

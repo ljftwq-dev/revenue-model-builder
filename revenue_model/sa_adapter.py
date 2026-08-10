@@ -134,18 +134,30 @@ def fetch_segments_sa(
     table_extractor: Optional[Callable[[str], List[dict]]] = None,
     user_agent: str = DEFAULT_UA,
     timeout: int = 45000,
+    use_cache: bool = True,
+    refresh: bool = False,
 ) -> Tuple[Dict[str, Dict[int, float]], Dict[int, float]]:
     """``ticker`` -> (segment_revenue, total_revenue) from stockanalysis.com.
 
     Each map is ``{year: million_USD}``. ``table_extractor`` is injectable
     (``url -> tables``); the default launches headless chromium via playwright.
+    When the default extractor is used, the rendered tables are cached to disk
+    (``RMB_CACHE_DIR``, default ``~/.cache/rmb/``) so repeats don't re-launch a
+    browser; ``refresh=True`` forces a re-fetch. Injected extractors bypass the
+    cache (tests stay offline & deterministic).
     """
-    if table_extractor is None:
-        table_extractor = lambda url: _default_table_extractor(
-            url, user_agent=user_agent, timeout=timeout)
     url = f"{SA_BASE}/{ticker.lower()}/financials/"
-    tables = table_extractor(url)
-    return _extract_segment_revenue(tables)
+    if table_extractor is None and use_cache:
+        from . import cache
+        key = cache.cache_key("sa", ticker.lower())
+        hit, tables = cache.cache_get(key, refresh)
+        if not hit:
+            tables = _default_table_extractor(url, user_agent=user_agent, timeout=timeout)
+            cache.cache_set(key, tables)
+        return _extract_segment_revenue(tables)
+    te = table_extractor or (lambda u: _default_table_extractor(
+        u, user_agent=user_agent, timeout=timeout))
+    return _extract_segment_revenue(te(url))
 
 
 def _placeholder_drivers(seg_name: str, years: List[int]) -> Dict[str, Driver]:
@@ -174,6 +186,8 @@ def build_model_from_sa(
     years: Optional[List[int]] = None,
     user_agent: str = DEFAULT_UA,
     timeout: int = 45000,
+    use_cache: bool = True,
+    refresh: bool = False,
 ) -> RevenueModel:
     """Build a ``RevenueModel`` for a US-listed company from stockanalysis.com.
 
@@ -184,7 +198,8 @@ def build_model_from_sa(
     """
     seg_rev, total_rev = fetch_segments_sa(
         ticker, table_extractor=table_extractor,
-        user_agent=user_agent, timeout=timeout)
+        user_agent=user_agent, timeout=timeout,
+        use_cache=use_cache, refresh=refresh)
     if not seg_rev and not total_rev:
         raise ValueError(f"stockanalysis.com returned no segment data for {ticker!r}")
 

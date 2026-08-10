@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.12.0] - 2026-08-10
+
+### Added
+- **Disk cache for network adapters** (`revenue_model.cache`): the `sec` / `sa` /
+  `q4cdn` adapters now cache their raw network fetches (SEC ticker map + XBRL
+  revenue, stockanalysis tables, q4cdn PDF text) to disk, so repeat calls don't
+  re-fetch (faster, fewer requests, works offline on a warm cache).
+  - Default location `~/.cache/rmb/`; override with the `RMB_CACHE_DIR` env var
+    (e.g. `RMB_CACHE_DIR=D:\rmb_cache`).
+  - JSON on disk (human-readable / inspectable). New `use_cache=True` (default)
+    and `refresh=False` params on every `fetch_*` / `build_model_*`; `refresh=True`
+    forces a re-fetch.
+  - Injectable getters (`http_get` / `table_extractor` / `pdf_text_getter`) bypass
+    the cache, so tests stay offline & deterministic.
+  - Core stays zero-dependency: `cache.py` is stdlib-only and importing it does no IO.
+
+### Changed
+- README (EN/ZH): new Caching section, test count 162 → 170.
+
 ## [0.11.0] - 2026-08-10
 
 ### Added

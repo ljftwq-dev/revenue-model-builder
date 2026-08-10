@@ -97,3 +97,27 @@ def test_build_model_year_filter():
     model = build_model_from_sa("NVDA", table_extractor=_extractor(),
                                 years=[2024, 2025])
     assert model.years() == [2024, 2025]
+
+
+def test_sa_cache_behavior_default_getter_cached(monkeypatch, tmp_path):
+    """Default extractor (None) + use_cache -> tables cached; 2nd call hits cache;
+    refresh re-fetches; injected extractor bypasses the cache entirely."""
+    monkeypatch.setenv("RMB_CACHE_DIR", str(tmp_path))
+    calls = []
+
+    def fake_default(url, **kw):
+        calls.append(url)
+        return NVDA_TABLES
+
+    monkeypatch.setattr("revenue_model.sa_adapter._default_table_extractor", fake_default)
+
+    segs1, _ = fetch_segments_sa("NVDA", use_cache=True)   # miss -> fetch + cache
+    assert len(calls) == 1
+    segs2, _ = fetch_segments_sa("NVDA", use_cache=True)   # hit -> no fetch
+    assert len(calls) == 1
+    assert segs1 == segs2
+    fetch_segments_sa("NVDA", use_cache=True, refresh=True)  # refresh -> re-fetch
+    assert len(calls) == 2
+    # injected extractor bypasses the cache (default never called)
+    fetch_segments_sa("NVDA", table_extractor=lambda url: NVDA_TABLES, use_cache=True)
+    assert len(calls) == 2
