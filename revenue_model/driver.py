@@ -25,10 +25,10 @@ LEVEL_B: DataLevel = "B"
 LEVEL_C: DataLevel = "C"
 
 _KIND_LABELS = {
-    BASE: "市场基数",
-    PENETRATION: "渗透率",
-    SHARE: "市占率",
-    PRICE: "单价",
+    BASE: {"zh": "市场基数", "en": "Market Base"},
+    PENETRATION: {"zh": "渗透率", "en": "Penetration"},
+    SHARE: {"zh": "市占率", "en": "Share"},
+    PRICE: {"zh": "单价", "en": "Unit Price"},
 }
 
 
@@ -40,6 +40,7 @@ class Driver:
     level: DataLevel = LEVEL_C
     unit: str = ""
     source: str = ""
+    source_url: str = ""   # optional URL → rendered as a clickable hyperlink in docx_builder
 
     def __post_init__(self):
         if self.kind not in _KIND_LABELS:
@@ -53,8 +54,9 @@ class Driver:
     def years(self):
         return sorted(self.values.keys())
 
-    def kind_label(self):
-        return _KIND_LABELS[self.kind]
+    def kind_label(self, lang: Literal["zh", "en"] = "zh") -> str:
+        labels = _KIND_LABELS[self.kind]
+        return labels.get(lang, labels["zh"])
 
     # ---- A2: driver extrapolation — Principle 3 as API ----
     def extrapolate_incremental(self, years: List[int], delta_pp: float) -> "Driver":

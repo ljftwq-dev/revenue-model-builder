@@ -97,3 +97,28 @@ def test_dashboard_picks_named_segment(model):
     fig = plot_dashboard(model, segment_name="消费电子")
     assert isinstance(fig, Figure)
     plt.close("all")
+
+
+# ---- i18n (lang parameter on every plot function) --------------------------
+def test_plot_lang_en_produces_english_labels(seg, model):
+    mc = simulate_segment(seg, 2024, RANGES, n=500, seed=0)
+    items = tornado(seg, 2024, RANGES)
+    ax = plot_revenue_distribution(mc, lang="en")
+    assert "Revenue" in ax.get_xlabel()
+    ax = plot_tornado(items, lang="en")
+    assert "Revenue" in ax.get_xlabel()
+    ax = plot_waterfall(items, lang="en")
+    assert "Revenue" in ax.get_ylabel()
+    ax = plot_forecast(model, forecast_years=[2025], lang="en")
+    assert "Historical" in ax.get_title()
+    fig = plot_dashboard(model, forecast_years=[2025], lang="en")
+    assert "overview" in fig._suptitle.get_text()
+    plt.close("all")
+
+
+def test_plot_default_lang_zh_unchanged(seg):
+    """Default lang='zh' preserves original Chinese labels (backward compat)."""
+    mc = simulate_segment(seg, 2024, RANGES, n=500, seed=0)
+    ax = plot_revenue_distribution(mc)
+    assert "收入" in ax.get_xlabel()
+    plt.close("all")

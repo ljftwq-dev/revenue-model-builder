@@ -1,4 +1,4 @@
-"""Unified CLI: python -m revenue_model {build, simulate, excel, extract}.
+"""Unified CLI: python -m revenue_model {build, simulate, excel, docx, extract}.
 
 Aggregates the demo alignment check, Monte Carlo + sensitivity, Excel
 rendering, and annual-report segment extraction behind a single entry point.
@@ -37,6 +37,21 @@ def cmd_excel(args):
     print("forecast columns 2025E/2026E/2027E: structure reserved (orange), values blank")
 
 
+def cmd_docx(args):
+    try:
+        from .docx_builder import build_docx
+    except ImportError as exc:
+        raise SystemExit(
+            "The 'docx' command needs python-docx. Install the [docx] extra:\n"
+            "    pip install revenue-model-builder[docx]"
+        ) from exc
+    model = build_novatech()
+    out = build_docx(model, args.output, lang=args.lang,
+                     include_charts=not args.no_charts)
+    print(f"OK -> {out}")
+    print(f"language: {args.lang}  |  charts: {not args.no_charts}")
+
+
 def cmd_extract(args):
     with open(args.file, encoding="utf-8") as f:
         text = f.read()
@@ -68,6 +83,20 @@ def build_parser():
         "output", nargs="?", default="NovaTech_revenue_model_demo.xlsx",
         help="output .xlsx path (default: ./NovaTech_revenue_model_demo.xlsx)")
     p_excel.set_defaults(func=cmd_excel)
+
+    p_docx = sub.add_parser(
+        "docx",
+        help="render the NovaTech demo model to a Word memo (.docx)")
+    p_docx.add_argument(
+        "output", nargs="?", default="NovaTech_revenue_model_demo.docx",
+        help="output .docx path (default: ./NovaTech_revenue_model_demo.docx)")
+    p_docx.add_argument(
+        "--lang", default="en", choices=["zh", "en"],
+        help="memo language: 'en' (default, global) or 'zh' (中文版)")
+    p_docx.add_argument(
+        "--no-charts", action="store_true",
+        help="render tables only, no embedded charts (skip matplotlib)")
+    p_docx.set_defaults(func=cmd_docx)
 
     p_extract = sub.add_parser(
         "extract",

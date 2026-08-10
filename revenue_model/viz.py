@@ -39,7 +39,7 @@ except ImportError as exc:  # pragma: no cover - exercised only without matplotl
         'Install it with:  pip install -e ".[viz]"'
     ) from exc
 
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Literal, Optional, Sequence
 
 from .model import RevenueModel
 from .monte_carlo import MCResult, Scenario, SensitivityItem
@@ -54,6 +54,48 @@ plt.rcParams["axes.unicode_minus"] = False
 
 _YI = 100.0  # million yuan -> 亿元 (100M yuan)
 
+# Bilingual chart strings. ``lang`` is threaded through every plot function;
+# default "zh" keeps existing call sites (and the CN demo) unchanged. English
+# units read as "RMB 100mn" to match the engine's million-yuan output / 100.
+_VIZ_STRINGS = {
+    "zh": {
+        "revenue_yi": "收入 (亿元)",
+        "freq": "频次",
+        "year": "年份",
+        "median": "中位数",
+        "base": "基准",
+        "total": "合计",
+        "up_arrow": "↗ 上行",
+        "down_arrow": "↘ 下行",
+        "forecast_mark": " 预测→",
+        "total_reported": "总收入(年报)",
+        "total_forecast": "总收入(预测Σ)",
+        "dist_title": "收入分布 · 蒙特卡洛 n={n:,} ({year}年)",
+        "tornado_title": "敏感度龙卷风图（单 driver 摆动，按影响排序）",
+        "waterfall_title": "瀑布图 · 基准→逐 driver {arrow}累积（近似）",
+        "hist_fc_title": "{company} · 历史(实线)+预测(同色虚线)收入轨迹",
+        "dashboard_title": "{company} · {seg} ({year}年) — 不确定性总览",
+    },
+    "en": {
+        "revenue_yi": "Revenue (RMB 100mn)",
+        "freq": "Count",
+        "year": "Year",
+        "median": "Median",
+        "base": "Base",
+        "total": "Total",
+        "up_arrow": "↗ Upside",
+        "down_arrow": "↘ Downside",
+        "forecast_mark": " Forecast→",
+        "total_reported": "Total (reported)",
+        "total_forecast": "Total (Σ forecast)",
+        "dist_title": "Revenue distribution · Monte Carlo n={n:,} ({year})",
+        "tornado_title": "Tornado sensitivity (one-driver swing, ranked)",
+        "waterfall_title": "Waterfall · base → per-driver {arrow} cumulative (approx.)",
+        "hist_fc_title": "{company} · Historical (solid) + forecast (dashed) revenue",
+        "dashboard_title": "{company} · {seg} ({year}) — uncertainty overview",
+    },
+}
+
 # A small, color-blind-friendly palette reused across the four charts.
 _C_BASE = "#3b6ea8"      # base / neutral
 _C_LOW = "#d9534f"       # downside / bear
@@ -67,12 +109,12 @@ def _ax_or_new(ax):
     return ax if ax is not None else plt.gca()
 
 
-def _label_unit(ax, which: str) -> None:
-    ax.set_ylabel("收入 (亿元)" if which == "y" else ax.get_ylabel())
+def _label_unit(ax, which: str, lang: str = "zh") -> None:
+    label = _VIZ_STRINGS[lang]["revenue_yi"]
     if which == "y":
-        ax.set_ylabel("收入 (亿元)")
+        ax.set_ylabel(label)
     else:
-        ax.set_xlabel("收入 (亿元)")
+        ax.set_xlabel(label)
 
 
 def plot_revenue_distribution(
@@ -82,6 +124,7 @@ def plot_revenue_distribution(
     scenarios: Optional[Sequence[Scenario]] = None,
     bins: int = 50,
     title: Optional[str] = None,
+    lang: Literal["zh", "en"] = "zh",
 ):
     """Monte Carlo revenue histogram with percentile markers.
 
@@ -94,6 +137,7 @@ def plot_revenue_distribution(
     Revenue is shown in 亿元.
     """
     ax = _ax_or_new(ax)
+    t = _VIZ_STRINGS[lang]
     samples_yi = [s / _YI for s in mc.samples]
     ax.hist(samples_yi, bins=bins, color=_C_BAND, alpha=0.55,
             edgecolor="white", linewidth=0.4)
@@ -108,7 +152,7 @@ def plot_revenue_distribution(
 
     median_yi = mc.median / _YI
     ax.axvline(median_yi, color=_C_MEDIAN, linewidth=2.0)
-    ax.text(median_yi, ax.get_ylim()[1], f" 中位数 {median_yi:.0f}",
+    ax.text(median_yi, ax.get_ylim()[1], f" {t['median']} {median_yi:.0f}",
             color=_C_MEDIAN, fontsize=9, fontweight="bold", va="top")
 
     if scenarios:
@@ -121,9 +165,9 @@ def plot_revenue_distribution(
                         xytext=(6, 4), textcoords="offset points",
                         color=color, fontsize=8)
 
-    ax.set_xlabel("收入 (亿元)")
-    ax.set_ylabel("频次")
-    ax.set_title(title or f"收入分布 · 蒙特卡洛 n={mc.n:,} ({mc.year}年)")
+    ax.set_xlabel(t["revenue_yi"])
+    ax.set_ylabel(t["freq"])
+    ax.set_title(title or t["dist_title"].format(n=mc.n, year=mc.year))
     ax.spines[["top", "right"]].set_visible(False)
     return ax
 
@@ -133,6 +177,7 @@ def plot_tornado(
     *,
     ax=None,
     title: Optional[str] = None,
+    lang: Literal["zh", "en"] = "zh",
 ):
     """Tornado (sensitivity) chart — ranked horizontal bars around the base case.
 
@@ -145,6 +190,7 @@ def plot_tornado(
     Revenue is shown in 亿元.
     """
     ax = _ax_or_new(ax)
+    t = _VIZ_STRINGS[lang]
     ranked = sorted(items, key=lambda i: i.swing)  # smallest at bottom for barh
     labels = [f"{i.driver}\n[{i.segment}]" if _multi_segment(items) else i.driver
               for i in ranked]
@@ -159,12 +205,12 @@ def plot_tornado(
 
     base_yi = ranked[-1].base_revenue / _YI if ranked else 0.0
     ax.axvline(base_yi, color=_C_MEDIAN, linewidth=1.4, linestyle="--", alpha=0.7)
-    ax.text(base_yi, len(ranked) - 0.4, f" 基准 {base_yi:.0f}", color=_C_MEDIAN,
+    ax.text(base_yi, len(ranked) - 0.4, f" {t['base']} {base_yi:.0f}", color=_C_MEDIAN,
             fontsize=8, va="top")
 
     ax.set_yticks(pos, labels, fontsize=9)
-    ax.set_xlabel("收入 (亿元)")
-    ax.set_title(title or "敏感度龙卷风图（单 driver 摆动，按影响排序）")
+    ax.set_xlabel(t["revenue_yi"])
+    ax.set_title(title or t["tornado_title"])
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(length=0)
     return ax
@@ -176,6 +222,7 @@ def plot_waterfall(
     ax=None,
     direction: str = "high",
     title: Optional[str] = None,
+    lang: Literal["zh", "en"] = "zh",
 ):
     """Waterfall / "upside bridge" — how each driver's swing accumulates.
 
@@ -191,6 +238,7 @@ def plot_waterfall(
     Revenue is shown in 亿元.
     """
     ax = _ax_or_new(ax)
+    t = _VIZ_STRINGS[lang]
     if direction not in ("high", "low"):
         raise ValueError(f"direction must be 'high' or 'low', got {direction!r}")
     ranked = sorted(items, key=lambda i: i.swing, reverse=True)
@@ -198,7 +246,7 @@ def plot_waterfall(
     deltas = [(it.high_revenue if direction == "high" else it.low_revenue) - it.base_revenue
               for it in ranked]
 
-    labels = ["基准"] + [it.driver for it in ranked] + ["合计"]
+    labels = [t["base"]] + [it.driver for it in ranked] + [t["total"]]
     totals = [base, *(base + sum(deltas[:k + 1]) for k in range(len(deltas))),
               base + sum(deltas)]
 
@@ -234,9 +282,9 @@ def plot_waterfall(
             color=_C_MEDIAN, fontweight="bold")
 
     ax.set_xticks(xs, labels, rotation=30, ha="right", fontsize=9)
-    ax.set_ylabel("收入 (亿元)")
-    arrow = "↗ 上行" if direction == "high" else "↘ 下行"
-    ax.set_title(title or f"瀑布图 · 基准→逐 driver {arrow}累积（近似）")
+    ax.set_ylabel(t["revenue_yi"])
+    arrow = t["up_arrow"] if direction == "high" else t["down_arrow"]
+    ax.set_title(title or t["waterfall_title"].format(arrow=arrow))
     ax.spines[["top", "right"]].set_visible(False)
     return ax
 
@@ -248,6 +296,7 @@ def plot_forecast(
     ax=None,
     show_total: bool = True,
     title: Optional[str] = None,
+    lang: Literal["zh", "en"] = "zh",
 ):
     """Historical (solid) vs forecast (dashed) revenue trajectory per segment.
 
@@ -264,6 +313,7 @@ def plot_forecast(
     Revenue is shown in 亿元.
     """
     ax = _ax_or_new(ax)
+    t = _VIZ_STRINGS[lang]
     all_years = sorted(set().union(*[seg.base.years() for seg in model.segments]))
     if not all_years:
         raise ValueError("model has no years to plot")
@@ -289,7 +339,7 @@ def plot_forecast(
         ty = sorted(model.total_revenue)
         ax.plot(ty, [model.total_revenue[y] / _YI for y in ty], color="black",
                 linestyle="-", marker="s", markersize=5, linewidth=1.8, zorder=6,
-                label="总收入(年报)")
+                label=t["total_reported"])
         fc_years_all = sorted(y for y in all_years if y in fc)
         if fc_years_all:
             tot_fc = [sum(s.revenue(y) for s in model.segments) / _YI
@@ -298,19 +348,19 @@ def plot_forecast(
             start_v = (model.total_revenue[ty[-1]] / _YI) if ty else tot_fc[0]
             ax.plot([start_y] + fc_years_all, [start_v] + tot_fc, color="black",
                     linestyle="--", marker="s", markersize=5, linewidth=1.8, zorder=6,
-                    label="总收入(预测Σ)")
+                    label=t["total_forecast"])
 
     hist_years = [y for y in all_years if y not in fc]
     fc_years = sorted(y for y in all_years if y in fc)
     if fc_years and hist_years:
         boundary = (hist_years[-1] + fc_years[0]) / 2
         ax.axvline(boundary, color=_C_DASH, linestyle=":", linewidth=1)
-        ax.text(boundary, ax.get_ylim()[1], " 预测→", color=_C_DASH,
+        ax.text(boundary, ax.get_ylim()[1], t["forecast_mark"], color=_C_DASH,
                 fontsize=8, va="top")
 
-    ax.set_xlabel("年份")
-    ax.set_ylabel("收入 (亿元)")
-    ax.set_title(title or f"{model.company} · 历史(实线)+预测(同色虚线)收入轨迹")
+    ax.set_xlabel(t["year"])
+    ax.set_ylabel(t["revenue_yi"])
+    ax.set_title(title or t["hist_fc_title"].format(company=model.company))
     ax.legend(fontsize=8, loc="best", framealpha=0.9)
     ax.spines[["top", "right"]].set_visible(False)
     return ax
@@ -324,6 +374,7 @@ def plot_dashboard(
     ranges: Optional[Dict[str, tuple]] = None,
     forecast_years: Optional[Sequence[int]] = None,
     figsize=(13, 9),
+    lang: Literal["zh", "en"] = "zh",
 ) -> "Figure":
     """2×2 panel combining distribution / tornado / waterfall / forecast.
 
@@ -342,14 +393,15 @@ def plot_dashboard(
 
     mc = simulate_segment(seg, yr, rng, n=10000, seed=0)
     items = tornado(seg, yr, rng)
+    t = _VIZ_STRINGS[lang]
 
     fig, axes = plt.subplots(2, 2, figsize=figsize)
-    fig.suptitle(f"{model.company} · {seg.name} ({yr}年) — 不确定性总览",
+    fig.suptitle(t["dashboard_title"].format(company=model.company, seg=seg.name, year=yr),
                  fontsize=13, fontweight="bold", y=0.995)
-    plot_revenue_distribution(mc, ax=axes[0, 0])
-    plot_tornado(items, ax=axes[0, 1])
-    plot_waterfall(items, ax=axes[1, 0])
-    plot_forecast(model, forecast_years=forecast_years, ax=axes[1, 1])
+    plot_revenue_distribution(mc, ax=axes[0, 0], lang=lang)
+    plot_tornado(items, ax=axes[0, 1], lang=lang)
+    plot_waterfall(items, ax=axes[1, 0], lang=lang)
+    plot_forecast(model, forecast_years=forecast_years, ax=axes[1, 1], lang=lang)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
     return fig
 

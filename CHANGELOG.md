@@ -4,6 +4,45 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-08-10
+
+### Added
+- **Word memo builder** (`revenue_model.docx_builder`, extra `docx`): render a
+  `RevenueModel` into a 7-section analyst research memo (.docx) — the narrative
+  counterpart to `excel_builder`'s working paper. Sections: Executive Summary,
+  Company & Segment Overview, ABC-graded Driver Tables, Residual Alignment,
+  Uncertainty & Scenarios (embedded Monte Carlo distribution / tornado /
+  forecast charts), Limitations, and a Methodology appendix.
+  - **Bilingual**: every memo carries a `lang` parameter (`"en"` default for the
+    global / PyPI audience, `"zh"` for 中文版). The footnote on each memo shows the
+    active language and how to switch. `driver.kind_label(lang)` and all `viz`
+    plot functions thread `lang` through (default `"zh"` = backward compatible).
+  - **Two honest defaults**, encoding the project's honesty philosophy at the
+    API boundary:
+    - `ranges=None` → Monte Carlo uses default ±10% bands but **flags them as
+      illustrative** in §5 (chart callout) and §6 (Limitations). The shape is
+      structurally valid; the absolute spread is not — silence would mislead.
+    - `forecast_years=None` → historical-only memo; passed-but-unfilled → a
+      prominent `[Forecast drivers not yet populated]` alarm (never silent skip).
+  - CLI: `python -m revenue_model docx -o memo.docx --lang en [--no-charts]`.
+  - `include_charts=False` renders §5 as tables only (no matplotlib needed);
+    `include_charts=True` without matplotlib raises `ImportError` naming the extra.
+  - **Full traceability via clickable hyperlinks**: every driver carries an
+    optional `source_url`; the memo renders it as a real clickable link (blue,
+    underlined — opens the browser). A new "Data Source Index" appendix lists
+    every driver's source + URL. The methodology section links to the GitHub
+    docs (design-principles / industry-fit / proposal), and the executive
+    summary carries internal chapter cross-references (§3 / §4 / §5 jumps).
+    Mirrors the revenue-model-builder skill's "链接：[URL]" convention — every
+    number is one click from its origin.
+
+### Changed
+- `pyproject.toml`: new optional extra `docx = [python-docx>=1.0, matplotlib>=3.5]`.
+  Core stays zero-dependency.
+- `driver.kind_label` and all `viz.plot_*` functions gained a `lang` parameter
+  (default `"zh"`, backward compatible).
+- README (EN/ZH): new Word memo section, `lang` callout, test count 102 → 120.
+
 ## [0.6.0] - 2026-08-09
 
 ### Added

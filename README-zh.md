@@ -58,6 +58,7 @@
 ```bash
 pip install -e .                  # 仅核心引擎（纯标准库，零依赖）
 pip install -e ".[excel]"         # + openpyxl，用于输出 .xlsx
+pip install -e ".[docx]"          # + python-docx & matplotlib，用于输出 .docx 底稿
 pip install -e ".[dev]"           # + pytest，用于跑测试
 pip install -e ".[backtest]"      # + statsmodels，用于 Holt/ARIMA 回测
 ```
@@ -98,6 +99,32 @@ python -m revenue_model.demo
 ```bash
 python -m revenue_model.excel_builder 输出.xlsx
 ```
+
+**渲染成 Word 研究底稿（.docx）**（需 `[docx]` extra）：
+
+> **语言**：底稿支持双语——`lang="en"`（默认，面向全球 / PyPI）或 `lang="zh"`（中文版）。
+> 每份底稿脚注都标注当前语言及切换方式。
+
+```python
+from revenue_model.docx_builder import build_docx
+
+build_docx(model, "memo.docx", lang="en")            # 英文（默认）
+build_docx(model, "memo_zh.docx", lang="zh")         # 中文版
+```
+
+或用 CLI：
+
+```bash
+python -m revenue_model docx -o memo.docx --lang en      # 默认
+python -m revenue_model docx -o memo.docx --lang zh      # 中文版
+python -m revenue_model docx -o memo.docx --no-charts    # 仅表格，不嵌图（跳过 matplotlib）
+```
+
+7 节底稿——执行摘要 → 公司与分部概述 → ABC 分级 driver 表 → 差额对齐 →
+不确定性与情景（嵌入蒙特卡洛分布 / tornado / 趋势图）→ 局限性 → 方法论——是
+Excel **工作底稿**的**叙述版**。两个诚实缺省：`ranges=None` 时蒙特卡洛用默认
+±10% 区间并标注"仅示意"；`forecast_years=None` 时只生成历史底稿（传了但没填则
+弹出 `[预测 driver 未填充]` 告警）——绝不静默。
 
 ## 蒙特卡洛 + 敏感度
 
@@ -255,9 +282,10 @@ revenue-model-builder/
 │   ├── monte_carlo.py   # 收入分布 + tornado 敏感度（纯标准库）
 │   ├── extractor.py     # 年报文本 → segment 骨架（LLM，纯标准库）
 │   ├── excel_builder.py # 渲染成 .xlsx（ABC 颜色、IF 公式、差额行）
+│   ├── docx_builder.py  # 渲染成 .docx 研究底稿（双语、ABC、嵌图）
 │   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 102 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测
+├── tests/               # 120 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -272,7 +300,7 @@ revenue-model-builder/
 - [x] Bear / Base / Bull 情景（从蒙特卡洛分布切片）
 - [ ] 多市场数据源适配器（A股 tushare / 美股 yfinance / 港股）
 - [ ] 从年报文本自动抽取 driver
-- [ ] Word 底稿生成器（历史 + 预测叙述）
+- [x] Word 底稿生成器（.docx 研究底稿，双语，嵌图）
 - [x] PyPI 发布
 - [x] 可视化图表（分布 / 龙卷风 / 瀑布 / 历史+预测趋势）
 - [x] 交互式 Streamlit app（driver 滑块 → 图实时变）

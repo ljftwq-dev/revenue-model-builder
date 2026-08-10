@@ -68,3 +68,26 @@ def test_extrapolation_does_not_mutate_original():
     assert d.values == {2024: 0.10}            # original values untouched
     assert d.level == "B"                       # original level untouched
     assert ext is not d                         # new object returned
+
+
+# ---- i18n (kind_label bilingual) -------------------------------------------
+def test_kind_label_default_zh():
+    from revenue_model.driver import BASE
+    assert Driver("x", BASE, {2024: 1.0}).kind_label() == "市场基数"
+    assert Driver("x", PENETRATION, {2024: 0.1}).kind_label() == "渗透率"
+    assert Driver("x", SHARE, {2024: 0.1}).kind_label() == "市占率"
+    assert Driver("x", PRICE, {2024: 1.0}).kind_label() == "单价"
+
+
+def test_kind_label_en():
+    from revenue_model.driver import BASE
+    assert Driver("x", BASE, {2024: 1.0}).kind_label("en") == "Market Base"
+    assert Driver("x", PENETRATION, {2024: 0.1}).kind_label("en") == "Penetration"
+    assert Driver("x", SHARE, {2024: 0.1}).kind_label("en") == "Share"
+    assert Driver("x", PRICE, {2024: 1.0}).kind_label("en") == "Unit Price"
+
+
+def test_kind_label_unknown_lang_falls_back_to_zh():
+    from revenue_model.driver import BASE
+    # graceful fallback: an unknown lang code returns the Chinese label
+    assert Driver("x", BASE, {2024: 1.0}).kind_label("fr") == "市场基数"

@@ -68,6 +68,7 @@ returns million yuan by construction.
 ```bash
 pip install -e .                  # core engine only (pure stdlib, zero deps)
 pip install -e ".[excel]"         # + openpyxl, to render .xlsx output
+pip install -e ".[docx]"          # + python-docx & matplotlib, to render .docx memos
 pip install -e ".[dev]"           # + pytest, to run the test suite
 pip install -e ".[backtest]"      # + statsmodels, for Holt/ARIMA backtesting
 ```
@@ -108,6 +109,35 @@ python -m revenue_model.demo
 ```bash
 python -m revenue_model.excel_builder output.xlsx
 ```
+
+**Render the model to a Word research memo (.docx)** (needs the `[docx]` extra):
+
+> **Language**: the memo is bilingual — `lang="en"` (default, for the global /
+> PyPI audience) or `lang="zh"` (中文版). Every memo carries a footnote showing
+> the active language and how to switch.
+
+```python
+from revenue_model.docx_builder import build_docx
+
+build_docx(model, "memo.docx", lang="en")            # English (default)
+build_docx(model, "memo_zh.docx", lang="zh")         # 中文版
+```
+
+Or via CLI:
+
+```bash
+python -m revenue_model docx -o memo.docx --lang en      # default
+python -m revenue_model docx -o memo.docx --lang zh      # 中文版
+python -m revenue_model docx -o memo.docx --no-charts    # tables only (skip matplotlib)
+```
+
+The 7-section memo — Executive Summary → Company & Segment Overview →
+ABC-graded Driver Tables → Residual Alignment → Uncertainty & Scenarios (with
+embedded Monte Carlo distribution / tornado / forecast charts) → Limitations →
+Methodology — is the **narrative** counterpart to the Excel **working paper**.
+Two honest defaults: `ranges=None` flags the default ±10% Monte Carlo bands as
+illustrative; `forecast_years=None` produces a historical-only memo (or a
+`[not yet populated]` alarm if passed unfilled) — never silent.
 
 ## Monte Carlo & sensitivity
 
@@ -310,9 +340,10 @@ revenue-model-builder/
 │   ├── monte_carlo.py   # revenue distribution + tornado sensitivity (pure stdlib)
 │   ├── extractor.py     # annual-report text -> segment skeleton (LLM, pure stdlib)
 │   ├── excel_builder.py # render to .xlsx (ABC colors, IF formulas, residual)
+│   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
 │   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 102 tests — formula, validation, residual, MC, tornado, extractor, backtest
+├── tests/               # 120 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -327,7 +358,7 @@ revenue-model-builder/
 - [x] Bear / Base / Bull scenarios (sliced from the Monte Carlo distribution)
 - [ ] Multi-market data source adapters (A股 tushare / US yfinance / HK)
 - [ ] Automated driver extraction from annual-report text
-- [ ] Word memo builder (historical + forecast narrative)
+- [x] Word memo builder (.docx research memo, bilingual, with embedded charts)
 - [x] PyPI release
 - [x] Visualization charts (distribution / tornado / waterfall / forecast)
 - [x] Interactive Streamlit app (driver sliders -> live charts)
