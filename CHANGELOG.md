@@ -4,6 +4,36 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.10.0] - 2026-08-10
+
+### Added
+- **Segment reported-revenue anchor** (`Segment.reported_revenue`): an A-grade
+  reported figure that takes precedence over the driver product in `revenue()`
+  (history-first, Principle 5). Backward compatible — defaults to empty, so
+  existing models keep the driver-product behavior. New `.revenue_source(year)`
+  reports whether a year's figure is the reported anchor or the driver product.
+- **stockanalysis.com segment adapter** (`revenue_model.sa_adapter`, `[scrape]`
+  extra): the segment counterpart to `sec_adapter`. `build_model_from_sa(ticker)`
+  pulls reported segment revenue from stockanalysis.com's "Revenue by Segment"
+  table (e.g. NVDA Compute & Networking + Graphics) into each Segment's
+  `reported_revenue` — filling the gap `sec_adapter` leaves (SEC XBRL segment
+  tags vary per issuer, so segments were placeholder templates).
+  - **Pure-stdlib core parser** (`_extract_segment_revenue`); playwright is
+    lazy-imported only in the default browser extractor.
+  - **`table_extractor` injectable** (url -> tables) → the test suite runs
+    offline, with no browser and no network.
+  - End-to-end verified on NVDA: FY22-FY26, Σ reported segments == reported
+    total (residual 0, caliber-consistent).
+
+### Changed
+- `Segment` gained a `reported_revenue: Dict[int, float]` field (default empty)
+  and a `.revenue_source(year)` method; `revenue(year)` returns the reported
+  anchor when present, else the driver product. All 148 existing tests pass
+  unchanged (backward compatible).
+- `pyproject.toml`: new optional extra `scrape = ["playwright>=1.40"]`.
+- README (EN/ZH): new stockanalysis adapter section, roadmap entry checked,
+  test count 148 → 154.
+
 ## [0.9.0] - 2026-08-10
 
 ### Added

@@ -1,7 +1,8 @@
-"""Segment — one business line whose revenue = base × penetration × share × price."""
+"""Segment — one business line whose revenue = base × penetration × share × price,
+or an A-grade reported anchor when available."""
 
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import Dict, List
 
 from .driver import Driver, DriverKind, BASE, PENETRATION, SHARE, PRICE
 
@@ -13,6 +14,12 @@ class Segment:
     penetration: Driver
     share: Driver
     price: Driver
+    # A-grade reported segment revenue (million yuan/USD), e.g. pulled from a
+    # 10-K / IR supplemental / stockanalysis.com. When present for a year,
+    # revenue() returns it directly (history-first, Principle 5) instead of the
+    # driver product — the drivers stay as the forecast layer for years without
+    # a reported figure. Backward compatible (defaults to empty).
+    reported_revenue: Dict[int, float] = field(default_factory=dict)
 
     def __post_init__(self):
         kinds = {d.kind for d in self.drivers()}
@@ -24,17 +31,26 @@ class Segment:
             raise ValueError(f"segment {self.name!r}: drivers must have unique names")
 
     def revenue(self, year: int) -> float:
-        """Revenue (in million yuan) = base(M units) × penetration × share × price(yuan).
+        """Segment revenue for ``year``.
 
-        Unit derivation: (M units) × yuan = million yuan, when penetration & share
-        are fractions in [0, 1].
+        A-grade reported anchor takes precedence when available (history-first,
+        Principle 5); otherwise the driver product ``base × penetration × share × price``.
+
+        Unit: million yuan/USD (the anchor's unit; the driver product derives
+        (M units) × yuan = million yuan when ratios are fractions in [0,1]).
         """
+        if year in self.reported_revenue:
+            return self.reported_revenue[year]
         return (
             self.base.get(year)
             * self.penetration.get(year)
             * self.share.get(year)
             * self.price.get(year)
         )
+
+    def revenue_source(self, year: int) -> str:
+        """'reported' (A-grade anchor) or 'drivers' (product) — for transparency."""
+        return "reported" if year in self.reported_revenue else "drivers"
 
     def drivers(self) -> List[Driver]:
         return [self.base, self.penetration, self.share, self.price]

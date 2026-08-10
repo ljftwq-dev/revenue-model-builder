@@ -179,10 +179,18 @@ model = build_model_from_akshare("01211")   # HK code, e.g. 比亚迪股份
 
 Or via CLI: `python -m revenue_model sec NVDA` / `akshare 01211`.
 
-All three adapters (`tushare` / `sec` / `akshare`) fill `total_revenue` from
-structured official sources and seed intelligent-driving segment drivers as
-placeholders — the machine gives the anchor + structure, the analyst fills
-driver values. Verified: NVDA FY26 $216B, 比亚迪股份 2025 ¥804B.
+**Reported segment revenue via stockanalysis.com** (needs the `[scrape]` extra — playwright; SEC XBRL segment tags vary per issuer, so this fills the gap `sec_adapter` leaves):
+
+```python
+from revenue_model.sa_adapter import build_model_from_sa
+model = build_model_from_sa("NVDA")   # pulls Compute & Networking + Graphics
+```
+
+The three total-revenue adapters (`tushare` / `sec` / `akshare`) fill `total_revenue`
+from structured official sources and seed intelligent-driving segment drivers as
+placeholders. The segment adapter (`sa`) additionally fills each Segment's
+`reported_revenue` A-grade anchor (history-first, Principle 5); drivers stay as
+the forecast layer a human fills. Verified: NVDA FY22-FY26, Σ reported segments == total.
 
 ## Monte Carlo & sensitivity
 
@@ -388,7 +396,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
 │   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 148 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare adapters
+├── tests/               # 154 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa adapters
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -403,6 +411,7 @@ revenue-model-builder/
 - [x] Bear / Base / Bull scenarios (sliced from the Monte Carlo distribution)
 - [x] Multi-market data source adapters (A股 tushare / 美股 SEC EDGAR / 港股 AKShare)
 - [ ] Automated driver extraction from annual-report text
+- [x] Reported segment-revenue adapter (stockanalysis.com via playwright, [scrape] extra)
 - [x] Word memo builder (.docx research memo, bilingual, with embedded charts)
 - [x] PyPI release
 - [x] Visualization charts (distribution / tornado / waterfall / forecast)
