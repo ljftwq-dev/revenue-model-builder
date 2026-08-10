@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.11.0] - 2026-08-10
+
+### Added
+- **q4cdn IR-PDF adapter** (`revenue_model.q4cdn_adapter`, `[pdf]` extra):
+  parse company IR "Revenue by Market Platform" PDF supplements hosted on
+  Q4 Inc's CDN (`s201.q4cdn.com/{company_id}/...`) at **quarterly granularity**
+  — finer than `sa_adapter`'s annual segment table. `fetch_market_platform(url)`
+  returns `{line_item: {(fiscal_year, quarter): million_USD}}`;
+  `fiscal_year_rollup` aggregates to annual.
+  - **Pure-stdlib parser** (`_extract_market_platform`); PyMuPDF lazy-imported
+    only in the default text getter.
+  - **`pdf_text_getter` injectable** → the test suite runs offline, no PDF, no network.
+  - Verified on NVDA's Q1 FY27 supplement: Data Center = Hyperscale + ACIE,
+    TOTAL = Data Center + Edge Computing, all 9 quarters caliber-consistent.
+  - **No `build_model_*`** by design: the market-platform caliber differs from
+    the business-segment caliber the other adapters use; mixing them would
+    conflate calibers. This adapter is the data layer (see `examples/web_scraping/`).
+
+### Changed
+- `pyproject.toml`: new optional extra `pdf = ["PyMuPDF>=1.23"]`.
+- README (EN/ZH): new q4cdn adapter section, test count 154 → 162.
+
 ## [0.10.0] - 2026-08-10
 
 ### Added

@@ -170,6 +170,17 @@ model = build_model_from_sa("NVDA")   # 抓 Compute & Networking + Graphics
 
 三个总收入 adapter（`tushare` / `sec` / `akshare`）从结构化官方源填 `total_revenue`，并预填智能驾驶 segment driver 占位符。segment adapter（`sa`）额外把每个 Segment 的 `reported_revenue` A 级锚点填上（history-first，原则五）；driver 仍是分析师要填的预测层。已验证：NVDA FY22-FY26，Σ 已披露 segment == total。
 
+**季度市场平台细分（q4cdn IR PDF，需 `[pdf]` extra —— PyMuPDF；部分公司在 Q4 Inc CDN 发布更细的「Revenue by Market Platform」PDF 补充材料，如 NVDA 的「Rev by Mkt Qtrly Trend」）**：
+
+```python
+from revenue_model.q4cdn_adapter import fetch_market_platform, fiscal_year_rollup
+# 季度颗粒度（Q1FY25..Q1FY27）+ 子市场细分（Hyperscale / ACIE / Edge）
+data, quarters = fetch_market_platform(url)
+dc_annual = fiscal_year_rollup(data["Data Center"])   # 季度 -> 财年
+```
+
+季度颗粒度 + 子市场细分，年度 adapter 拿不到。市场平台口径 ≠ 业务分部口径，所以这个 adapter 是**数据层**（无 `build_model_*`）—— 见 `examples/web_scraping/`。
+
 ## 蒙特卡洛 + 敏感度
 
 把单点预测变成**分布**，并找出**哪个假设最关键**——纯标准库，不用 numpy：
@@ -329,7 +340,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # 渲染成 .docx 研究底稿（双语、ABC、嵌图）
 │   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 154 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare/sa 多市场 adapter
+├── tests/               # 162 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare/sa/q4cdn 多市场 adapter
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -345,6 +356,7 @@ revenue-model-builder/
 - [x] 多市场数据源适配器（A股 tushare / 美股 SEC EDGAR / 港股 AKShare）
 - [ ] 从年报文本自动抽取 driver
 - [x] 已披露 segment 收入 adapter（stockanalysis.com，playwright，[scrape] extra）
+- [x] q4cdn IR-PDF adapter（季度市场平台细分，[pdf] extra）
 - [x] Word 底稿生成器（.docx 研究底稿，双语，嵌图）
 - [x] PyPI 发布
 - [x] 可视化图表（分布 / 龙卷风 / 瀑布 / 历史+预测趋势）

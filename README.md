@@ -192,6 +192,19 @@ placeholders. The segment adapter (`sa`) additionally fills each Segment's
 `reported_revenue` A-grade anchor (history-first, Principle 5); drivers stay as
 the forecast layer a human fills. Verified: NVDA FY22-FY26, Σ reported segments == total.
 
+**Quarterly market-platform detail via q4cdn IR PDFs** (needs the `[pdf]` extra — PyMuPDF; some companies publish a finer "Revenue by Market Platform" PDF supplement on Q4 Inc's CDN, e.g. NVDA's "Rev by Mkt Qtrly Trend"):
+
+```python
+from revenue_model.q4cdn_adapter import fetch_market_platform, fiscal_year_rollup
+# Quarterly granularity (Q1FY25..Q1FY27) + sub-market splits (Hyperscale / ACIE / Edge)
+data, quarters = fetch_market_platform(url)
+dc_annual = fiscal_year_rollup(data["Data Center"])   # quarters -> fiscal year
+```
+
+Quarterly granularity and sub-market detail the annual adapters can't reach. The
+market-platform caliber differs from the business-segment caliber, so this adapter
+is a **data layer** (no `build_model_*`) — see `examples/web_scraping/`.
+
 ## Monte Carlo & sensitivity
 
 Turn point forecasts into **distributions** and find out **which assumption
@@ -396,7 +409,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
 │   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 154 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa adapters
+├── tests/               # 162 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa/q4cdn adapters
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -412,6 +425,7 @@ revenue-model-builder/
 - [x] Multi-market data source adapters (A股 tushare / 美股 SEC EDGAR / 港股 AKShare)
 - [ ] Automated driver extraction from annual-report text
 - [x] Reported segment-revenue adapter (stockanalysis.com via playwright, [scrape] extra)
+- [x] q4cdn IR-PDF adapter (quarterly market-platform detail, [pdf] extra)
 - [x] Word memo builder (.docx research memo, bilingual, with embedded charts)
 - [x] PyPI release
 - [x] Visualization charts (distribution / tornado / waterfall / forecast)
