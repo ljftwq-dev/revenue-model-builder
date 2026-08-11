@@ -4,6 +4,49 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.13.0] - 2026-08-11
+
+### Added
+- **`sec_adapter` full financial statements** (`fetch_company_facts` +
+  `fetch_statement`): complete income / balance / cashflow at annual AND
+  quarterly granularity, including single-quarter derivation for flow items
+  (`Q2_single = Q2_YTD − Q1_YTD`, `Q4_single = FY − Q3_YTD`). Augments the
+  existing `fetch_revenues` (single-concept, annual-only). Validated on SDGR
+  (Schrödinger): FY2019-2025, 265 US-GAAP concepts, one round-trip.
+- **`ir_adapter`** (new): Q4 Inc `PressRelease.svc` API — one call returns a
+  company's full press-release history (validated on SDGR: 259 releases,
+  2017-2026). `classify()` buckets headlines into 9 event categories (Earnings
+  / Partnership / Pipeline / ...); ticker→IR-domain map (SDGR / NVDA). Pure
+  stdlib + `http_get` injectable + cache, mirrors the sec/q4cdn contract. Data
+  layer for news-impact modeling (Direction-3).
+
+### Fixed
+- **`sec_adapter` Q4-comparative bug** (bug A/B): a 10-K income statement's
+  "three months ended Dec 31" comparative was mis-labeled as FY (same
+  end-month), overwriting the real annual figure and corrupting single-quarter
+  Q4 derivation. New `_is_true_annual` enforces ≥350-day duration for flow
+  items (reuses the lesson from `_is_annual`).
+- **M1**: `sa_adapter` now raises when segments exist but the total row is
+  unrecognized (was: silent half-built model, `years()==[]` → `validate` KeyError).
+- **M2**: `q4cdn_adapter` fiscal regex now matches "Fiscal Year" / "Fiscal Yr".
+- **M3**: `q4cdn_adapter` raises on empty PDF text extraction (scanned/image
+  PDF → OCR hint, not silent empty).
+- **M4**: SEC `company_tickers.json` cache now TTL-aware (7d) via new
+  `cache_get_timed` / `cache_set_timed`; new IPOs/delistings no longer invisible.
+- **M5**: `q4cdn_adapter` `_is_note` now continues instead of break (mid-table
+  footnotes no longer drop subsequent line items).
+- **M6**: `cache_set` now atomic (temp file + `os.replace`); no half-written
+  JSON under concurrent access.
+
+### Changed
+- **M7 (BREAKING)**: `fiscal_year_rollup` returns `(annual, complete_years)`
+  instead of just `annual`. Callers must unpack: `annual, complete = ...`. Years
+  with <4 quarters are flagged partial — feeding them to
+  `RevenueModel.total_revenue` would severely understate revenue.
+
+### Tests
+- Suite 170 → 204 (+34: sec_adapter 13, ir_adapter 13, M1-M7 + bug-A/B regression 8).
+
 ## [0.12.1] - 2026-08-10
 
 ### Fixed

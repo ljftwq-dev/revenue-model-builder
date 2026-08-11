@@ -342,7 +342,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # 渲染成 .docx 研究底稿（双语、ABC、嵌图）
 │   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 170 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare/sa/q4cdn 多市场 adapter + 缓存
+├── tests/               # 204 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare/sa/q4cdn/ir 多市场 adapter + 缓存
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml

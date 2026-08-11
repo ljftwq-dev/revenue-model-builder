@@ -411,7 +411,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
 │   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 170 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa/q4cdn adapters + cache
+├── tests/               # 204 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa/q4cdn/ir adapters + cache
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
