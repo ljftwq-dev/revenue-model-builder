@@ -198,7 +198,7 @@ the forecast layer a human fills. Verified: NVDA FY22-FY26, Σ reported segments
 from revenue_model.q4cdn_adapter import fetch_market_platform, fiscal_year_rollup
 # Quarterly granularity (Q1FY25..Q1FY27) + sub-market splits (Hyperscale / ACIE / Edge)
 data, quarters = fetch_market_platform(url)
-dc_annual = fiscal_year_rollup(data["Data Center"])   # quarters -> fiscal year
+dc_annual, dc_complete = fiscal_year_rollup(data["Data Center"])   # quarters -> FY; dc_complete = years with all 4 quarters
 ```
 
 Quarterly granularity and sub-market detail the annual adapters can't reach. The

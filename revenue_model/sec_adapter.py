@@ -38,6 +38,7 @@ _REVENUE_CONCEPTS = (
 )
 
 _TICKERS_KEY = "sec_tickers"  # cache key for the company_tickers.json mapping
+_TICKERS_TTL_SEC = 7 * 86400  # M4: refresh weekly; new IPOs/delistings lag otherwise
 
 # US-flavored intelligent-driving template (global / US data sources; price in
 # USD so segment revenue stays in million-USD, matching the anchor's unit).
@@ -77,11 +78,11 @@ def fetch_cik(ticker: str, *, http_get: Optional[Callable] = None,
     """
     from . import cache
     if use_cache and http_get is None:
-        hit, tk = cache.cache_get(_TICKERS_KEY, refresh)
+        hit, tk = cache.cache_get_timed(_TICKERS_KEY, _TICKERS_TTL_SEC, refresh)
         if not hit:
             tk = _get(f"{SEC_WWW}/files/company_tickers.json",
                       http_get=http_get, user_agent=user_agent, timeout=timeout)
-            cache.cache_set(_TICKERS_KEY, tk)
+            cache.cache_set_timed(_TICKERS_KEY, tk)
     else:
         tk = _get(f"{SEC_WWW}/files/company_tickers.json",
                   http_get=http_get, user_agent=user_agent, timeout=timeout)
@@ -301,6 +302,28 @@ def _period_from_end(end_str: str, fiscal_year_end_month: int = 12
     return d.year, qmap.get(m, f"M{m}")
 
 
+def _is_true_annual(start: str, end: str) -> bool:
+    """True if ``(start, end)`` is a genuine full-year figure, not a Q4 comparative.
+
+    A 10-K income statement shows two columns ending Dec 31: the 'year ended'
+    (12-month) and 'three months ended Dec 31' (Q4 comparative). Both end in
+    December — month alone mislabels the 3-month row as FY. Require >= 350 days
+    for flow items. Instant items (balance sheet, ``start=""``) have no duration;
+    their end-month alone identifies the fiscal-year snapshot.
+
+    This mirrors the lesson encoded in :func:`_is_annual` (form + duration) but
+    operates post-dedup on the ``(start, end)`` period key without re-checking
+    ``form`` (``_dedupe_by_period`` already kept the latest-filed instance).
+    """
+    if not start:  # instant item (balance sheet) — no duration to check
+        return True
+    try:
+        days = (datetime.fromisoformat(end) - datetime.fromisoformat(start)).days
+    except (ValueError, TypeError):
+        return False
+    return days >= 350
+
+
 def fetch_statement(cik: int, statement: str = "income",
                     freq: str = "annual", *, single_quarter: bool = False,
                     http_get: Optional[Callable] = None,
@@ -353,17 +376,24 @@ def fetch_statement(cik: int, statement: str = "income",
 
     pinfo = {p: _period_from_end(p[1]) for p in all_periods}
     q_order = {"Q1": 1, "Q2": 2, "Q3": 3}
-    annual_p = sorted([p for p in all_periods if pinfo[p][1] == "FY"],
+    annual_p = sorted([p for p in all_periods
+                       if pinfo[p][1] == "FY" and _is_true_annual(p[0], p[1])],
                       key=lambda p: pinfo[p][0])
     quarterly_p = sorted([p for p in all_periods if pinfo[p][1] in q_order],
                          key=lambda p: (pinfo[p][0], q_order[pinfo[p][1]]))
 
     # (fy, fp) -> period across ALL periods (incl. FY), so single-quarter Q4
     # derivation can find the annual figure even when freq="quarterly".
+    # For FY, only record true-annual periods — a Q4 comparative (3 months
+    # ending Dec) must not hijack the FY slot and corrupt Q4 derivation.
     all_by_fyfp = {}
     for p in all_periods:
         fy, fp = pinfo[p]
-        all_by_fyfp[(fy, fp)] = p
+        if fp == "FY":
+            if _is_true_annual(p[0], p[1]):
+                all_by_fyfp[(fy, "FY")] = p
+        else:
+            all_by_fyfp[(fy, fp)] = p
 
     def build_table(periods, do_single_q):
         from collections import defaultdict

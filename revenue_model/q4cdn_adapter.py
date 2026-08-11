@@ -83,7 +83,7 @@ def _extract_market_platform(
 
     # 1. Build the quarter column labels from "Fiscal YYYY" + "Q1..Q4" headers.
     # Match across newlines: PyMuPDF can emit "Fiscal  \n2027" on two lines.
-    fiscal_years = [int(y) for y in re.findall(r"Fiscal\s+(\d{4})", text, re.I)]
+    fiscal_years = [int(y) for y in re.findall(r"Fiscal\s+(?:Year\s+|Yr\s+)?(\d{4})", text, re.I)]
     q_tokens = [l for l in lines if re.fullmatch(r"q[1-4]", l, re.I)]
     if not fiscal_years or not q_tokens:
         return {}, []
@@ -111,9 +111,13 @@ def _extract_market_platform(
         if _is_header(l):
             continue
         if _is_note(l):
+            # M5: flush the in-progress item and SKIP the note line; do not abort
+            # the whole parse. Notes can appear mid-table for some issuers, and
+            # break would silently drop every line item after the first note.
             if cur_name and len(cur_vals) == n_cols:
                 items.append((" ".join(cur_name), cur_vals))
-            break
+            cur_name, cur_vals = [], []
+            continue
         money = _parse_money(l)
         if money is not None:
             cur_vals.append(money)
@@ -142,7 +146,13 @@ def _clean_name(name: str) -> str:
 def _default_pdf_text_getter(
     url: str, *, user_agent: str = DEFAULT_UA, timeout: int = 60
 ) -> str:
-    """Download the PDF and extract text via PyMuPDF (lazy-imported, [pdf] extra)."""
+    """Download the PDF and extract text via PyMuPDF (lazy-imported, [pdf] extra).
+
+    Raises ``ValueError`` if extraction yields empty text — the PDF is likely a
+    scanned / image-only document with no text layer, which needs OCR (e.g. the
+    Unlimited-OCR local pipeline) rather than silent empty output that the
+    parser would later misread as 'no data' (M3).
+    """
     import fitz  # PyMuPDF
     import io
 
@@ -150,7 +160,14 @@ def _default_pdf_text_getter(
     with urllib.request.urlopen(req, timeout=timeout) as r:
         data = r.read()
     doc = fitz.open(stream=io.BytesIO(data), filetype="pdf")
-    return "\n".join(page.get_text() for page in doc)
+    text = "\n".join(page.get_text() for page in doc)
+    if not text.strip():
+        raise ValueError(
+            f"PDF at {url} extracted no text — likely a scanned/image-only "
+            f"document with no text layer. Run it through an OCR pipeline "
+            f"(e.g. Unlimited-OCR) and feed the resulting text via "
+            f"pdf_text_getter=.")
+    return text
 
 
 def fetch_market_platform(
@@ -185,14 +202,24 @@ def fetch_market_platform(
 
 def fiscal_year_rollup(
     quarterly: Dict[Quarter, float],
-) -> Dict[int, float]:
+) -> Tuple[Dict[int, float], set]:
     """Aggregate a single line-item's quarterly series to fiscal-year totals.
 
-    A fiscal year with all four quarters sums to the full year; a partial year
-    (the most recent, e.g. only Q1 reported) sums what's available — callers
-    should treat partial years as incomplete (the latest year is often partial).
+    Returns ``(annual, complete_years)``:
+    - ``annual``: ``{fiscal_year: sum_of_quarters}`` (million USD).
+    - ``complete_years``: set of fiscal years with all four quarters present.
+
+    Callers MUST treat years not in ``complete_years`` as partial (e.g. the
+    latest year with only Q1 reported) — feeding a partial-year sum to
+    ``RevenueModel.total_revenue`` would severely understate revenue (M7).
+
+    **Breaking change (v0.13):** previously returned just ``Dict[int, float]``.
+    Update callers: ``annual, complete = fiscal_year_rollup(q)``.
     """
     annual: Dict[int, float] = {}
+    q_counts: Dict[int, int] = {}
     for (fy, _q), v in quarterly.items():
         annual[fy] = annual.get(fy, 0.0) + v
-    return annual
+        q_counts[fy] = q_counts.get(fy, 0) + 1
+    complete = {fy for fy, n in q_counts.items() if n >= 4}
+    return annual, complete

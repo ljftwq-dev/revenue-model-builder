@@ -176,7 +176,7 @@ model = build_model_from_sa("NVDA")   # 抓 Compute & Networking + Graphics
 from revenue_model.q4cdn_adapter import fetch_market_platform, fiscal_year_rollup
 # 季度颗粒度（Q1FY25..Q1FY27）+ 子市场细分（Hyperscale / ACIE / Edge）
 data, quarters = fetch_market_platform(url)
-dc_annual = fiscal_year_rollup(data["Data Center"])   # 季度 -> 财年
+dc_annual, dc_complete = fiscal_year_rollup(data["Data Center"])   # 季度 -> 财年; dc_complete = 满4季度的年
 ```
 
 季度颗粒度 + 子市场细分，年度 adapter 拿不到。市场平台口径 ≠ 业务分部口径，所以这个 adapter 是**数据层**（无 `build_model_*`）—— 见 `examples/web_scraping/`。

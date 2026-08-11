@@ -202,6 +202,13 @@ def build_model_from_sa(
         use_cache=use_cache, refresh=refresh)
     if not seg_rev and not total_rev:
         raise ValueError(f"stockanalysis.com returned no segment data for {ticker!r}")
+    if not total_rev and seg_rev:
+        # M1: total row labeled 'Net Revenue'/'Operating Revenue'/other variant
+        # -> detection misses it, but segments have data. Fail loudly instead of
+        # returning a half-built model (years()==[] -> validate() KeyError).
+        raise ValueError(
+            f"found {len(seg_rev)} segments but no total row for {ticker!r}; "
+            f"the total may use an unrecognized label (e.g. 'Net Revenue')")
 
     all_years = set(total_rev)
     for v in seg_rev.values():

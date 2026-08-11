@@ -121,3 +121,20 @@ def test_sa_cache_behavior_default_getter_cached(monkeypatch, tmp_path):
     # injected extractor bypasses the cache (default never called)
     fetch_segments_sa("NVDA", table_extractor=lambda url: NVDA_TABLES, use_cache=True)
     assert len(calls) == 2
+
+
+def test_build_model_raises_when_total_label_unrecognized():
+    # M1: total row uses 'Net Revenue' (a variant sa_adapter won't recognize),
+    # but segments have data. Must raise instead of returning a half-built
+    # model (which would later cause validate() KeyError on empty years()).
+    tables = [{
+        "caption": "Revenue by Segment",
+        "headers": ["Fiscal Year", "FY 2025", "Period Ending", "Jan 26, 2025"],
+        "rows": [
+            ["Compute & Networking", "193,479"],
+            ["Graphics", "22,459"],
+            ["Net Revenue", "215,938"],     # unrecognized total variant
+        ],
+    }]
+    with pytest.raises(ValueError, match="no total row"):
+        build_model_from_sa("TEST", table_extractor=lambda url: tables)

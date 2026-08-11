@@ -132,10 +132,12 @@ def test_caliber_consistency():
 
 def test_fiscal_year_rollup():
     data, _ = _extract_market_platform(NVDA_TEXT)
-    dc_annual = fiscal_year_rollup(data["Data Center"])
+    dc_annual, dc_complete = fiscal_year_rollup(data["Data Center"])
     assert dc_annual[2025] == 22563 + 26272 + 30771 + 35580  # full year
     assert dc_annual[2026] == 39112 + 41096 + 51215 + 62314
     assert dc_annual[2027] == 75246  # partial — only Q1 reported
+    assert dc_complete == {2025, 2026}     # M7: 2027 partial (1 of 4 quarters)
+    assert 2027 not in dc_complete         # partial year must NOT be "complete"
 
 
 def test_fetch_market_platform_injectable():
@@ -149,3 +151,19 @@ def test_extract_empty_text():
     data, quarters = _extract_market_platform("no fiscal/quarter headers here")
     assert data == {}
     assert quarters == []
+
+
+def test_note_in_middle_does_not_drop_items():
+    # M5: a footnote appearing mid-table must be skipped, not abort the parse.
+    # Previously the first _is_note hit did `break`, dropping every line item
+    # after it. Edge Computing (after the note) must still be extracted.
+    text = (
+        "Fiscal 2025\n($ in millions)\nQ1\nQ2\nQ3\nQ4\n"
+        "Data Center\n100\n200\n300\n400\n"
+        "Note: DC includes AI revenue\n"
+        "Edge Computing\n50\n60\n70\n80\n"
+    )
+    data, quarters = _extract_market_platform(text)
+    assert "Data Center" in data
+    assert "Edge Computing" in data      # would be lost under the old `break`
+    assert len(quarters) == 4

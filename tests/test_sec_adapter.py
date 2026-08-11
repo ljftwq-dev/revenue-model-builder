@@ -3,7 +3,7 @@ import pytest
 from revenue_model.sec_adapter import (
     fetch_cik, fetch_revenues, build_model_from_sec, _is_annual,
     fetch_company_facts, fetch_statement, _dedupe_by_period, _period_from_end,
-    SEC_WWW, SEC_API)
+    _is_true_annual, SEC_WWW, SEC_API)
 
 
 def _fake_http(routes):
@@ -207,3 +207,29 @@ def test_fetch_statement_missing_concept_is_none():
     # GrossProfit absent from fixture -> metric present with None value
     stmt = fetch_statement(_CIK, "income", "annual", http_get=_facts_http())
     assert stmt[(2023, "FY")].get("Gross Profit") is None
+
+
+# ---- bug A/B regression: Q4 comparative must not masquerade as FY ----------
+def test_is_true_annual_duration_check():
+    assert _is_true_annual("2023-01-01", "2023-12-31") is True    # 364d full year
+    assert _is_true_annual("2023-10-01", "2023-12-31") is False   # 91d Q4 comparative
+    assert _is_true_annual("", "2023-12-31") is True              # instant (balance)
+    assert _is_true_annual("2023-01-01", "2023-03-31") is False   # quarterly
+
+
+def test_fetch_statement_filters_q4_comparative_from_annual():
+    """A 10-K income statement carries a 'year ended' (12mo) column AND a
+    'three months ended Dec 31' (Q4) comparative. Both end in December — the
+    3-month row must NOT be treated as FY (would overwrite the real annual)."""
+    facts = {
+        "cik": _CIK, "entityName": "Test Co",
+        "facts": {"us-gaap": {
+            "Revenues": {"units": {"USD": [
+                {"start": "2023-01-01", "end": "2023-12-31", "form": "10-K", "fy": 2023, "filed": "2024-03-01", "val": 1_000_000_000},
+                {"start": "2023-10-01", "end": "2023-12-31", "form": "10-K", "fy": 2023, "filed": "2024-03-01", "val": 300_000_000},
+            ]}},
+        }},
+    }
+    stmt = fetch_statement(_CIK, "income", "annual",
+                           http_get=_fake_http({_FACTS_URL: facts}))
+    assert stmt[(2023, "FY")]["Revenue"] == 1000.0   # full year, not 300 (3-month)

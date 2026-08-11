@@ -52,3 +52,26 @@ def test_invalid_cache_treated_as_miss(tmp_cache):
     hit, data = cache.cache_get("bad")
     assert hit is False
     assert data is None
+
+
+# ---- M4: TTL-aware cache --------------------------------------------------
+def test_timed_cache_fresh(tmp_cache):
+    cache.cache_set_timed("k", {"v": 1})
+    hit, data = cache.cache_get_timed("k", max_age_seconds=3600)
+    assert hit is True and data == {"v": 1}
+
+
+def test_timed_cache_stale(tmp_cache, monkeypatch):
+    import time as _t
+    cache.cache_set_timed("k", {"v": 1})
+    real_now = _t.time()
+    monkeypatch.setattr(cache.time, "time", lambda: real_now + 7200)  # +2h
+    hit, data = cache.cache_get_timed("k", max_age_seconds=3600)     # 1h TTL
+    assert hit is False and data is None
+
+
+def test_timed_cache_treats_untimed_entry_as_miss(tmp_cache):
+    # An entry written by cache_set (no _ts) must not satisfy cache_get_timed.
+    cache.cache_set("k", {"v": 1})
+    hit, data = cache.cache_get_timed("k", max_age_seconds=3600)
+    assert hit is False and data is None
