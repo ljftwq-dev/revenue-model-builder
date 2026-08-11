@@ -2,6 +2,7 @@
 import pytest
 from revenue_model.sec_adapter import (
     fetch_cik, fetch_revenues, build_model_from_sec, _is_annual,
+    fetch_company_facts, fetch_statement, _dedupe_by_period, _period_from_end,
     SEC_WWW, SEC_API)
 
 
@@ -111,3 +112,98 @@ def test_build_model_raises_when_no_revenue():
     })
     with pytest.raises(ValueError, match="no annual revenue"):
         build_model_from_sec("AAPL", http_get=http)
+
+
+# ---- extended: company_facts + full statements + single-Q (v0.8) -----------
+# Minimal companyfacts fixture: Revenues + NetIncomeLoss (flow, with start) +
+# CashAndCashEquivalents (instant, start=None). Values in raw USD.
+_COMPANYFACTS = {
+    "cik": 1490978, "entityName": "Test Co",
+    "facts": {"us-gaap": {
+        "Revenues": {"units": {"USD": [
+            {"start": "2022-01-01", "end": "2022-12-31", "form": "10-K", "fy": 2022, "filed": "2023-03-01", "val": 800_000_000},
+            {"start": "2023-01-01", "end": "2023-12-31", "form": "10-K", "fy": 2023, "filed": "2024-03-01", "val": 1_000_000_000},
+            {"start": "2023-01-01", "end": "2023-03-31", "form": "10-Q", "fy": 2023, "fp": "Q1", "filed": "2023-05-01", "val": 200_000_000},
+            {"start": "2023-01-01", "end": "2023-06-30", "form": "10-Q", "fy": 2023, "fp": "Q2", "filed": "2023-08-01", "val": 450_000_000},
+            {"start": "2023-01-01", "end": "2023-09-30", "form": "10-Q", "fy": 2023, "fp": "Q3", "filed": "2023-11-01", "val": 720_000_000},
+        ]}},
+        "NetIncomeLoss": {"units": {"USD": [
+            {"start": "2023-01-01", "end": "2023-12-31", "form": "10-K", "fy": 2023, "filed": "2024-03-01", "val": -50_000_000},
+            {"start": "2023-01-01", "end": "2023-03-31", "form": "10-Q", "fy": 2023, "fp": "Q1", "filed": "2023-05-01", "val": -20_000_000},
+            {"start": "2023-01-01", "end": "2023-06-30", "form": "10-Q", "fy": 2023, "fp": "Q2", "filed": "2023-08-01", "val": -30_000_000},
+            {"start": "2023-01-01", "end": "2023-09-30", "form": "10-Q", "fy": 2023, "fp": "Q3", "filed": "2023-11-01", "val": -45_000_000},
+        ]}},
+        "CashAndCashEquivalentsAtCarryingValue": {"units": {"USD": [
+            {"end": "2022-12-31", "form": "10-K", "fy": 2022, "filed": "2023-03-01", "val": 300_000_000},
+            {"end": "2023-12-31", "form": "10-K", "fy": 2023, "filed": "2024-03-01", "val": 400_000_000},
+        ]}},
+    }},
+}
+_CIK = 1490978
+_FACTS_URL = f"{SEC_API}/api/xbrl/companyfacts/CIK{_CIK:010d}.json"
+
+
+def _facts_http():
+    return _fake_http({_FACTS_URL: _COMPANYFACTS})
+
+
+def test_dedupe_keeps_latest_filed_same_period():
+    pts = [
+        {"start": "2023-01-01", "end": "2023-12-31", "filed": "2024-03-01", "val": 1},
+        {"start": "2023-01-01", "end": "2023-12-31", "filed": "2025-03-01", "val": 2},
+    ]
+    out = _dedupe_by_period(pts)
+    assert out[("2023-01-01", "2023-12-31")]["val"] == 2
+
+
+def test_dedupe_handles_instant_no_start():
+    out = _dedupe_by_period([{"end": "2023-12-31", "filed": "2024-03-01", "val": 5}])
+    assert out[("", "2023-12-31")]["val"] == 5
+
+
+def test_period_from_end_calendar():
+    assert _period_from_end("2023-12-31") == (2023, "FY")
+    assert _period_from_end("2023-03-31") == (2023, "Q1")
+    assert _period_from_end("2023-06-30") == (2023, "Q2")
+    assert _period_from_end("2023-09-30") == (2023, "Q3")
+
+
+def test_fetch_company_facts_returns_payload():
+    facts = fetch_company_facts(_CIK, http_get=_facts_http())
+    assert facts["entityName"] == "Test Co"
+    assert "Revenues" in facts["facts"]["us-gaap"]
+
+
+def test_fetch_statement_annual_income():
+    stmt = fetch_statement(_CIK, "income", "annual", http_get=_facts_http())
+    assert stmt[(2023, "FY")]["Revenue"] == 1000.0      # 1e9 -> million
+    assert stmt[(2023, "FY")]["Net Income"] == -50.0
+
+
+def test_fetch_statement_quarterly_ytd():
+    stmt = fetch_statement(_CIK, "income", "quarterly", http_get=_facts_http())
+    assert stmt[(2023, "Q2")]["Revenue"] == 450.0        # YTD cumulative
+
+
+def test_fetch_statement_single_quarter_derivation():
+    stmt = fetch_statement(_CIK, "income", "quarterly",
+                           single_quarter=True, http_get=_facts_http())
+    assert stmt[(2023, "Q1")]["Revenue"] == 200.0        # Q1 = Q1_YTD
+    assert stmt[(2023, "Q2")]["Revenue"] == 250.0        # 450 - 200
+    assert stmt[(2023, "Q4")]["Revenue"] == 280.0        # FY(1000) - Q3_YTD(720)
+
+
+def test_fetch_statement_balance_instant_items():
+    stmt = fetch_statement(_CIK, "balance", "annual", http_get=_facts_http())
+    assert stmt[(2023, "FY")]["Cash & Equivalents"] == 400.0
+
+
+def test_fetch_statement_rejects_invalid_kind():
+    with pytest.raises(ValueError, match="statement must be"):
+        fetch_statement(_CIK, "bogus", http_get=_facts_http())
+
+
+def test_fetch_statement_missing_concept_is_none():
+    # GrossProfit absent from fixture -> metric present with None value
+    stmt = fetch_statement(_CIK, "income", "annual", http_get=_facts_http())
+    assert stmt[(2023, "FY")].get("Gross Profit") is None

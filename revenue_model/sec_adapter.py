@@ -194,3 +194,213 @@ def build_model_from_sec(
     total = {y: rev[y] / 1e6 for y in yrs}  # USD -> million USD
     segments = _intel_driving_us_segments(name, yrs)
     return RevenueModel(company=name, segments=segments, total_revenue=total)
+
+
+# ============================================================================
+# Extended financial statements — full three statements + quarterly (v0.8)
+#
+# Augments ``fetch_revenues`` (single concept, annual-only) with complete
+# multi-concept income / balance / cashflow at annual AND quarterly granularity,
+# including single-quarter derivation for flow items. Powers richer driver
+# calibration (R&D intensity, cash runway, margin trends) beyond the top line.
+# ============================================================================
+
+# statement -> [(display_name, [candidate us-gaap concepts], unit)]
+# unit: "USD" monetary, "shares" counts, "USD/shares" per-share.
+# Concept lists use the first element the issuer actually files.
+_STATEMENT_CONCEPTS: Dict[str, List[Tuple[str, List[str], str]]] = {
+    "income": [
+        ("Revenue", ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax"], "USD"),
+        ("Cost of Revenue", ["CostOfRevenueAndOperatingExpense", "CostOfGoodsAndServicesSold", "CostOfRevenue"], "USD"),
+        ("Gross Profit", ["GrossProfit"], "USD"),
+        ("R&D Expense", ["ResearchAndDevelopmentExpense"], "USD"),
+        ("SG&A Expense", ["GeneralAndAdministrativeExpense", "SellingGeneralAndAdministrativeExpense"], "USD"),
+        ("Operating Income", ["OperatingIncomeLoss"], "USD"),
+        ("Net Income", ["NetIncomeLoss"], "USD"),
+        ("EPS Diluted", ["EarningsPerShareDiluted"], "USD/shares"),
+    ],
+    "balance": [
+        ("Cash & Equivalents", ["CashAndCashEquivalentsAtCarryingValue"], "USD"),
+        ("Total Current Assets", ["AssetsCurrent"], "USD"),
+        ("Total Assets", ["Assets"], "USD"),
+        ("Total Current Liabilities", ["LiabilitiesCurrent"], "USD"),
+        ("Total Liabilities", ["Liabilities"], "USD"),
+        ("Stockholders' Equity", ["StockholdersEquity"], "USD"),
+        ("Shares Outstanding", ["CommonStockSharesOutstanding"], "shares"),
+    ],
+    "cashflow": [
+        ("Net Income", ["NetIncomeLoss"], "USD"),
+        ("Stock-based Comp", ["ShareBasedCompensation"], "USD"),
+        ("Operating CF", ["NetCashProvidedByUsedInOperatingActivities"], "USD"),
+        ("CapEx", ["PaymentsToAcquirePropertyPlantAndEquipment", "CapitalExpenditure"], "USD"),
+        ("Investing CF", ["NetCashProvidedByUsedInInvestingActivities"], "USD"),
+        ("Financing CF", ["NetCashProvidedByUsedInFinancingActivities"], "USD"),
+    ],
+}
+
+
+def fetch_company_facts(cik: int, *, http_get: Optional[Callable] = None,
+                        user_agent: str = DEFAULT_UA, timeout: int = 30,
+                        use_cache: bool = True, refresh: bool = False) -> dict:
+    """CIK -> full companyfacts JSON from SEC EDGAR's XBRL API.
+
+    One call returns ALL us-gaap concepts for the issuer (every reported
+    number across every form). Heavier than ``fetch_revenues`` (~1 MB for a
+    mid-cap) but cache-backed, and the basis for ``fetch_statement`` which
+    pulls many concepts in one round-trip instead of N. Cached by CIK
+    (key ``sec_facts_{cik}``) when the default getter is used.
+    """
+    from . import cache
+    cache_enabled = use_cache and http_get is None
+    key = cache.cache_key("sec_facts", cik)
+    if cache_enabled:
+        hit, cached = cache.cache_get(key, refresh)
+        if hit:
+            return cached
+    cik10 = f"{cik:010d}"
+    facts = _get(f"{SEC_API}/api/xbrl/companyfacts/CIK{cik10}.json",
+                 http_get=http_get, user_agent=user_agent, timeout=timeout)
+    if cache_enabled:
+        cache.cache_set(key, facts)
+    return facts
+
+
+def _dedupe_by_period(points: List[dict]) -> Dict[Tuple[str, str], dict]:
+    """Deduplicate XBRL points by actual ``(start, end)`` period, latest-filed.
+
+    The same fact often appears multiple times (re-filed as a comparative in a
+    later 10-K, or tagged under a different fy/fp). The actual period — not the
+    fy/fp label — is the reliable key. ``start`` may be ``None`` for instant
+    items (balance sheet); those key on ``end`` alone (``start`` normalized to
+    ``""``).
+    """
+    best: Dict[Tuple[str, str], dict] = {}
+    for p in points:
+        s = p.get("start") or ""
+        e = p.get("end")
+        if not e:
+            continue
+        k = (s, e)
+        if k not in best or p.get("filed", "") > best[k].get("filed", ""):
+            best[k] = p
+    return best
+
+
+def _period_from_end(end_str: str, fiscal_year_end_month: int = 12
+                     ) -> Tuple[int, str]:
+    """End date -> ``(fiscal_year, period_label)``. Calendar-year default.
+
+    ``"2024-12-31"`` -> ``(2024, "FY")``; ``"2024-03-31"`` -> ``(2024, "Q1")``.
+    Issuers with non-calendar fiscal years pass ``fiscal_year_end_month``.
+    """
+    d = datetime.fromisoformat(end_str)
+    m = d.month
+    if m == fiscal_year_end_month:
+        return d.year, "FY"
+    qmap = {3: "Q1", 6: "Q2", 9: "Q3"}
+    return d.year, qmap.get(m, f"M{m}")
+
+
+def fetch_statement(cik: int, statement: str = "income",
+                    freq: str = "annual", *, single_quarter: bool = False,
+                    http_get: Optional[Callable] = None,
+                    user_agent: str = DEFAULT_UA, timeout: int = 30,
+                    use_cache: bool = True, refresh: bool = False
+                    ) -> Dict[Tuple[int, str], Dict[str, Optional[float]]]:
+    """CIK + statement kind -> structured financial statement.
+
+    Parameters
+    ----------
+    statement : {"income", "balance", "cashflow"}
+    freq : {"annual", "quarterly", "both"}
+    single_quarter : bool
+        For flow items (income/cashflow) at quarterly freq, convert YTD
+        cumulative values to single-quarter: ``Q2_single = Q2_YTD - Q1_YTD``,
+        ``Q4_single = FY - Q3_YTD``. Balance-sheet (instant) items are never
+        differenced. Per-share (EPS) and share counts are kept as-reported.
+
+    Returns ``{(fiscal_year, period): {metric_name: value}}`` where period is
+    ``"FY"`` or ``"Q1".."Q4"`` (single-quarter labels when adjusted). Monetary
+    values in million USD; share counts in million; per-share as-is.
+    """
+    if statement not in _STATEMENT_CONCEPTS:
+        raise ValueError(
+            f"statement must be one of {list(_STATEMENT_CONCEPTS)}, got {statement!r}")
+    facts = fetch_company_facts(cik, http_get=http_get, user_agent=user_agent,
+                                timeout=timeout, use_cache=use_cache, refresh=refresh)
+    gaap = facts.get("facts", {}).get("us-gaap", {})
+    concepts_def = _STATEMENT_CONCEPTS[statement]
+    is_flow = statement in ("income", "cashflow")
+    metric_names = [c[0] for c in concepts_def]
+
+    raw: Dict[str, Dict[Tuple[str, str], float]] = {}
+    metric_unit: Dict[str, str] = {}
+    all_periods: set = set()
+    for display, candidates, unit in concepts_def:
+        concept = next((c for c in candidates if c in gaap), None)
+        if concept is None:
+            continue
+        pts = _dedupe_by_period(gaap[concept]["units"].get(unit, []))
+        d = {}
+        for (s, e), p in pts.items():
+            v = p["val"]
+            if unit in ("USD", "shares"):
+                v = v / 1e6
+            d[(s, e)] = v
+            all_periods.add((s, e))
+        raw[display] = d
+        metric_unit[display] = unit
+
+    pinfo = {p: _period_from_end(p[1]) for p in all_periods}
+    q_order = {"Q1": 1, "Q2": 2, "Q3": 3}
+    annual_p = sorted([p for p in all_periods if pinfo[p][1] == "FY"],
+                      key=lambda p: pinfo[p][0])
+    quarterly_p = sorted([p for p in all_periods if pinfo[p][1] in q_order],
+                         key=lambda p: (pinfo[p][0], q_order[pinfo[p][1]]))
+
+    # (fy, fp) -> period across ALL periods (incl. FY), so single-quarter Q4
+    # derivation can find the annual figure even when freq="quarterly".
+    all_by_fyfp = {}
+    for p in all_periods:
+        fy, fp = pinfo[p]
+        all_by_fyfp[(fy, fp)] = p
+
+    def build_table(periods, do_single_q):
+        from collections import defaultdict
+        years = defaultdict(dict)
+        for p in periods:
+            fy, fp = pinfo[p]
+            years[fy][fp] = p
+        data = {}
+        for fy in sorted(years):
+            yps = years[fy]
+            if do_single_q and is_flow:
+                fy_p = all_by_fyfp.get((fy, "FY"))
+                conv = []
+                if "Q1" in yps: conv.append(("Q1", yps["Q1"], None))
+                if "Q2" in yps and "Q1" in yps: conv.append(("Q2", yps["Q2"], yps["Q1"]))
+                if "Q3" in yps and "Q2" in yps: conv.append(("Q3", yps["Q3"], yps["Q2"]))
+                if fy_p is not None and "Q3" in yps: conv.append(("Q4", fy_p, yps["Q3"]))
+                if "FY" in yps: conv.append(("FY", yps["FY"], None))
+                for fp, num_p, den_p in conv:
+                    row = {}
+                    for m in metric_names:
+                        u = metric_unit.get(m, "USD")
+                        nv = raw.get(m, {}).get(num_p)
+                        if u != "USD" or den_p is None:
+                            row[m] = nv
+                        else:
+                            dv = raw.get(m, {}).get(den_p)
+                            row[m] = (nv - dv) if (nv is not None and dv is not None) else None
+                    data[(fy, fp)] = row
+            else:
+                for fp, p in yps.items():
+                    data[(fy, fp)] = {m: raw.get(m, {}).get(p) for m in metric_names}
+        return data
+
+    result = {}
+    if freq in ("annual", "both"):
+        result.update(build_table(annual_p, do_single_q=False))
+    if freq in ("quarterly", "both"):
+        result.update(build_table(quarterly_p, do_single_q=single_quarter))
+    return result
