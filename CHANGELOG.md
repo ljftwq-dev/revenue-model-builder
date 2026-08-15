@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.14.1] - 2026-08-15
+
+### Changed
+- **`docs/news-impact-validation.md`** extended from one round to three:
+  - **Round 2 (revenue dimension, 18 issuers / 8 sectors)**: post-event YoY
+    ran 7-9pp below baseline across every sector and one cell cleared
+    Bonferroni — but pre-event growth was already low (p=0.013), the paired
+    post−pre delta is zero, and filing rate falls monotonically with growth
+    tercile (4.3 / 3.4 / 2.6 per year). The "effect" is **selection**: slow
+    growers file more non-Earnings 8-Ks. Filing frequency is a reverse slow
+    variable — a screening feature, not a shock.
+  - **Round 3 (customer → supplier lead-lag, 8 pairs)**: customer event
+    density ≥2/quarter precedes supplier YoY of +59-62% (vs +30% baseline,
+    MWU p ≤ 0.008) at lags +1..+4 with clean placebo lags and a monotone
+    dose-response — but the 13 high-activity quarters cluster inside two
+    industry waves (2020-21 cloud, 2023+ AI), and the acceleration placebo
+    fails. **News is a wave detector, not a trading signal**: ecosystem
+    event density marks a driver regime shift 1-4 quarters before reported
+    revenue, which is the trigger for the event → driver revision →
+    re-run loop (never event → revenue regressions).
+  - Methodological checklist extended (pre-event diagnostics, placebo lags,
+    "what does n mean"), conclusion rewritten as three scoped answers.
+
 ## [0.14.0] - 2026-08-15
 
 ### Added
