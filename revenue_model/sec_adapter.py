@@ -360,19 +360,27 @@ def fetch_statement(cik: int, statement: str = "income",
     metric_unit: Dict[str, str] = {}
     all_periods: set = set()
     for display, candidates, unit in concepts_def:
-        concept = next((c for c in candidates if c in gaap), None)
-        if concept is None:
-            continue
-        pts = _dedupe_by_period(gaap[concept]["units"].get(unit, []))
-        d = {}
-        for (s, e), p in pts.items():
-            v = p["val"]
-            if unit in ("USD", "shares"):
-                v = v / 1e6
-            d[(s, e)] = v
-            all_periods.add((s, e))
-        raw[display] = d
-        metric_unit[display] = unit
+        # Merge ALL candidate concepts the issuer files, not just the first
+        # present one. SDGR switched from the ASC 606 element to ``Revenues``
+        # in 2024; picking one concept silently dropped 2019-2023 quarters
+        # (BUG-A). First-listed candidate wins on period overlap (values are
+        # identical in practice — validated on SDGR's 2024+ dual-tagging).
+        d: Dict[Tuple[str, str], float] = {}
+        for concept in candidates:
+            if concept not in gaap:
+                continue
+            pts = _dedupe_by_period(gaap[concept]["units"].get(unit, []))
+            for (s, e), p in pts.items():
+                if (s, e) in d:
+                    continue
+                v = p["val"]
+                if unit in ("USD", "shares"):
+                    v = v / 1e6
+                d[(s, e)] = v
+                all_periods.add((s, e))
+        if d:
+            raw[display] = d
+            metric_unit[display] = unit
 
     pinfo = {p: _period_from_end(p[1]) for p in all_periods}
     q_order = {"Q1": 1, "Q2": 2, "Q3": 3}
@@ -395,37 +403,94 @@ def fetch_statement(cik: int, statement: str = "income",
         else:
             all_by_fyfp[(fy, fp)] = p
 
+    def _period_days(p: Tuple[str, str]) -> int:
+        s, e = p
+        if not s:
+            return 10 ** 6  # instant items have no duration
+        try:
+            return (datetime.fromisoformat(e) - datetime.fromisoformat(s)).days
+        except ValueError:
+            return 10 ** 6
+
     def build_table(periods, do_single_q):
         from collections import defaultdict
+        # A YTD cumulative and a discrete quarter can share an end date (both
+        # map to the same (fy, fp) slot via ``_period_from_end``). Keying
+        # slots by end date alone let one silently overwrite the other and
+        # corrupted single-quarter differencing — e.g. SDGR Q3'24 derived as
+        # discrete(Jul-Sep) - YTD(Jan-Jun) = -48.6M (BUG-B). Resolve the
+        # collision deterministically: single-quarter mode wants the discrete
+        # quarter; as-reported mode documents cumulative semantics, so it
+        # wants the YTD figure.
+        prefer_shorter = do_single_q and is_flow
         years = defaultdict(dict)
         for p in periods:
             fy, fp = pinfo[p]
-            years[fy][fp] = p
+            cur = years[fy].get(fp)
+            if cur is None:
+                years[fy][fp] = p
+            elif (prefer_shorter and _period_days(p) < _period_days(cur)) or \
+                 (not prefer_shorter and _period_days(p) > _period_days(cur)):
+                years[fy][fp] = p
+
+        def metric_value(m, p, den_p):
+            u = metric_unit.get(m, "USD")
+            nv = raw.get(m, {}).get(p)
+            if u != "USD" or den_p is None:
+                return nv
+            dv = raw.get(m, {}).get(den_p)
+            return (nv - dv) if (nv is not None and dv is not None) else None
+
         data = {}
         for fy in sorted(years):
             yps = years[fy]
             if do_single_q and is_flow:
-                fy_p = all_by_fyfp.get((fy, "FY"))
-                conv = []
-                if "Q1" in yps: conv.append(("Q1", yps["Q1"], None))
-                if "Q2" in yps and "Q1" in yps: conv.append(("Q2", yps["Q2"], yps["Q1"]))
-                if "Q3" in yps and "Q2" in yps: conv.append(("Q3", yps["Q3"], yps["Q2"]))
-                if fy_p is not None and "Q3" in yps: conv.append(("Q4", fy_p, yps["Q3"]))
-                if "FY" in yps: conv.append(("FY", yps["FY"], None))
-                for fp, num_p, den_p in conv:
-                    row = {}
-                    for m in metric_names:
-                        u = metric_unit.get(m, "USD")
-                        nv = raw.get(m, {}).get(num_p)
-                        if u != "USD" or den_p is None:
-                            row[m] = nv
-                        else:
-                            dv = raw.get(m, {}).get(den_p)
-                            row[m] = (nv - dv) if (nv is not None and dv is not None) else None
-                    data[(fy, fp)] = row
+                # Cumulative chain of this fy: periods starting at the
+                # fiscal-year start (Q1 ≡ YTD1, YTD2, YTD3). A slot holding a
+                # discrete quarter needs no differencing at all; a slot
+                # holding a YTD figure must subtract its chain *predecessor*,
+                # never the neighbouring quarter slot (which may hold a
+                # discrete value of a different length).
+                fy_anchor = all_by_fyfp.get((fy, "FY"))
+                if fy_anchor is not None:
+                    fy_start_d = datetime.fromisoformat(fy_anchor[0]).date()
+
+                    def at_fy_start(p):
+                        return abs((datetime.fromisoformat(p[0]).date()
+                                    - fy_start_d).days) <= 10
+
+                    ytd_chain = sorted(
+                        (p for p in periods
+                         if pinfo[p][0] == fy and at_fy_start(p)),
+                        key=lambda p: p[1])
+                else:
+                    ytd_chain = []
+
+                def ytd_pred(p):
+                    earlier = [q for q in ytd_chain if q[1] < p[1]]
+                    return earlier[-1] if earlier else None
+
+                for fp, p in sorted(yps.items()):
+                    den = ytd_pred(p) if _period_days(p) > 105 else None
+                    data[(fy, fp)] = {m: metric_value(m, p, den)
+                                      for m in metric_names}
+                # Q4 = FY - YTD3 (Q4 is never discretely tagged as a Q slot:
+                # a 3-month Oct-Dec period ends in the FY month and maps to
+                # the "FY" label instead).
+                if fy_anchor is not None and "Q3" in yps and "Q4" not in yps \
+                        and ytd_chain:
+                    # the last chain link must be the cumulative-through-Q3
+                    # (a ~9-month gap to FY end means the chain is broken)
+                    last = ytd_chain[-1]
+                    gap = (datetime.fromisoformat(fy_anchor[1])
+                           - datetime.fromisoformat(last[1])).days
+                    if 60 <= gap <= 120 and last[1] <= yps["Q3"][1]:
+                        data[(fy, "Q4")] = {m: metric_value(m, fy_anchor, last)
+                                            for m in metric_names}
             else:
                 for fp, p in yps.items():
-                    data[(fy, fp)] = {m: raw.get(m, {}).get(p) for m in metric_names}
+                    data[(fy, fp)] = {m: raw.get(m, {}).get(p)
+                                      for m in metric_names}
         return data
 
     result = {}
@@ -434,3 +499,102 @@ def fetch_statement(cik: int, statement: str = "income",
     if freq in ("quarterly", "both"):
         result.update(build_table(quarterly_p, do_single_q=single_quarter))
     return result
+
+
+# ============================================================================
+# Fiscal-general single-quarter revenue series (v0.14)
+#
+# ``fetch_statement`` keys quarters by end-month via ``_period_from_end`` and
+# therefore assumes a calendar fiscal year (its ``fiscal_year_end_month``
+# default). ``fetch_fiscal_quarters`` instead anchors on each true-annual
+# period, so non-calendar fiscal years (NVDA closes late January) derive
+# correctly. Merges both revenue concepts (BUG-A) and derives single quarters
+# from the fiscal chain, preferring discretely-tagged quarters. Trailing
+# incomplete fiscal years (10-Qs filed, 10-K not yet) are excluded — the M7
+# honesty rule: a partial year must not silently understate.
+# ============================================================================
+
+def _revenue_periods_merged(gaap: dict) -> Dict[Tuple[str, str], float]:
+    """Both revenue concepts merged per period, first-listed wins (raw USD)."""
+    out: Dict[Tuple[str, str], float] = {}
+    for concept in _REVENUE_CONCEPTS:
+        if concept not in gaap:
+            continue
+        for p in gaap[concept]["units"].get("USD", []):
+            s, e = p.get("start"), p.get("end")
+            if s and e and (s, e) not in out:
+                out[(s, e)] = p["val"]
+    return out
+
+
+def fetch_fiscal_quarters(cik: int, *, http_get: Optional[Callable] = None,
+                          user_agent: str = DEFAULT_UA, timeout: int = 30,
+                          use_cache: bool = True, refresh: bool = False
+                          ) -> List[Tuple[int, int, "datetime.date", float]]:
+    """CIK -> single-quarter revenue for every *complete* fiscal year.
+
+    Returns ``[(fiscal_year, quarter_index, quarter_end_date, revenue_musd)]``
+    sorted chronologically, where ``fiscal_year`` is the calendar year of the
+    fiscal-year END (NVDA's FY2026 ends 2026-01 → labeled 2026) and
+    ``quarter_index`` is 1..4 within that fiscal year.
+
+    Derivation per fiscal year (anchored on the true-annual period):
+    - a *chain* member is any period starting within 10 days of the fiscal
+      year start (Q1 itself, YTD-2, YTD-3, and the FY period);
+    - consecutive chain differences give Q2/Q3/Q4
+      (``Q2 = YTD2 - Q1``, ``Q4 = FY - YTD3``);
+    - a discretely-tagged quarter (75-105 days) always overrides the
+      derived value;
+    - incomplete trailing fiscal years (no 10-K anchor yet) are excluded.
+    """
+    facts = fetch_company_facts(cik, http_get=http_get, user_agent=user_agent,
+                                timeout=timeout, use_cache=use_cache,
+                                refresh=refresh)
+    gaap = facts.get("facts", {}).get("us-gaap", {})
+    merged = _revenue_periods_merged(gaap)
+
+    def dur(se: Tuple[str, str]) -> int:
+        return (datetime.fromisoformat(se[1])
+                - datetime.fromisoformat(se[0])).days
+
+    fys = sorted((se for se in merged if 340 <= dur(se) <= 390),
+                 key=lambda se: se[1])
+    out: List[Tuple[int, int, datetime.date, float]] = []
+    for fy_start, fy_end in fys:
+        fy_year = datetime.fromisoformat(fy_end).year
+        start_d = datetime.fromisoformat(fy_start).date()
+
+        def starts_at_fy_start(se):
+            return abs((datetime.fromisoformat(se[0]).date() - start_d).days) <= 10
+
+        in_fy = [(s, e, v) for (s, e), v in merged.items()
+                 if s >= fy_start and e <= fy_end and (s, e) != (fy_start, fy_end)]
+        if not in_fy:
+            continue
+
+        quarters: Dict[str, float] = {}  # end_date -> single-quarter value
+        # 1) chain differences (Q1 direct, Q2/Q3/Q4 derived). The chain is
+        # every period starting at the fiscal-year start — Q1, YTD-2, YTD-3 —
+        # plus the FY anchor itself as the last link so Q4 = FY - YTD3.
+        chain = sorted(((s, e, v) for s, e, v in in_fy if starts_at_fy_start((s, e))),
+                       key=lambda t: t[1])
+        chain.append((fy_start, fy_end, merged[(fy_start, fy_end)]))
+        if chain and dur((chain[0][0], chain[0][1])) <= 105:
+            quarters[chain[0][1]] = chain[0][2]  # Q1 tagged discretely
+        for prev, cur in zip(chain, chain[1:]):
+            # a chain difference is a quarter only when the links are ~one
+            # quarter apart (a broken chain — e.g. [Q1, FY] with the YTD
+            # links missing — spans months, not a quarter)
+            span = (datetime.fromisoformat(cur[1])
+                    - datetime.fromisoformat(prev[1])).days
+            if 60 <= span <= 120:
+                quarters[cur[1]] = cur[2] - prev[2]
+        # 2) discrete overrides win over derived values
+        for s, e, v in in_fy:
+            if 75 <= dur((s, e)) <= 105 and not starts_at_fy_start((s, e)):
+                quarters[e] = v
+        # 3) first four quarters by end date, labeled 1..4
+        for i, (e, v) in enumerate(sorted(quarters.items())[:4], start=1):
+            out.append((fy_year, i, datetime.fromisoformat(e).date(),
+                        v / 1e6))
+    return out

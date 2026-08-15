@@ -4,6 +4,60 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.14.0] - 2026-08-15
+
+### Added
+- **News-impact validation** (Direction-3): the pooled six-company case study
+  (NVDA / AMD / SDGR / REGN / GILD / GM; 409 8-K events, 2019-2026) is
+  documented in `docs/news-impact-validation.md`. Headline finding: the
+  original single-company SDGR p=0.033 was a small-sample artifact — under
+  pooling, market adjustment and Bonferroni correction, **no 8-K category
+  carries robust monthly-horizon information on large caps**. The null
+  result ships with the methodology that exposed it.
+- **`news_impact` module** — honest event-study statistics, pure stdlib:
+  - `welch_test` / `mann_whitney_u` hand-rolled (regularized incomplete
+    beta via Lentz continued fraction; tie-corrected, continuity-corrected
+    normal approximation). Verified against scipy to 8 decimals (constants
+    in tests; scipy itself is not a dependency).
+  - `event_study(events_by_sample, outcomes_by_sample, ...)` — pooled
+    cross-issuer studies with per-category rows, automatic Bonferroni
+    family correction surfaced per row (`significant` vs
+    `bonferroni_significant`), and `min_n` small-sample guards that report
+    without testing.
+  - `align_first_after` — strict next-period alignment (a `date`-keyed
+    outcome series; `date`/`datetime` compared safely).
+- **`form8k_adapter` module** — 8-K filing events from SEC's submissions
+  API: universal coverage (any ticker), official item classification
+  (2.01 M&A / 1.01 Agreement / 5.02 Management / 2.02 Earnings / ...) via
+  `classify_items` with materiality-priority ordering, `since` filter,
+  cached by CIK, `http_get` injectable. The universal replacement for
+  guessing Q4-Inc IR domains.
+- **`sec_adapter.fetch_fiscal_quarters`** — fiscal-year-general
+  single-quarter revenue series: anchored on each true-annual period (so
+  non-calendar fiscal years like NVDA's late-January close derive
+  correctly), concept-merged, discrete quarters preferred over derived
+  values, incomplete trailing fiscal years excluded (the M7 honesty rule).
+
+### Fixed
+- **`sec_adapter` BUG-A (concept switching)**: `fetch_statement` picked the
+  first revenue concept the issuer files and dropped the rest — SDGR
+  switched from the ASC 606 element to `Revenues` in 2024, silently losing
+  2019-2023 quarters. All candidate concepts are now merged per period
+  (first-listed wins on overlap; overlap values are identical in practice).
+- **`sec_adapter` BUG-B (period collision)**: a YTD cumulative and a
+  discrete quarter sharing an end date collided in the `(fy, fp)` slot map,
+  corrupting single-quarter differencing (SDGR Q3'24 derived as
+  discrete(Jul-Sep) − YTD(Jan-Jun) = −48.6M). Slots now resolve
+  deterministically — single-quarter mode prefers the discrete quarter,
+  as-reported mode prefers the YTD figure — and differencing subtracts the
+  fiscal chain predecessor, never the neighbouring slot. Chain differences
+  carry a ~one-quarter span guard, so broken chains derive nothing rather
+  than garbage.
+
+### Tests
+- Suite 204 → 240 (+36: statement fixes / fiscal quarters 11, form8k 11,
+  news_impact 14).
+
 ## [0.13.0] - 2026-08-11
 
 ### Added

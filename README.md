@@ -355,6 +355,48 @@ company data must not enter the repo**; real-company demos (Luxun, NVIDIA) use
 only public disclosures (see [DISCLAIMER.md](DISCLAIMER.md)). The fictional
 NovaTech is the zero-real-data default.
 
+## News-impact validation (8-K events + honest event studies)
+
+Direction-3 asked whether filing events can improve revenue forecasts. The
+answer, after a six-company pooled validation (NVDA / AMD / SDGR / REGN /
+GILD / GM, 409 8-K events, 2019-2026): **not at monthly granularity for
+large caps** — a seductive single-company p-value (SDGR p = 0.033) dissolved
+under pooling, market adjustment and multiplicity control. The full story,
+including two `sec_adapter` data bugs the rebuild uncovered, is in
+[`docs/news-impact-validation.md`](docs/news-impact-validation.md).
+
+What ships from the exercise:
+
+```python
+from revenue_model import form8k_adapter, news_impact, sec_adapter
+from datetime import date
+
+events = form8k_adapter.fetch_8k_events("NVDA", since=date(2019, 1, 1))
+# [{"date": ..., "category": "Earnings"|"Agreement"|"M&A"|..., "items": ...}]
+
+quarters = sec_adapter.fetch_fiscal_quarters(cik)   # fiscal-year general,
+# concept-merged single quarters (NVDA's late-Jan FY handled; incomplete
+# trailing years excluded)
+
+res = news_impact.event_study(
+    events_by_sample={"NVDA": [(e["date"], e["category"]) for e in events],
+                      "AMD": ...},                  # pool, never one issuer
+    outcomes_by_sample={"NVDA": {q[2]: q[3] for q in quarters_yoy}, ...},
+    min_n=8)                                          # small n -> note, no test
+# res.rows[i].welch_p / mwu_p / significant / bonferroni_significant
+```
+
+- **`form8k_adapter`** — 8-K events from SEC's submissions API: universal
+  coverage, official item classification, no key, cached, `http_get`
+  injectable.
+- **`news_impact`** — pure-stdlib Welch t + Mann-Whitney U (scipy-verified),
+  pooled event studies with automatic Bonferroni family correction and
+  small-sample guards.
+- **`sec_adapter` fixes** — revenue-concept switching no longer drops years;
+  YTD/discrete period collisions no longer corrupt single-quarter
+  differencing; new `fetch_fiscal_quarters()` builds fiscal-general
+  quarterly series.
+
 ## Design principles
 
 | # | Principle | What it prevents |
@@ -410,8 +452,10 @@ revenue-model-builder/
 │   ├── excel_builder.py # render to .xlsx (ABC colors, IF formulas, residual)
 │   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
 │   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
+│   ├── form8k_adapter.py # 8-K filing events from SEC submissions (item-classified)
+│   ├── news_impact.py   # honest event studies: Welch/MWU (stdlib) + Bonferroni guards
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 204 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa/q4cdn/ir adapters + cache
+├── tests/               # 240 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa/q4cdn/ir/form8k adapters + cache + news_impact
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -433,6 +477,7 @@ revenue-model-builder/
 - [x] Visualization charts (distribution / tornado / waterfall / forecast)
 - [x] Interactive Streamlit app (driver sliders -> live charts)
 - [x] Backtesting — out-of-sample method comparison (Naive / Linear / CAGR / Holt / ARIMA)
+- [x] News-impact validation (8-K event layer + honest pooled event studies; monthly/large-cap null documented)
 
 ## Who is this for
 

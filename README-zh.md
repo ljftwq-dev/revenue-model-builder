@@ -288,6 +288,41 @@ print(alignment_check(parsed))                             # Σ + 差额 ≈ 年
 公司数据不入库**；真实公司 demo（立讯、NVIDIA）只用公开披露数据（见
 [DISCLAIMER.md](DISCLAIMER.md)）。虚构的 NovaTech 是零真实数据的默认示例。
 
+## 新闻冲击验证（8-K 事件 + 诚实版事件研究）
+
+方向三的问题是：公告/申报事件能否改进收入预测？六公司池化验证
+（NVDA / AMD / SDGR / REGN / GILD / GM，409 个 8-K 事件，2019-2026）给出的答案是：
+**大盘股 + 月度粒度上不行**——诱人的单公司 p 值（SDGR p=0.033）在池化、市场调整
+和多重检验校正下消散。完整故事（含重建过程中揪出的两个 sec_adapter 数据 bug）
+见 [docs/news-impact-validation.md](docs/news-impact-validation.md)。
+
+这次验证沉淀出的库能力：
+
+```python
+from revenue_model import form8k_adapter, news_impact, sec_adapter
+from datetime import date
+
+events = form8k_adapter.fetch_8k_events("NVDA", since=date(2019, 1, 1))
+# [{"date": ..., "category": "Earnings"|"Agreement"|"M&A"|..., "items": ...}]
+
+quarters = sec_adapter.fetch_fiscal_quarters(cik)   # 财年通用、concept 合并的
+# 单季收入序列（NVDA 一月底财年正确处理；不完整尾年按 M7 规则排除）
+
+res = news_impact.event_study(
+    events_by_sample={"NVDA": [(e["date"], e["category"]) for e in events],
+                      "AMD": ...},                  # 池化，绝不单公司
+    outcomes_by_sample={"NVDA": {q[2]: q[3] for q in quarters_yoy}, ...},
+    min_n=8)                                          # 小样本 → 只报告不检验
+# res.rows[i].welch_p / mwu_p / significant / bonferroni_significant
+```
+
+- **`form8k_adapter`**——SEC submissions API 的 8-K 事件层：全市场覆盖、官方
+  item 分类、免 key、带缓存、`http_get` 可注入。
+- **`news_impact`**——纯标准库 Welch t + Mann-Whitney U（与 scipy 对拍至小数点后
+  8 位）、池化事件研究、自动 Bonferroni 族校正、小样本守卫。
+- **`sec_adapter` 修复**——revenue concept 切换不再丢年；YTD/单季期间碰撞不再
+  算出负的单季值；新增 `fetch_fiscal_quarters()` 构建财年通用季度序列。
+
 ## 五条设计原则
 
 | # | 原则 | 防止什么 |
@@ -342,7 +377,7 @@ revenue-model-builder/
 │   ├── docx_builder.py  # 渲染成 .docx 研究底稿（双语、ABC、嵌图）
 │   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 204 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare/sa/q4cdn/ir 多市场 adapter + 缓存
+├── tests/               # 240 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare/sa/q4cdn/ir/form8k 多市场 adapter + 缓存 + news_impact
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -364,6 +399,7 @@ revenue-model-builder/
 - [x] 可视化图表（分布 / 龙卷风 / 瀑布 / 历史+预测趋势）
 - [x] 交互式 Streamlit app（driver 滑块 → 图实时变）
 - [x] 回测 — 样本外方法对比（Naive / Linear / CAGR / Holt / ARIMA）
+- [x] 新闻冲击验证（8-K 事件层 + 诚实版池化事件研究；大盘股/月度粒度的零结果已文档化）
 
 ## 适用人群
 
