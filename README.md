@@ -478,6 +478,7 @@ revenue-model-builder/
 - [x] Interactive Streamlit app (driver sliders -> live charts)
 - [x] Backtesting — out-of-sample method comparison (Naive / Linear / CAGR / Holt / ARIMA)
 - [x] News-impact validation (8-K event layer + honest pooled event studies; monthly/large-cap null documented)
+- [x] Macro driver revisions — QESA adapter + event→driver→re-run loop (upstream cost/demand/fx shocks → C-grade revision suggestions with elasticity, lag and evidence; [qesa] extra for MySQL)
 
 ## Who is this for
 

@@ -400,6 +400,7 @@ revenue-model-builder/
 - [x] 交互式 Streamlit app（driver 滑块 → 图实时变）
 - [x] 回测 — 样本外方法对比（Naive / Linear / CAGR / Holt / ARIMA）
 - [x] 新闻冲击验证（8-K 事件层 + 诚实版池化事件研究；大盘股/月度粒度的零结果已文档化）
+- [x] 宏观 driver 修正 — QESA adapter + event→driver→re-run 闭环（上游成本/需求/汇率冲击 → 带弹性、滞后与证据链的 C 级修正建议；MySQL 需 [qesa] extra）
 
 ## 适用人群
 

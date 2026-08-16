@@ -20,6 +20,8 @@ from .monte_carlo import (
 from .extractor import (
     DRIVER_TYPES, build_prompt, parse_segments, extract_segments, alignment_check,
 )
+from .qesa_adapter import QesaStore, QesaStoreError
+from .macro_revision import MacroBinding, RevisionSuggestion, suggest_revisions, apply_revision
 
 __all__ = [
     "Driver", "Segment", "RevenueModel", "YearResult", "implied_driver",
@@ -30,4 +32,6 @@ __all__ = [
     "simulate_segment", "simulate_model", "tornado", "scenarios",
     "DRIVER_TYPES", "build_prompt", "parse_segments",
     "extract_segments", "alignment_check",
+    "QesaStore", "QesaStoreError",
+    "MacroBinding", "RevisionSuggestion", "suggest_revisions", "apply_revision",
 ]

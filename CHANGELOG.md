@@ -1,8 +1,32 @@
 # Changelog
 
-All notable changes to this project are documented here. The format follows
+All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
+
+## [0.15.0] - 2026-08-16
+
+### Added
+- **Macro driver revisions — the event -> driver revision -> re-run loop**
+  (Direction-3's conclusion encoded as code):
+  - **`qesa_adapter` module** — read-only accessor for a QESA (Quant Event
+    Signal Aggregator) store: `QesaStore` supports both backends (SQLite via
+    stdlib, MySQL via the new `[qesa]` extra `pymysql`), with
+    `series_history` / `latest` / `recent_shocks` / `series_info`.
+  - **`macro_revision` module** — `MacroBinding` (upstream series -> driver
+    mapping with channel `demand`/`cost`/`fx`, elasticity pp/pp, transmission
+    lag in quarters, evidence note), `suggest_revisions()` (triggers on a
+    *jump in upstream YoY*, not a high level), and `apply_revision()`
+    (returns a new C-grade Driver tagged with the full evidence chain, same
+    discipline as the extrapolation API). Suggestions are advisory — the memo
+    carries the evidence next to the before/after forecast.
+  - **Two demos**: `examples/luxun-real-demo/luxun_macro_demo.py` (real
+    A-share Luxun model; cost channel via LME copper/aluminum + fx channel
+    via CNY/USD; bundled `sample_qesa.db` of real FRED data so the demo runs
+    offline) and `examples/nvda_demo/nvda_macro_demo.py` (demand channel via
+    durable-goods orders; sector-peer-borrowed beta explicitly flagged C-grade
+    with a magnitude sanity-check note; segment financials illustrative).
+  - 21 new tests (`test_qesa_adapter`, `test_macro_revision`).
 
 ## [0.14.1] - 2026-08-15
 
