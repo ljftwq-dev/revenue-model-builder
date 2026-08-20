@@ -25,7 +25,7 @@ import math
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from statistics import NormalDist
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 __all__ = [
     "welch_test", "mann_whitney_u", "align_first_after",
