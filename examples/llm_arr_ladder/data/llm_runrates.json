@@ -1,0 +1,48 @@
+{
+  "as_of": "2026-08-31",
+  "note": "大模型行业板块①：五家公司 run-rate/ARR 锚点与实际值，单位见字段名",
+  "fx_cny_per_usd": 6.72,
+  "companies": {
+    "zhipu": {
+      "ticker": "02513.HK",
+      "arr_anchors_cny_yi": {"2026-01": 4.48, "2026-03": 17.0, "2026-07": 67.2},
+      "arr_growth_7m": 15,
+      "arr_jul_usd_b": 10.0,
+      "actual_h1_2026_yi": 9.539,
+      "h1_yoy": 3.997,
+      "reported": "2026-08-31 港交所中期业绩公告"
+    },
+    "openai": {
+      "listed": false,
+      "runrate": {"2025-12": 21.4, "2026-03": 25.0, "2026-08": 40.0},
+      "gaap_q2_2026": 6.7,
+      "notes": "8月CFO内部会：7月ARR超整个Q2；QTD run-rate+35%",
+      "sources": "The Information 2026-03-04; dealroom; CNBC 2026-07-29; Bloomberg 2026-08-13"
+    },
+    "anthropic": {
+      "listed": false,
+      "runrate": {"2025-12": 9.0, "2026-02": 14.0, "2026-04": 30.0, "2026-05": 47.0, "2026-07": 65.0},
+      "valuation_series_h_usd_b": 965,
+      "sources": "Bloomberg/CNBC/Reuters/TechCrunch 2026-08-17; LinkedIn汇总(7月~$74B取保守值65)"
+    },
+    "google_cloud": {
+      "ticker": "GOOGL",
+      "gaap_q1_2026": 20.03,
+      "consensus_q1": 18.41,
+      "gaap_q2_2026": 24.77,
+      "consensus_q2": 22.46,
+      "backlog_q1": 460,
+      "backlog_q2": 514,
+      "gemini_app_mau_m": 950,
+      "sources": "Alphabet Q1/Q2 2026 earnings (SEC/官网slides); consensus 转引 CNBC/Reuters"
+    },
+    "deepseek": {
+      "listed": false,
+      "theoretical_daily_rev_usd_202503": 562027,
+      "theoretical_cost_profit_ratio_202503": 5.45,
+      "annualized_2026_usd_b": 0.5,
+      "valuation_report_usd_b": 45,
+      "sources": "Reuters 2025-03-01 (545%理论成本利润率); PYMNTS 2026 (年化≈$500M, IPO计划)"
+    }
+  }
+}
