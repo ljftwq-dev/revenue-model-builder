@@ -1,0 +1,21 @@
+{
+  "reported": "2026-08-31 18:56, HKEXnews 中期业绩公告",
+  "revenue_yi": 9.539,
+  "yoy": 3.997,
+  "cloud_yi": 8.2518,
+  "cloud_share": 0.865,
+  "cloud_yoy": 27.357,
+  "onprem_yi": 1.2872,
+  "gross_margin": 0.264,
+  "h1_2025_gross_margin": 0.5,
+  "cloud_gross_margin": 0.246,
+  "h1_2025_cloud_gross_margin": -0.004,
+  "net_loss_yi": -20.72,
+  "h1_2025_net_loss_yi": -23.579,
+  "notes": [
+    "收入9.539亿元同比+399.7%, 超过去年全年(7.24亿)",
+    "云端(开放平台及API)占比15.2%->86.5%",
+    "云端毛利率由-0.4%转正至24.6%",
+    "净亏损20.72亿, 同比收窄12.1%"
+  ]
+}
