@@ -29,7 +29,7 @@ PRICE_JUMP_EARLY = 1.30   # 2026-02-12 Coding Plan China +30%
 # 事件日历（预测时点前已公开）
 EVENTS = [
     ("2026-02-12", "price",  "GLM Coding Plan 中国区结构性涨价30%起、海外+100%，取消首购优惠", "公司调价函/财联社"),
-    ("2026-02-12", "model",  "GLM-5 发布并开源，供给紧张下"算力不够用"", "公司公告"),
+    ("2026-02-12", "model",  "GLM-5 发布并开源，供给紧张（算力不够用）", "公司公告"),
     ("2026-03",    "price",  "年内第二次调价，API价格年内累计涨超八成", "东方财富"),
 ]
 
@@ -84,7 +84,9 @@ def main():
     print("\n④ 增长归因（实际 H1 = %.2f 亿元，同比 +%.0f%%）" % (actual, (actual / h1_2025 - 1) * 100))
     print("   反事实 H1（纯量）   = %.2f 亿元  → 量贡献 = %.2fx" % (cf, cf / h1_2025))
     print("   实际/反事实          = %.2f       → 价格贡献（H1均价口径）" % (actual / cf))
-    print("   验证: %.2f × %.2f ≈ %.2f = 实际" % (cf / h1_2025, actual / cf, cf / h1_2025 * actual / cf * h1_2025 / h1_2025 * actual / (cf / h1_2025 * actual / cf) * (cf / h1_2025) * h1_2025 / cf * actual / (cf / h1_2025 * actual / cf) * actual / actual * (cf * (actual / cf)) / actual))
+    print("   验证: %.2f(2025H1) × %.2f(量) × %.2f(价) = %.2f ≈ 实际 %.2f"
+          % (h1_2025, cf / h1_2025, actual / cf,
+             h1_2025 * (cf / h1_2025) * (actual / cf), actual))
     print("   即: +%.0f%% ≈ 量 %.1f倍 × 价 %.2f倍" % ((actual / h1_2025 - 1) * 100, cf / h1_2025, actual / cf))
 
     print("\n⑤ 接口与下一步")
