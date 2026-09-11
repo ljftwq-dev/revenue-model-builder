@@ -5,12 +5,16 @@ Extrapolation API (Principle 3 encoded as code):
   absolute increment stays constant as the base grows (unlike a % growth rate).
 - ``extrapolate_logistic`` — S-curve for long-horizon saturation.
 - ``fit_trend(...).extrapolate(...)`` — OLS linear trend for unbounded (price/base).
+- ``extrapolate_mean_reversion`` — pull toward an anchor (yields, utilization, eCPM).
+- ``extrapolate_erosion`` — geometric decline (ASP erosion in electronics).
+- ``extrapolate_growth`` — geometric growth (balance sheets, ARPU escalators).
+- ``extrapolate_hold`` — flat extension of the last value (sticky factors).
 All return a *new* Driver downgraded to C-grade, source tagged 'extrapolated'.
 """
 
 import math
 from dataclasses import dataclass
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 
 DriverKind = Literal["base", "penetration", "share", "price"]
 DataLevel = Literal["A", "B", "C"]
@@ -97,6 +101,91 @@ class Driver:
         return Driver(self.name, self.kind, new_values, level=LEVEL_C,
                       unit=self.unit,
                       source=f"logistic L={L} k={k} t0={t0} extrapolated")
+
+    def extrapolate_mean_reversion(self, years: List[int],
+                                    *, target: Optional[float] = None,
+                                    speed: float = 0.5) -> "Driver":
+        """Mean reversion toward an anchor: ``v <- v + speed*(target - v)`` per year.
+
+        For cyclical or policy-anchored factors — interest yields, capacity
+        utilization, eCPM, cyclical commodity prices — where the honest default
+        is "return to the anchor", not "continue the trend".
+        ``target=None`` anchors to the mean of the last 3 known years.
+        Returns a new Driver downgraded to C-grade.
+        """
+        if not 0 < speed <= 1:
+            raise ValueError(f"speed must be in (0, 1], got {speed}")
+        if target is None:
+            recent = sorted(self.values)[-3:]
+            target = sum(self.values[y] for y in recent) / len(recent)
+        last_yr = max(self.values)
+        v = self.values[last_yr]
+        # march forward year by year so multi-year horizons compound the pull
+        fwd: Dict[int, float] = {}
+        for y in range(last_yr + 1, max(years) + 1):
+            v = v + speed * (target - v)
+            fwd[y] = v
+        new_values = dict(self.values)
+        for y in years:
+            if y > last_yr:
+                new_values[y] = fwd[y]
+        return Driver(self.name, self.kind, new_values, level=LEVEL_C,
+                      unit=self.unit,
+                      source=f"mean-reverting to {target:.4g} (speed={speed}/yr) extrapolated")
+
+    def extrapolate_erosion(self, years: List[int], rate: float) -> "Driver":
+        """Geometric price erosion: ``v * (1 - rate)^(y - last_yr)``.
+
+        The canonical consumer-electronics default: ASPs decline a few % per
+        year as products mature. ``rate`` in (0, 1). Returns a new Driver
+        downgraded to C-grade.
+        """
+        if not 0 < rate < 1:
+            raise ValueError(f"erosion rate must be in (0, 1), got {rate}")
+        last_yr = max(self.values)
+        last_val = self.values[last_yr]
+        new_values = dict(self.values)
+        for y in years:
+            if y > last_yr:
+                new_values[y] = last_val * (1.0 - rate) ** (y - last_yr)
+        return Driver(self.name, self.kind, new_values, level=LEVEL_C,
+                      unit=self.unit,
+                      source=f"erosion -{rate:.0%}/yr extrapolated")
+
+    def extrapolate_growth(self, years: List[int], rate: float) -> "Driver":
+        """Geometric growth: ``v * (1 + rate)^(y - last_yr)``.
+
+        For balance-sheet-like bases (interest-earning assets) and contractual
+        escalators (ARPU step-ups). ``rate`` > -1. Returns a new Driver
+        downgraded to C-grade.
+        """
+        if rate <= -1:
+            raise ValueError(f"growth rate must be > -1, got {rate}")
+        last_yr = max(self.values)
+        last_val = self.values[last_yr]
+        new_values = dict(self.values)
+        for y in years:
+            if y > last_yr:
+                new_values[y] = last_val * (1.0 + rate) ** (y - last_yr)
+        return Driver(self.name, self.kind, new_values, level=LEVEL_C,
+                      unit=self.unit,
+                      source=f"geometric +{rate:.0%}/yr extrapolated")
+
+    def extrapolate_hold(self, years: List[int]) -> "Driver":
+        """Flat extension of the last known value.
+
+        For sticky factors an analyst would not forecast off-trend without
+        evidence: ad load, telecom ARPU, market share at steady state.
+        Returns a new Driver downgraded to C-grade.
+        """
+        last_yr = max(self.values)
+        last_val = self.values[last_yr]
+        new_values = dict(self.values)
+        for y in years:
+            if y > last_yr:
+                new_values[y] = last_val
+        return Driver(self.name, self.kind, new_values, level=LEVEL_C,
+                      unit=self.unit, source="held flat extrapolated")
 
     def fit_trend(self, fit_years: List[int]) -> "_TrendFit":
         """Ordinary-least-squares linear fit over ``fit_years`` (pure stdlib).

@@ -5,6 +5,11 @@
 > for *when* a driver tree is the right tool, when it isn't, and what to do
 > instead.
 >
+> **Executable since v0.16**: the matrix below is now code —
+> `revenue_model.industry` ships 10 mechanism profiles (fit classes, per-driver
+> forecast defaults, industry checks, and the weak-fit scenario redirect). See
+> [`examples/industry_demo/`](../examples/industry_demo/).
+>
 > 中文要点见文末 **中文摘要** 小节。
 
 Most revenue-forecasting tools sell you on accuracy. This one sells you on

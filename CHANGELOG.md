@@ -4,6 +4,57 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.16.0] - 2026-09-11
+
+### Added
+- **Industry profiles — the industry-fit matrix, executable**. The flagship
+  methodology doc (`docs/industry-fit-analysis.md`) proved a driver tree's
+  accuracy is a property of the *industry's growth mechanism* (NVDA Gaming
+  1.0% vs Data Center 60% hold-out sMAPE); this release encodes that matrix
+  as forecasting behavior:
+  - **`industry` module** — `IndustryProfile` registry of **10 mechanism
+    profiles** (consumer_electronics, semiconductor, saas_subscription,
+    advertising, retail_store, telecom_subscriber, industrial_capacity,
+    financial_interest, commodity_cyclical, regime_shift_tech), each carrying
+    a fit class (strong / adapt / weak), per-driver-kind default
+    extrapolation specs, industry-specific checks, and — for weak-fit
+    industries — the scenario-first redirect. Profiles are pure data: adding
+    one is a dict entry, not a subclass.
+  - **`resolve_industry()`** — mechanism keys, GICS sector codes/names
+    (`"40"`, `"financials"`), and Chinese aliases (`"软件"`, `"银行"`) all
+    resolve; health care / real estate intentionally unmapped (no mechanism
+    profile fits yet) with a catalog-bearing error.
+  - **`Segment(..., industry=...)`** — optional tag, fully backward
+    compatible; tags change forecast *defaults and warnings*, never the
+    historical driver math.
+  - **`forecast_segment()`** — extend every driver with the profile's
+    analyst-first defaults (soft defaults by design: hand extrapolations
+    always win; history is never touched; results stay C-grade).
+  - **`check_segment()` / `profile_warnings()` / `segment_warnings()`** —
+    10 industry checks (hypergrowth base, utilization cap, cycle top, ASP
+    pricing-power, ad-load norm, ARPU acceleration, saturated subscribers,
+    turnaround mix, credit-cycle flag, unconditional regime-shift redirect)
+    plus the weak-fit verdict lines.
+  - **Driver: 4 new extrapolation methods** (all pure stdlib, C-grade,
+    source-tagged like the existing three): `extrapolate_mean_reversion`
+    (yields / utilization / eCPM pull toward an anchor, `target=None` =
+    last-3yr mean), `extrapolate_erosion` (geometric ASP decline),
+    `extrapolate_growth` (geometric growth for balance sheets / escalators),
+    `extrapolate_hold` (flat extension for sticky factors).
+  - **Logistic anchoring**: profile specs support `t0="anchor_last"` — the
+    inflection year is solved so the S-curve passes through the last known
+    value (forecasts leave history smoothly instead of jumping to L/2).
+  - **`examples/industry_demo/`** — NVDA re-run on v0.16: the mis-tag
+    teaching moment (DC tagged `semiconductor` trips the hypergrowth check
+    *before any forecast*), profile-default hold-out (Gaming 3.0% sMAPE vs
+    DC 57.9% / FY2025 −82%), and the Monte Carlo close-out where the
+    distribution frames the actual $115B.
+  - 42 new tests (`test_industry.py`); suite total 303.
+- Design rule of the release: profiles are **soft defaults + loud warnings,
+  never hard blocks** — a researcher can always run the naive trend on a
+  weak-fit industry *and be told exactly why that number cannot be trusted*.
+  The NVDA demo depends on that loop staying open.
+
 ## [0.15.0] - 2026-08-16
 
 ### Added

@@ -331,6 +331,38 @@ point forecast collapsed.
 > industry-fit matrix, five techniques for event-driven growth, and why this
 > library chooses honesty over false precision.
 
+## Industry profiles — the fit matrix, executable (v0.16)
+
+The NVDA demo left the industry-fit lesson in a hand-written script. v0.16
+moves it into the engine: tag a segment with an **industry**, and it gets
+analyst-first forecast defaults, industry-specific checks, and — where the
+point forecast is a category error — the loud redirect to scenarios. **10
+mechanism profiles** (never hard blocks: hand extrapolations always win):
+
+| fit | profiles | engine behavior |
+|---|---|---|
+| **strong** | `consumer_electronics` (ASP erosion 5%/yr), `semiconductor` | trend/hold defaults; back-test will be tight |
+| **adapt** | `saas_subscription` (logistic adoption, ARPU escalator), `advertising` (sticky ad load, mean-reverting eCPM), `retail_store`, `telecom_subscriber` (subscriber S-curve), `industrial_capacity` (utilization reverts to 80%) | the tree with swapped factors + per-industry checks |
+| **weak** | `financial_interest` (yield → policy-rate anchor), `commodity_cyclical` (cycle-top check), `regime_shift_tech` | point forecast still runs *as a baseline*, but `segment_warnings()` fires the scenario-first redirect |
+
+```python
+from revenue_model import (
+    Segment, forecast_segment, segment_warnings, resolve_industry,
+)
+
+seg = Segment(..., industry="saas_subscription")   # or "40", "financials", "银行"
+fc  = forecast_segment(seg, [2026, 2027])          # profile-default extrapolations
+for w in segment_warnings(fc):                     # fit verdict + industry checks
+    print(w)
+```
+
+Checks fire **before** you forecast: tag NVDA Data Center `semiconductor` and
+the hypergrowth check (`base compounding +58%/yr → consider
+regime_shift_tech`) redirects you before the hold-out ever opens. Full story:
+[`examples/industry_demo/`](examples/industry_demo/). Also new on `Driver`:
+`extrapolate_mean_reversion` / `extrapolate_erosion` / `extrapolate_growth` /
+`extrapolate_hold`.
+
 ## Segment extraction (from annual reports)
 
 Automate the tedious part of segment build-up — pull a **segment skeleton**
@@ -416,8 +448,9 @@ Plus a validation layer (triangulation, assumption documentation, S-curves):
 Driver(name, kind, values, level="C", unit="", source="")
 #   kind ∈ {BASE, PENETRATION, SHARE, PRICE};  level ∈ {"A","B","C"}
 
-Segment(name, base, penetration, share, price)
+Segment(name, base, penetration, share, price, industry="")
 #   .revenue(year) -> float  (million yuan)
+#   industry: optional mechanism key / GICS alias -> forecast defaults + checks
 
 implied_driver(segment, year, target_revenue, solve_kind) -> float
 #   calibrate one driver to a known revenue (e.g. reported segment revenue);
@@ -437,6 +470,11 @@ scenarios(mc, *, bear_p=0.10, bull_p=0.90) -> list[Scenario]  # Bear/Base/Bull f
 
 extract_segments(text, *, api_key=None, llm=None) -> dict  # segment skeleton from annual report
 alignment_check(parsed) -> dict                            # Σ + residual ≈ reported total
+
+resolve_industry("saas_subscription" | "40" | "financials" | "银行") -> IndustryProfile
+list_profiles() -> [(key, fit, label)]                     # the 10-mechanism catalog
+forecast_segment(seg, years, *, profile=None) -> Segment   # industry-default drivers
+check_segment(seg) / segment_warnings(seg) -> list[str]    # industry checks + fit verdict
 ```
 
 ## Project structure
@@ -448,6 +486,7 @@ revenue-model-builder/
 │   ├── segment.py       # Segment — revenue = base × pen × share × price
 │   ├── model.py         # RevenueModel — residual + alignment validation
 │   ├── monte_carlo.py   # revenue distribution + tornado sensitivity (pure stdlib)
+│   ├── industry.py      # 10 mechanism profiles: fit classes, forecast defaults, checks
 │   ├── extractor.py     # annual-report text -> segment skeleton (LLM, pure stdlib)
 │   ├── excel_builder.py # render to .xlsx (ABC colors, IF formulas, residual)
 │   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
@@ -455,7 +494,7 @@ revenue-model-builder/
 │   ├── form8k_adapter.py # 8-K filing events from SEC submissions (item-classified)
 │   ├── news_impact.py   # honest event studies: Welch/MWU (stdlib) + Bonferroni guards
 │   └── demo.py          # NovaTech fictional example
-├── tests/               # 240 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, tushare/sec/akshare/sa/q4cdn/ir/form8k adapters + cache + news_impact
+├── tests/               # 303 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, industry profiles, tushare/sec/akshare/sa/q4cdn/ir/form8k adapters + cache + news_impact
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -479,6 +518,7 @@ revenue-model-builder/
 - [x] Backtesting — out-of-sample method comparison (Naive / Linear / CAGR / Holt / ARIMA)
 - [x] News-impact validation (8-K event layer + honest pooled event studies; monthly/large-cap null documented)
 - [x] Macro driver revisions — QESA adapter + event→driver→re-run loop (upstream cost/demand/fx shocks → C-grade revision suggestions with elasticity, lag and evidence; [qesa] extra for MySQL)
+- [x] Industry profiles — the fit matrix executable (10 mechanism profiles + GICS/zh aliases, per-industry forecast defaults, checks, weak-fit scenario redirect)
 
 ## Who is this for
 

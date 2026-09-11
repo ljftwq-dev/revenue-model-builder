@@ -22,6 +22,11 @@ from .extractor import (
 )
 from .qesa_adapter import QesaStore, QesaStoreError
 from .macro_revision import MacroBinding, RevisionSuggestion, suggest_revisions, apply_revision
+from .industry import (
+    ExtrapolationSpec, IndustryProfile, INDUSTRY_PROFILES,
+    resolve_industry, list_profiles, forecast_segment,
+    check_segment, profile_warnings, segment_warnings,
+)
 
 __all__ = [
     "Driver", "Segment", "RevenueModel", "YearResult", "implied_driver",
@@ -34,4 +39,7 @@ __all__ = [
     "extract_segments", "alignment_check",
     "QesaStore", "QesaStoreError",
     "MacroBinding", "RevisionSuggestion", "suggest_revisions", "apply_revision",
+    "ExtrapolationSpec", "IndustryProfile", "INDUSTRY_PROFILES",
+    "resolve_industry", "list_profiles", "forecast_segment",
+    "check_segment", "profile_warnings", "segment_warnings",
 ]

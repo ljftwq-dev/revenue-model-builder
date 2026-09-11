@@ -267,6 +267,37 @@ $115.2B vs 预测 $18.4B）。demo 接着闭环：用 Monte Carlo 情景分布�
 > [`docs/industry-fit-analysis.md`](docs/industry-fit-analysis.md)——行业适配性矩阵、
 > 事件驱动增长的五招、以及为什么本库选择诚实而非虚假精度。
 
+## 行业画像 —— 适配矩阵，可执行（v0.16）
+
+NVDA demo 把行业适配的教训留在了手写脚本里；v0.16 把它搬进了引擎：给
+segment 打一个**行业标签**，就自动获得"分析师第一直觉"的预测默认值、行业
+专属检查，以及——在点预测属于范畴错误的地方——切行情景的响亮重定向。
+**10 个机制型画像**（永不硬性阻断：手工外推永远优先）：
+
+| 适配档 | 画像 | 引擎行为 |
+|---|---|---|
+| **强契合** | `consumer_electronics`（ASP 年降 5%）、`semiconductor` | 趋势/持平默认；回测会很紧 |
+| **改造契合** | `saas_subscription`（logistic 扩散 + ARPU 温和上调）、`advertising`（ad load 粘性、eCPM 均值回归）、`retail_store`、`telecom_subscriber`（用户数 S 曲线）、`industrial_capacity`（利用率回归 80%） | 换因子后用树 + 行业检查 |
+| **不契合** | `financial_interest`（收益率锚定政策利率）、`commodity_cyclical`（周期顶检查）、`regime_shift_tech` | 点预测仍会跑（作为基线），但 `segment_warnings()` 触发"切情景"重定向 |
+
+```python
+from revenue_model import (
+    Segment, forecast_segment, segment_warnings, resolve_industry,
+)
+
+seg = Segment(..., industry="saas_subscription")   # 也接受 "40" / "financials" / "银行"
+fc  = forecast_segment(seg, [2026, 2027])          # 行业默认外推
+for w in segment_warnings(fc):                     # 适配判定 + 行业检查
+    print(w)
+```
+
+检查在**预测之前**就会触发：把 NVDA Data Center 标成 `semiconductor`，
+超高增速检查（`base 年化 +58% → 考虑 regime_shift_tech`）会在打开 hold-out
+之前就重定向你。完整故事见
+[`examples/industry_demo/`](examples/industry_demo/)。`Driver` 同步新增 4 个
+外推法：`extrapolate_mean_reversion` / `extrapolate_erosion` /
+`extrapolate_growth` / `extrapolate_hold`。
+
 ## 主营业务抽取（从年报）
 
 把 segment build-up 里最繁琐的部分自动化——用 LLM 从年报「主营业务分析」文本里抽出
@@ -341,8 +372,9 @@ res = news_impact.event_study(
 Driver(name, kind, values, level="C", unit="", source="")
 #   kind ∈ {BASE, PENETRATION, SHARE, PRICE};  level ∈ {"A","B","C"}
 
-Segment(name, base, penetration, share, price)
+Segment(name, base, penetration, share, price, industry="")
 #   .revenue(year) -> float  (百万元)
+#   industry: 可选机制键 / GICS 别名 → 预测默认值 + 行业检查
 
 implied_driver(segment, year, target_revenue, solve_kind) -> float
 #   把某个 driver 对齐到已知收入（如年报分项收入）；优先解 PRICE/BASE，避免解 PENETRATION（反推陷阱）
@@ -361,6 +393,11 @@ scenarios(mc, *, bear_p=0.10, bull_p=0.90) -> list[Scenario]  # 从分布切片 
 
 extract_segments(text, *, api_key=None, llm=None) -> dict  # 从年报抽 segment 骨架
 alignment_check(parsed) -> dict                            # Σ + 差额 ≈ 年报总收入
+
+resolve_industry("saas_subscription" | "40" | "financials" | "银行") -> IndustryProfile
+list_profiles() -> [(key, fit, label)]                     # 10 机制画像目录
+forecast_segment(seg, years, *, profile=None) -> Segment   # 行业默认外推
+check_segment(seg) / segment_warnings(seg) -> list[str]    # 行业检查 + 适配判定
 ```
 
 ## 目录结构
@@ -372,12 +409,13 @@ revenue-model-builder/
 │   ├── segment.py       # Segment — 收入 = 基数 × 渗透 × 市占 × 单价
 │   ├── model.py         # RevenueModel — 差额行 + 对齐校验
 │   ├── monte_carlo.py   # 收入分布 + tornado 敏感度（纯标准库）
+│   ├── industry.py      # 10 机制画像：适配档、预测默认值、行业检查
 │   ├── extractor.py     # 年报文本 → segment 骨架（LLM，纯标准库）
 │   ├── excel_builder.py # 渲染成 .xlsx（ABC 颜色、IF 公式、差额行）
 │   ├── docx_builder.py  # 渲染成 .docx 研究底稿（双语、ABC、嵌图）
 │   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
 │   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 240 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、tushare/sec/akshare/sa/q4cdn/ir/form8k 多市场 adapter + 缓存 + news_impact
+├── tests/               # 303 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、行业画像、tushare/sec/akshare/sa/q4cdn/ir/form8k 多市场 adapter + 缓存 + news_impact
 ├── docs/
 │   └── design-principles.md
 └── pyproject.toml
@@ -401,6 +439,7 @@ revenue-model-builder/
 - [x] 回测 — 样本外方法对比（Naive / Linear / CAGR / Holt / ARIMA）
 - [x] 新闻冲击验证（8-K 事件层 + 诚实版池化事件研究；大盘股/月度粒度的零结果已文档化）
 - [x] 宏观 driver 修正 — QESA adapter + event→driver→re-run 闭环（上游成本/需求/汇率冲击 → 带弹性、滞后与证据链的 C 级修正建议；MySQL 需 [qesa] extra）
+- [x] 行业画像 —— 适配矩阵可执行（10 机制画像 + GICS/中文别名，行业预测默认值、检查、weak 档切情景重定向）
 
 ## 适用人群
 

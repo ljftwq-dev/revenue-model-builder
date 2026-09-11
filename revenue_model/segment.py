@@ -20,6 +20,12 @@ class Segment:
     # driver product — the drivers stay as the forecast layer for years without
     # a reported figure. Backward compatible (defaults to empty).
     reported_revenue: Dict[int, float] = field(default_factory=dict)
+    # Optional industry tag (v0.16): a key into revenue_model.industry profiles
+    # (e.g. "saas_subscription", "consumer_electronics", or a GICS alias like
+    # "information technology"). Empty string = generic, industry-agnostic
+    # segment (pre-v0.16 behavior). Tags only change *forecast defaults* and
+    # warnings — never the historical driver math.
+    industry: str = ""
 
     def __post_init__(self):
         kinds = {d.kind for d in self.drivers()}
