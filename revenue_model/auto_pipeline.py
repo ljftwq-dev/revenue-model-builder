@@ -89,29 +89,84 @@ class PipelineResult:
     gate2_pending: Tuple[str, ...]          # above-band without a story
     warnings: Dict[str, List[str]] = field(default_factory=dict)
     report_path: Optional[str] = None
+    total_source: str = "manual"            # or "SEC EDGAR (auto)"
+
+
+def _fetch_total_from_sec(
+    ticker: str, years_hint: List[int], *, http_get=None,
+    user_agent: str = "", timeout: int = 30,
+) -> Dict[int, float]:
+    """ticker -> {fiscal_year: revenue in million USD} via the sec_adapter
+    (ticker mapping + annual 10-K revenues, disk-cached). Raises ValueError
+    with an actionable message when the ticker is unknown or the network
+    is unreachable — degradation is explicit, never silent."""
+    from . import sec_adapter
+    kwargs = {"http_get": http_get, "timeout": timeout}
+    if user_agent:
+        kwargs["user_agent"] = user_agent
+    try:
+        cik, _name = sec_adapter.fetch_cik(ticker, **kwargs)
+        rev = sec_adapter.fetch_revenues(cik, **kwargs)
+    except (ValueError, OSError) as exc:
+        raise ValueError(
+            f"could not auto-fetch total revenue for {ticker!r} from SEC "
+            f"EDGAR ({exc}). Either fix the ticker/network, or pass "
+            f"total_revenue={{year: $M}} by hand.") from exc
+    if not rev:
+        raise ValueError(
+            f"SEC EDGAR returned no annual revenue for {ticker!r}; pass "
+            f"total_revenue={{year: $M}} by hand.")
+    return {y: v / 1e6 for y, v in rev.items() if y in years_hint}
 
 
 def auto_pipeline(
     company: str,
     segments: Dict[str, Dict[str, Dict[int, float]]],
-    total_revenue: Dict[int, float],
-    years: List[int],
+    total_revenue: Optional[Dict[int, float]] = None,
+    years: Optional[List[int]] = None,
     tags: Optional[Dict[str, str]] = None,
     stories: Optional[Dict[str, str]] = None,
     report: Optional[str] = None,
     lang: Literal["zh", "en"] = "en",
+    http_get=None,
+    user_agent: str = "",
+    timeout: int = 30,
 ) -> PipelineResult:
     """Run the full offline spine: build → suggest → gate 1 → forecast →
     check → gate 2 → assemble → report. See the module docstring for the
-    gate contract; nothing here touches the network or an LLM.
+    gate contract; nothing here needs an LLM.
+
+    v0.20b: pass ``total_revenue=None`` with a real ticker as ``company``
+    and the annual 10-K total revenue is auto-fetched from SEC EDGAR
+    (disk-cached; inject ``http_get`` for tests). Failure degrades loudly
+    with an actionable message — never silently.
 
     Note: omitted ratio drivers default to a constant 1.0 ("factor
     absent"). That is fine for hold/trend profiles, but a two-factor
     segment tagged with an S-curve profile (logistic penetration) should
     supply its real adoption curve — a constant 1.0 collides with the
     logistic anchor."""
+    if years is None:
+        years = []
+    if not years:
+        raise ValueError("years= (the forecast years) is required")
     tags = tags or {}
     stories = stories or {}
+
+    # -- v0.20b: auto total revenue from SEC EDGAR when not given ----------
+    total_source = "manual"
+    if total_revenue is None:
+        hist_years = sorted({y for spec in segments.values()
+                             for series in spec.values() for y in series})
+        total_revenue = _fetch_total_from_sec(
+            company, hist_years, http_get=http_get,
+            user_agent=user_agent, timeout=timeout)
+        if not total_revenue:
+            raise ValueError(
+                f"SEC EDGAR has no annual revenue overlapping the driver "
+                f"years for {company!r}; pass total_revenue by hand.")
+        total_source = "SEC EDGAR (auto)"
+    total_revenue = dict(total_revenue)
 
     built = {name: _build_segment(name, spec) for name, spec in segments.items()}
 
@@ -164,8 +219,7 @@ def auto_pipeline(
     # -- assemble -------------------------------------------------------------
     model = None
     if forecast_segments:
-        model = RevenueModel(company, forecast_segments,
-                             total_revenue=dict(total_revenue))
+        model = RevenueModel(company, forecast_segments, total_revenue)
 
     # -- report (deferred import: python-docx is an extra; the pipeline
     #    itself stays zero-dependency when no report is requested) ----------
@@ -187,4 +241,5 @@ def auto_pipeline(
         gate2_pending=gate2_pending,
         warnings=warnings,
         report_path=report_path,
+        total_source=total_source,
     )

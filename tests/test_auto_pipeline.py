@@ -110,3 +110,63 @@ class TestSuggestions:
         r = auto_pipeline("Co", segs, {2023: 1.0, 2024: 2.0}, YEARS,
                           tags={"Short": "auto"})
         assert r.gate1_pending == ("Short",)        # nothing to adopt from
+
+
+# ---------------------------------------------------------------------------
+# v0.20b: SEC auto total revenue (injected http_get, zero network)
+# ---------------------------------------------------------------------------
+
+def _fake_http(payload_by_url):
+    """http_get injector: matches by URL substring, fails loudly otherwise."""
+    def _get(url, timeout):
+        for frag, data in payload_by_url.items():
+            if frag in url:
+                return data
+        raise OSError(f"unexpected url {url}")
+    return _get
+
+
+_TICKERS = {"0": {"cik_str": 1321655, "ticker": "DEMO", "title": "Demo Inc"}}
+_FACTS = {
+    "units": {"USD": [
+        {"form": "10-K", "start": "2021-01-01", "end": "2021-12-31",
+         "fy": 2021, "fp": "FY", "val": 94_000_000},
+        {"form": "10-K", "start": "2022-01-01", "end": "2022-12-31",
+         "fy": 2022, "fp": "FY", "val": 110_000_000},
+        {"form": "10-K", "start": "2023-01-01", "end": "2023-12-31",
+         "fy": 2023, "fp": "FY", "val": 131_000_000},
+        {"form": "10-K", "start": "2024-01-01", "end": "2024-12-31",
+         "fy": 2024, "fp": "FY", "val": 160_000_000},
+    ]},
+}
+
+
+class TestSecAutoTotal:
+    def test_auto_fetch_fills_total(self):
+        http = _fake_http({
+            "company_tickers.json": _TICKERS,
+            "companyconcept": _FACTS,
+        })
+        r = auto_pipeline(
+            "DEMO", SEGMENTS, total_revenue=None, years=YEARS,
+            tags={"Core": "semiconductor", "AI": "auto"}, http_get=http)
+        assert r.total_source == "SEC EDGAR (auto)"
+        assert r.model.total_revenue[2024] == 160.0   # $M
+
+    def test_explicit_total_skips_the_fetch(self):
+        def _boom(url, timeout):
+            raise AssertionError("network must not be touched")
+        r = auto_pipeline(
+            "DemoCo", SEGMENTS, TOTAL, YEARS,
+            tags={"Core": "semiconductor", "AI": "auto"}, http_get=_boom)
+        assert r.total_source == "manual"
+
+    def test_unknown_ticker_degrades_loudly(self):
+        http = _fake_http({"company_tickers.json": _TICKERS})
+        with pytest.raises(ValueError, match="total_revenue"):
+            auto_pipeline("NOPE", SEGMENTS, total_revenue=None, years=YEARS,
+                          http_get=http)
+
+    def test_years_required(self):
+        with pytest.raises(ValueError, match="years"):
+            auto_pipeline("Co", SEGMENTS, TOTAL)

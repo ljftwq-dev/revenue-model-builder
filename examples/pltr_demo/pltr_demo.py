@@ -45,14 +45,18 @@ YEARS = [2025, 2026]
 
 
 def main():
+    fetch = "--fetch" in sys.argv     # v0.20b: auto total revenue from SEC
+    kwargs = {}
+    if fetch:
+        kwargs["total_revenue"] = None    # ask the pipeline to fetch it
+        print("[fetch]     auto total revenue from SEC EDGAR (10-K, $M)")
     result = auto_pipeline(
-        company="Palantir (education demo)",
+        company="PLTR" if fetch else "Palantir (education demo)",
         segments={
             "Government": {"base": dict(GOV_REVENUE)},
             "Commercial": {"base": dict(COMM_CUSTOMERS),
                            "price": dict(COMM_ARPU)},
         },
-        total_revenue=dict(TOTAL),
         years=YEARS,
         tags={"Government": "semiconductor",      # explicit: trend-family proxy
               "Commercial": "auto"},               # gate 1: adopt + record
@@ -67,7 +71,10 @@ def main():
                 "customer onboarding dilutes the average (2024 ARPU dipped).",
         },
         report=os.path.join(HERE, "PLTR_revenue_model.docx"),
+        **kwargs,
     )
+    print(f"[total]     source: {result.total_source}"
+          + (f"  {result.model.total_revenue}" if result.model else ""))
 
     print("[suggested] shortlists (top of each):")
     for name, sugg in result.suggestions.items():

@@ -22,6 +22,14 @@ All notable changes to this project are documented here. The format is based on
   a hand override closing the soft-default loop.
 - **`docs/auto-pipeline.md`** cookbook: input format, gate contract,
   override pattern.
+- **SEC auto total revenue (v0.20b)**: pass `total_revenue=None` with a
+  real ticker as `company` and the annual 10-K total is auto-fetched from
+  SEC EDGAR via the existing adapter (disk-cached, `http_get` injectable —
+  tests stay zero-network). `PipelineResult.total_source` records where
+  the total came from. Failure degrades loudly with an actionable message
+  (unknown ticker / network down → pass `total_revenue` by hand), never
+  silently. Live-checked with PLTR: auto-fetched totals match the 10-K
+  segment sums to the decimal.
 - mypy: `auto_pipeline.py` joins the kernel scope; `__init__`-reachable
   stub-less extras (statsmodels, pymysql) and the report builder are
   scoped out via per-module overrides.
