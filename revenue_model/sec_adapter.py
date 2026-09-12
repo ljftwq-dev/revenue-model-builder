@@ -19,6 +19,7 @@ Design choices:
 """
 import json
 import urllib.request
+from datetime import date as _date
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Tuple
 
@@ -530,7 +531,7 @@ def _revenue_periods_merged(gaap: dict) -> Dict[Tuple[str, str], float]:
 def fetch_fiscal_quarters(cik: int, *, http_get: Optional[Callable] = None,
                           user_agent: str = DEFAULT_UA, timeout: int = 30,
                           use_cache: bool = True, refresh: bool = False
-                          ) -> List[Tuple[int, int, "datetime.date", float]]:
+                          ) -> List[Tuple[int, int, _date, float]]:
     """CIK -> single-quarter revenue for every *complete* fiscal year.
 
     Returns ``[(fiscal_year, quarter_index, quarter_end_date, revenue_musd)]``
@@ -559,7 +560,7 @@ def fetch_fiscal_quarters(cik: int, *, http_get: Optional[Callable] = None,
 
     fys = sorted((se for se in merged if 340 <= dur(se) <= 390),
                  key=lambda se: se[1])
-    out: List[Tuple[int, int, datetime.date, float]] = []
+    out: List[Tuple[int, int, _date, float]] = []
     for fy_start, fy_end in fys:
         fy_year = datetime.fromisoformat(fy_end).year
         start_d = datetime.fromisoformat(fy_start).date()
