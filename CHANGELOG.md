@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.16.1] - 2026-09-12
 
 ### Added
 - **Profile validation — the pre-registered experiment, run and reported**
