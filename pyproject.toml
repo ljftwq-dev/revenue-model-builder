@@ -75,6 +75,7 @@ files = [
     "revenue_model/model.py",
     "revenue_model/monte_carlo.py",
     "revenue_model/industry.py",
+    "revenue_model/suggest.py",
 ]
 ignore_missing_imports = true
 # pymysql installs without stubs on some CI pythons (import-untyped is not

@@ -4,6 +4,26 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Profile auto-recommendation — `suggest_profile()` (v0.19 step 1)**: the
+  other half of the v0.16 teaching loop. For an untagged segment, run the
+  zero-dependency subset of the backtest battery (Naive, LinearTrend,
+  LogLinearCAGR, DampedTrend, DeceleratingCAGR — no statsmodels needed) on
+  each driver's own history; score every profile by how its default
+  extrapolation families rank on base/price (ratio drivers carry almost no
+  signal and are weighted down), add the v0.18 band-proximity bonus
+  (revenue CAGR inside the profile's Damodaran band), and a hypergrowth
+  prior — recent-3y revenue CAGR above 40% pins `regime_shift_tech` first
+  with the v0.16 lesson in the reasons. Returns `ProfileSuggestion`
+  top-k with evidence lines; refuses to guess when no driver history is
+  backtestable. Soft by design: it ranks and explains, the analyst still
+  tags.
+- Fixed two latent type errors in `backtest/rolling.py` exposed by bringing
+  `suggest.py` (pure stdlib, now in the mypy kernel scope) into the type
+  graph.
+
 ## [0.18.0] - 2026-09-12
 
 ### Added

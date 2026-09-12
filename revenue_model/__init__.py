@@ -27,6 +27,7 @@ from .industry import (
     resolve_industry, list_profiles, forecast_segment,
     check_segment, benchmark_warnings, profile_warnings, segment_warnings,
 )
+from .suggest import ProfileSuggestion, suggest_profile
 
 __all__ = [
     "Driver", "Segment", "RevenueModel", "YearResult", "implied_driver",
@@ -43,4 +44,5 @@ __all__ = [
     "resolve_industry", "list_profiles", "forecast_segment",
     "check_segment", "benchmark_warnings", "profile_warnings",
     "segment_warnings",
+    "ProfileSuggestion", "suggest_profile",
 ]

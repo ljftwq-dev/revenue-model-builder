@@ -137,7 +137,7 @@ class MethodScore:
     r2: float
     directional_accuracy: float
 
-    def as_row(self) -> Dict[str, float]:
+    def as_row(self) -> Dict[str, object]:
         return {
             "method": self.name, "n": self.n,
             "MAE": self.mae, "RMSE": self.rmse,
@@ -174,8 +174,11 @@ def evaluate(steps: Sequence[StepResult]) -> List[MethodScore]:
     for name in method_names:
         actuals, preds, dirs = _collect(name)
         if not actuals:
-            scores.append(MethodScore(name, 0, *[float("nan")] * 5,
-                                      directional_accuracy=float("nan")))
+            scores.append(MethodScore(
+                name=name, n=0,
+                mae=float("nan"), rmse=float("nan"), mape=float("nan"),
+                smape=float("nan"), r2=float("nan"),
+                directional_accuracy=float("nan")))
             continue
         scores.append(MethodScore(
             name=name,
