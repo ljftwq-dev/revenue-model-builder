@@ -28,6 +28,17 @@ All notable changes to this project are documented here. The format is based on
   ``history_end`` boundary, forwarded from ``segment_warnings``) against the
   analyst-expected band; heuristic ``check_segment`` stays as the backstop
   layer, and ``regime_shift_tech`` stays heuristic-only by design.
+- **Damodaran adapter — `damodaran_adapter` (v0.18 step 2)**: the bands'
+  honesty is now automated, stdlib-only (zero new dependencies). Fetches the
+  free histgr HTML export (30-day disk cache via the existing TTL cache),
+  parses it with ``html.parser`` (percent strings → fractions), recomputes
+  the cluster quartile bands with the same linear interpolation as the
+  shipped literals, and diffs them — ``python -m
+  revenue_model.damodaran_adapter verify [--refresh]`` exits 0 on match and
+  prints drift lines plus upstream-vs-shipped vintage on mismatch.
+  ``CLUSTERS`` is the single source of truth for the profile→industry
+  mapping (regime_shift_tech deliberately absent). Verified live against
+  the January 2026 update: 96 industries parsed, all 18 bands match.
 
 ## [0.17.0] - 2026-09-12
 
