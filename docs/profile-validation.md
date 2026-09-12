@@ -15,7 +15,7 @@ Three hypotheses, one null, written before the data:
 
 | ID | Hypothesis | Verdict |
 |---|---|---|
-| H1 | strong-fit: profile-default (trend family) beats naive | **Rejected** at the company-total layer; **supported** at the driver layer (NVDA Gaming 3.0% vs 10.9%) |
+| H1 | strong-fit: profile-default (trend family) beats naive | **Rejected** at the company-total layer; **directionally supported** at the driver layer, but on a single legacy tree (NVDA Gaming 3.0% vs 10.9%) |
 | H2 | adapt-fit: damped/held factors beat one-size trend | **Partially supported** (revenue layer: p_adj = 0.020 validation, 0.064 test; driver layer: 2 of 3 trees win) |
 | H3 | weak-fit: point forecasts fail **and the engine says so in advance** | **Supported, cleanly**: warning hit rate 2/2, false-alarm rate 0/4, MC P10–P90 framed all three weak-fit test years |
 | H0 | profiles add nothing | **Rejected where it matters** (driver layer, weak-fit redirect) — but the revenue-total layer belongs to Naive, and the README claim is narrowed accordingly (§5) |
@@ -76,6 +76,15 @@ layer. It lives one layer down.
 
 Six hand-built trees, disclosed drivers, history ≤ FY2024, FY2025 opened
 once. Profile-default forecast vs naive per-driver linear trend:
+
+> **Scope note (honest deviation from the spec).** The proposal sketched
+> 12-15 trees; five new ones were built before the list froze — the binding
+> constraint was *disclosed* driver data (telecom connection counts failed
+> source verification; only companies whose 10-K/8-K/releases expose real
+> driver series qualified). The two NVDA trees carry the pre-existing demo
+> split. n is small and each tree tests one year: Track B verdicts are
+> **directional evidence, not a definitive sample**. Track A is the
+> large-N leg; Track B is the mechanism leg.
 
 | tree | profile (fit) | profile sMAPE | naive-trend sMAPE | winner |
 |---|---|---|---|---|
@@ -156,10 +165,14 @@ engine's redirect is the product.*
   profile methods, Track B trees + runner, all data CSVs/txt
 - `data/analysis_summary.txt` (Track A inference), `data/track_b_results.txt`
   (driver-layer results + warning ledger)
-- Sources: SEC XBRL (revenue panel, JPM NII/assets), 10-K/8-K exhibits
-  (SBUX stores), Q4 earnings releases (META impressions/price, ad revenue),
-  10-K/shareholder letters (NFLX memberships). Driver grades A/B/C labeled
-  per series in `track_b_trees.py`.
+- Sources: SEC XBRL (revenue panel, JPM NII/assets — end-year-mapped and
+  re-verified), 10-K/8-K exhibits (SBUX stores: FY19/FY21-24 grepped from
+  filings in-session; FY20 cited from the Q4 FY20 8-K), Q4 earnings
+  releases (META impressions/price and 2022-2025 ad revenue fetched and
+  read in-session; 2019-2021 ad revenue as published in the corresponding
+  releases), 10-K/shareholder letters (NFLX memberships: FY23/FY24 counts
+  grepped from 10-Ks in-session; earlier years as published). Driver
+  grades A/B/C labeled per series in `track_b_trees.py`.
 
 ## 7. What goes into v0.17 (post-test discoveries — no retro-fitting)
 

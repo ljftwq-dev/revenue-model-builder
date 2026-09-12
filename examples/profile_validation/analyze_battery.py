@@ -142,28 +142,20 @@ def table_median(rows, title, out):
 
 def win_table(rows, title, out):
     per_co = defaultdict(dict)
+    meta = {}
     for r in rows:
+        meta[r["ticker"]] = (r["profile"], r["fit"])
         per_co[(r["ticker"], r["year"])][r["method"]] = float(r["smape"])
     wins = defaultdict(lambda: defaultdict(int))
     for (t, y), d in per_co.items():
         best = min(d, key=d.get)
-        wins[(rows_meta[t],)][best] += 0  # placeholder no-op (profile via rows)
-    # simpler: recompute with profile
-    per_co2 = defaultdict(dict)
-    meta = {}
-    for r in rows:
-        meta[r["ticker"]] = (r["profile"], r["fit"])
-        per_co2[(r["ticker"], r["year"])][r["method"]] = float(r["smape"])
-    wins2 = defaultdict(lambda: defaultdict(int))
-    for (t, y), d in per_co2.items():
-        best = min(d, key=d.get)
-        wins2[meta[t][0]][best] += 1
+        wins[meta[t][0]][best] += 1
     lines = ["=" * 88, f" {title}", "=" * 88]
-    for prof in sorted(wins2):
-        total = sum(wins2[prof].values())
-        top = sorted(wins2[prof].items(), key=lambda kv: -kv[1])[:3]
+    for prof in sorted(wins):
+        total = sum(wins[prof].values())
+        top = sorted(wins[prof].items(), key=lambda kv: -kv[1])[:3]
         champ = PROFILE_CHAMPION.get(prof)
-        champ_n = wins2[prof].get(champ, 0) if champ else 0
+        champ_n = wins[prof].get(champ, 0) if champ else 0
         pretty = ", ".join(f"{k}:{v}" for k, v in top)
         mark = f"  [champion {champ}={champ_n}/{total}]" if champ else ""
         lines.append(f" {prof:22s} n={total:4d}  {pretty}{mark}")
