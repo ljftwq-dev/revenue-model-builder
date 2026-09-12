@@ -7,6 +7,19 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- **Demo closes the loop (v0.19 step 2)**: `industry_demo` now opens with an
+  *untagged* Gaming segment — `suggest_profile` ranks semiconductor first
+  (battery evidence in the shortlist), the analyst accepts, and the [4]
+  hold-out lands at 1.0% sMAPE: no-tag → right-tag → accurate. The DC
+  mis-tag segment shows the other half: the untagged shortlist *led with
+  the regime-shift warning* before we ignored it on purpose. Two halves of
+  one teaching loop.
+- **Profile catalog page (v0.19 step 3)**: `docs/profile-catalog.md`,
+  *generated* from `INDUSTRY_PROFILES` by
+  `examples/profile_catalog/render_catalog.py` — summary table (fit / base
+  default / checks / benchmark count) plus one section per profile:
+  mechanism one-liner, driver-defaults table, checks, Damodaran bands,
+  weak-fit advice. The page cannot drift from the registry.
 - **Profile auto-recommendation — `suggest_profile()` (v0.19 step 1)**: the
   other half of the v0.16 teaching loop. For an untagged segment, run the
   zero-dependency subset of the backtest battery (Naive, LinearTrend,

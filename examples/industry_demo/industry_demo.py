@@ -6,6 +6,8 @@ Before v0.16, the industry-fit lesson lived in a hand-written backtest script
 knowledge is in the engine:
 
 1. ``list_profiles()``          — the catalog (mechanism → defaults → checks)
+1b. ``suggest_profile()``       — v0.19: no tag yet? a ranked shortlist with
+   evidence, before you commit to a profile
 2. tag segments                 — Gaming→semiconductor, Data Center→?
 2b. ``benchmark_warnings()``    — v0.18: growth reads vs Damodaran bands,
    citation inside the warning text (in-band = silent)
@@ -32,6 +34,7 @@ from revenue_model import (
     simulate_segment, scenarios,
     list_profiles, forecast_segment,
     check_segment, benchmark_warnings, segment_warnings,
+    suggest_profile,
 )
 
 TRAIN = [2019, 2020, 2021, 2022, 2023]
@@ -89,12 +92,27 @@ def main():
     for key, fit, label in list_profiles():
         print("    {:22s} {:6s}  {}".format(key, "[" + fit + "]", label))
 
-    gaming = _build("Gaming", GAMING_DRV, GAMING, "semiconductor",
+    gaming = _build("Gaming", GAMING_DRV, GAMING, "",       # v0.19: untagged first
                     "GeForce ASP", "PC shipments")
-    dc = _build("Data Center", DC_DRV, DC, "semiconductor",   # deliberately wrong first
+    dc = _build("Data Center", DC_DRV, DC, "",              # untagged first
                 "GPU ASP", "accelerator shipments")
 
-    print("\n[2] Mis-tag teaching moment — DC tagged 'semiconductor' (wrong):")
+    print("\n[1b] v0.19 suggest_profile — don't know the industry yet? ask:")
+    for s in suggest_profile(gaming):
+        print("    {:24s} score {:4.1f}".format(s.key, s.score))
+        for r in s.reasons[:2]:
+            print("        -", r)
+    print("    -> the analyst accepts the top candidate and tags Gaming")
+    gaming.industry = "semiconductor"
+
+    print("\n[2] Mis-tag teaching moment — DC tagged 'semiconductor' (wrong).")
+    print("    (v0.19 could have prevented it: the untagged shortlist leads")
+    print("     with the regime-shift warning — we ignore it on purpose.)")
+    for s in suggest_profile(dc)[:1]:
+        print("    untagged suggestion #1: {} score {:.1f}".format(s.key, s.score))
+        for r in s.reasons[-1:]:
+            print("        -", r)
+    dc.industry = "semiconductor"   # deliberately wrong
     for w in check_segment(dc):
         print("    CHECK:", w)
 
@@ -168,8 +186,12 @@ def main():
     print("  Same company, same data, same engine — the only new input was the")
     print("  industry tag, and it changed everything: which defaults applied,")
     print("  which warnings fired, and which forecast mode (point vs scenarios)")
-    print("  is even meaningful. Accuracy is a property of the industry; v0.16")
-    print("  makes the engine say so out loud. Docs: docs/industry-fit-analysis.md")
+    print("  is even meaningful. And since v0.19 you don't even need to know")
+    print("  the tag up front: the shortlist carries the evidence, you make")
+    print("  the call (wrong-tag caught [2] / right-tag suggested [1b] — two")
+    print("  halves of one loop). Accuracy is a property of the industry;")
+    print("  v0.16-v0.19 make the engine say so out loud.")
+    print("  Docs: docs/industry-fit-analysis.md")
 
 
 if __name__ == "__main__":
