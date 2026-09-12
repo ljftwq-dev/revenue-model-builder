@@ -76,6 +76,7 @@ files = [
     "revenue_model/monte_carlo.py",
     "revenue_model/industry.py",
     "revenue_model/suggest.py",
+    "revenue_model/momentum.py",
     "revenue_model/auto_pipeline.py",
 ]
 

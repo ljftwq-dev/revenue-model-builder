@@ -7,6 +7,20 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- **Quarterly momentum layer (v0.21a)**: the analyst's "read quarterlies
+  for momentum" step as a pipeline stage. `momentum.py` (pure stdlib,
+  kernel-scoped) rolls single-quarter revenues into a TTM series and reads
+  the *change* in TTM YoY (±3pp band): accelerating / decelerating /
+  steady, with an evidence line annual points cannot produce ("trend
+  extrapolation likely UNDERSTATES/OVERSTATES"). Fewer than 9 quarters →
+  "insufficient" (refuse to guess). Wired into `auto_pipeline`
+  (`momentum_enabled=True` by default when the total was auto-fetched;
+  failures skip softly), exposed as `PipelineResult.momentum` and exported
+  (`detect_momentum`, `ttm_series`, `MomentumReading`). Live-checked on
+  PLTR: TTM +56%/yr vs +47% one quarter earlier — a real accelerating
+  up-turn the annual 4-point history cannot show.
+
+### Added
 - **`auto_pipeline` — the offline spine (v0.20a)**: one call from raw
   segment data to a report, zero network / zero LLM. Stages: build drivers
   (omitted ratio drivers default to constant 1.0) → suggest shortlists →

@@ -43,6 +43,7 @@ from typing import Dict, List, Literal, Optional, Tuple
 from .driver import Driver, BASE, PENETRATION, SHARE, PRICE
 from .industry import forecast_segment, segment_warnings
 from .model import RevenueModel
+from .momentum import MomentumReading
 from .segment import Segment
 from .suggest import ProfileSuggestion, suggest_profile
 
@@ -90,16 +91,20 @@ class PipelineResult:
     warnings: Dict[str, List[str]] = field(default_factory=dict)
     report_path: Optional[str] = None
     total_source: str = "manual"            # or "SEC EDGAR (auto)"
+    # v0.21a quarterly layer: company-level momentum reading (None when
+    # quarterly data was unavailable — soft, never blocks the spine)
+    momentum: Optional[MomentumReading] = None
 
 
 def _fetch_total_from_sec(
     ticker: str, years_hint: List[int], *, http_get=None,
     user_agent: str = "", timeout: int = 30,
-) -> Dict[int, float]:
-    """ticker -> {fiscal_year: revenue in million USD} via the sec_adapter
-    (ticker mapping + annual 10-K revenues, disk-cached). Raises ValueError
-    with an actionable message when the ticker is unknown or the network
-    is unreachable — degradation is explicit, never silent."""
+) -> Tuple[Dict[int, float], int]:
+    """ticker -> ({fiscal_year: revenue in million USD}, cik) via the
+    sec_adapter (ticker mapping + annual 10-K revenues, disk-cached). The
+    cik comes back for reuse by later stages (v0.21a: quarterly momentum).
+    Raises ValueError with an actionable message when the ticker is unknown
+    or the network is unreachable — degradation is explicit, never silent."""
     from . import sec_adapter
     kwargs = {"http_get": http_get, "timeout": timeout}
     if user_agent:
@@ -116,7 +121,7 @@ def _fetch_total_from_sec(
         raise ValueError(
             f"SEC EDGAR returned no annual revenue for {ticker!r}; pass "
             f"total_revenue={{year: $M}} by hand.")
-    return {y: v / 1e6 for y, v in rev.items() if y in years_hint}
+    return ({y: v / 1e6 for y, v in rev.items() if y in years_hint}, cik)
 
 
 def auto_pipeline(
@@ -131,6 +136,7 @@ def auto_pipeline(
     http_get=None,
     user_agent: str = "",
     timeout: int = 30,
+    momentum_enabled: bool = True,
 ) -> PipelineResult:
     """Run the full offline spine: build → suggest → gate 1 → forecast →
     check → gate 2 → assemble → report. See the module docstring for the
@@ -155,10 +161,11 @@ def auto_pipeline(
 
     # -- v0.20b: auto total revenue from SEC EDGAR when not given ----------
     total_source = "manual"
+    cik: Optional[int] = None
     if total_revenue is None:
         hist_years = sorted({y for spec in segments.values()
                              for series in spec.values() for y in series})
-        total_revenue = _fetch_total_from_sec(
+        total_revenue, cik = _fetch_total_from_sec(
             company, hist_years, http_get=http_get,
             user_agent=user_agent, timeout=timeout)
         if not total_revenue:
@@ -167,6 +174,17 @@ def auto_pipeline(
                 f"years for {company!r}; pass total_revenue by hand.")
         total_source = "SEC EDGAR (auto)"
     total_revenue = dict(total_revenue)
+
+    # -- v0.21a: quarterly momentum (company-level evidence; soft stage) ----
+    momentum: Optional[MomentumReading] = None
+    if cik is not None and momentum_enabled:
+        from .momentum import quarterly_momentum
+        try:
+            momentum = quarterly_momentum(cik, http_get=http_get,
+                                          user_agent=user_agent,
+                                          timeout=timeout)
+        except (ValueError, OSError):
+            momentum = None   # quarterly disclosure missing — soft skip
 
     built = {name: _build_segment(name, spec) for name, spec in segments.items()}
 
@@ -242,4 +260,5 @@ def auto_pipeline(
         warnings=warnings,
         report_path=report_path,
         total_source=total_source,
+        momentum=momentum,
     )

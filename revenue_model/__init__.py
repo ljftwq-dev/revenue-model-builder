@@ -28,6 +28,7 @@ from .industry import (
     check_segment, benchmark_warnings, profile_warnings, segment_warnings,
 )
 from .suggest import ProfileSuggestion, suggest_profile
+from .momentum import MomentumReading, detect_momentum, ttm_series
 from .auto_pipeline import PipelineResult, auto_pipeline
 
 __all__ = [
@@ -46,5 +47,6 @@ __all__ = [
     "check_segment", "benchmark_warnings", "profile_warnings",
     "segment_warnings",
     "ProfileSuggestion", "suggest_profile",
+    "MomentumReading", "detect_momentum", "ttm_series",
     "PipelineResult", "auto_pipeline",
 ]

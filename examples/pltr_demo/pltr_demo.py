@@ -75,6 +75,8 @@ def main():
     )
     print(f"[total]     source: {result.total_source}"
           + (f"  {result.model.total_revenue}" if result.model else ""))
+    if result.momentum is not None:
+        print(f"[momentum]  {result.momentum.state}: {result.momentum.evidence}")
 
     print("[suggested] shortlists (top of each):")
     for name, sugg in result.suggestions.items():

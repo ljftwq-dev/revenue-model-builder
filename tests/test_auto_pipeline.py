@@ -170,3 +170,43 @@ class TestSecAutoTotal:
     def test_years_required(self):
         with pytest.raises(ValueError, match="years"):
             auto_pipeline("Co", SEGMENTS, TOTAL)
+
+
+class TestMomentumWiring:
+    def test_momentum_stage_runs_when_auto_fetch(self, monkeypatch):
+        from revenue_model import momentum as mom
+        reading = mom.MomentumReading(
+            "accelerating", 0.55, 0.20, 12, "TTM growth +55%/yr vs +20%")
+        monkeypatch.setattr(mom, "quarterly_momentum", lambda *a, **k: reading)
+        http = _fake_http({"company_tickers.json": _TICKERS,
+                           "companyconcept": _FACTS})
+        r = auto_pipeline("DEMO", SEGMENTS, total_revenue=None, years=YEARS,
+                          tags={"Core": "semiconductor", "AI": "auto"},
+                          http_get=http)
+        assert r.momentum is not None
+        assert r.momentum.state == "accelerating"
+
+    def test_momentum_failure_degrades_softly(self, monkeypatch):
+        from revenue_model import momentum as mom
+
+        def _boom(*a, **k):
+            raise OSError("network down")
+        monkeypatch.setattr(mom, "quarterly_momentum", _boom)
+        http = _fake_http({"company_tickers.json": _TICKERS,
+                           "companyconcept": _FACTS})
+        r = auto_pipeline("DEMO", SEGMENTS, total_revenue=None, years=YEARS,
+                          tags={"Core": "semiconductor"}, http_get=http)
+        assert r.momentum is None          # soft skip, spine unaffected
+        assert r.model is not None
+
+    def test_momentum_disabled(self, monkeypatch):
+        from revenue_model import momentum as mom
+        called = []
+        monkeypatch.setattr(mom, "quarterly_momentum",
+                            lambda *a, **k: called.append(1))
+        http = _fake_http({"company_tickers.json": _TICKERS,
+                           "companyconcept": _FACTS})
+        auto_pipeline("DEMO", SEGMENTS, total_revenue=None, years=YEARS,
+                      tags={"Core": "semiconductor"}, http_get=http,
+                      momentum_enabled=False)
+        assert called == []                # really off, not silently skipped
