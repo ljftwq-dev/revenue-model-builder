@@ -175,8 +175,16 @@ pyramid · history-first workflow →
 
 ## Roadmap
 
-- **v0.19 (experience)**: profile auto-recommendation from backtest
-  fingerprints; profile catalog page
+- **v0.20+**: more external anchors (ChartMogul SaaS stage tables), profile
+  validation refreshes each January with the Damodaran update
+
+**Shipped — v0.19 (experience)**: `suggest_profile()` — the untagged
+segment gets a ranked shortlist with evidence (zero-dependency battery on
+its own driver histories + the v0.18 band bonus + a hypergrowth prior that
+pins `regime_shift_tech` when recent growth passes 40%/yr); it ranks and
+explains, the analyst still tags. The demo closes the teaching loop
+(no-tag → right-tag → 1.0% sMAPE), and `docs/profile-catalog.md` is
+*generated* from the registry so the catalog can never drift.
 
 **Shipped — v0.18 (data anchor)**: `Benchmark` bands on 9 of 10 profiles
 (Damodaran histgr industry clusters — revenue 5y CAGR + expected growth,
