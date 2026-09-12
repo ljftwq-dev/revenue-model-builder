@@ -1,0 +1,280 @@
+ticker,symbol,cik,sector,sub_industry,profile,fit,source
+AAPL,AAPL,320193,Information Technology,"Technology Hardware, Storage & Peripherals",consumer_electronics,strong,current_list
+ABNB,ABNB,1559720,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",retail_store,adapt,current_list
+ACGL,ACGL,947484,Financials,Property & Casualty Insurance,financial_interest,weak,current_list
+ADBE,ADBE,796343,Information Technology,Application Software,saas_subscription,adapt,current_list
+ADI,ADI,6281,Information Technology,Semiconductors,semiconductor,strong,current_list
+ADSK,ADSK,769397,Information Technology,Application Software,saas_subscription,adapt,current_list
+AFL,AFL,4977,Financials,Life & Health Insurance,financial_interest,weak,current_list
+AIG,AIG,5272,Financials,Multi-line Insurance,financial_interest,weak,current_list
+AIZ,AIZ,1267238,Financials,Multi-line Insurance,financial_interest,weak,current_list
+AJG,AJG,354190,Financials,Insurance Brokers,financial_interest,weak,current_list
+ALB,ALB,915913,Materials,Specialty Chemicals,commodity_cyclical,weak,current_list
+ALL,ALL,899051,Financials,Property & Casualty Insurance,financial_interest,weak,current_list
+ALLE,ALLE,1579241,Industrials,Building Products,industrial_capacity,adapt,current_list
+AMAT,AMAT,6951,Information Technology,Semiconductor Materials & Equipment,semiconductor,strong,current_list
+AMCR,AMCR,1748790,Materials,Paper & Plastic Packaging Products & Materials,industrial_capacity,adapt,current_list
+AMD,AMD,2488,Information Technology,Semiconductors,semiconductor,strong,current_list
+AME,AME,1037868,Industrials,Electrical Components & Equipment,industrial_capacity,adapt,current_list
+AMP,AMP,820027,Financials,Asset Management & Custody Banks,financial_interest,weak,current_list
+AMZN,AMZN,1018724,Consumer Discretionary,Broadline Retail,retail_store,adapt,current_list
+ANET,ANET,1596532,Information Technology,Communications Equipment,consumer_electronics,strong,current_list
+ANSS,ANSS,1013462,sic:7372,,saas_subscription,adapt,sec_sic_fallback
+AON,AON,315293,Financials,Insurance Brokers,financial_interest,weak,current_list
+AOS,AOS,91142,Industrials,Building Products,industrial_capacity,adapt,current_list
+APA,APA,1841666,Energy,Oil & Gas Exploration & Production,commodity_cyclical,weak,current_list
+APD,APD,2969,Materials,Industrial Gases,industrial_capacity,adapt,current_list
+APTV,APTV,1521332,Consumer Discretionary,Automotive Parts & Equipment,industrial_capacity,adapt,current_list
+AVGO,AVGO,1730168,Information Technology,Semiconductors,semiconductor,strong,current_list
+AVY,AVY,8818,Materials,Paper & Plastic Packaging Products & Materials,industrial_capacity,adapt,current_list
+AXON,AXON,1069183,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+AXP,AXP,4962,Financials,Consumer Finance,financial_interest,weak,current_list
+AZO,AZO,866787,Consumer Discretionary,Automotive Retail,retail_store,adapt,current_list
+BA,BA,12927,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+BAC,BAC,70858,Financials,Diversified Banks,financial_interest,weak,current_list
+BALL,BALL,9389,Materials,"Metal, Glass & Plastic Containers",industrial_capacity,adapt,current_list
+BBY,BBY,764478,Consumer Discretionary,Computer & Electronics Retail,retail_store,adapt,current_list
+BEN,BEN,38777,Financials,Asset Management & Custody Banks,financial_interest,weak,current_list
+BK,BK,1390777,Financials,Asset Management & Custody Banks,financial_interest,weak,current_list
+BKNG,BKNG,1075531,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",retail_store,adapt,current_list
+BKR,BKR,1701605,Energy,Oil & Gas Equipment & Services,commodity_cyclical,weak,current_list
+BLDR,BLDR,1316835,Industrials,Building Products,industrial_capacity,adapt,current_list
+BLK,BLK,2012383,Financials,Asset Management & Custody Banks,financial_interest,weak,current_list
+BRK.B,BRK.B,1067983,Financials,Multi-Sector Holdings,financial_interest,weak,current_list
+BRO,BRO,79282,Financials,Insurance Brokers,financial_interest,weak,current_list
+BWA,BWA,908255,sic:3714,,industrial_capacity,adapt,sec_sic_fallback
+BX,BX,1393818,Financials,Asset Management & Custody Banks,financial_interest,weak,current_list
+C,C,831001,Financials,Diversified Banks,financial_interest,weak,current_list
+CARR,CARR,1783180,Industrials,Building Products,industrial_capacity,adapt,current_list
+CAT,CAT,18230,Industrials,Construction Machinery & Heavy Transportation Equipment,industrial_capacity,adapt,current_list
+CB,CB,896159,Financials,Property & Casualty Insurance,financial_interest,weak,current_list
+CCL,CCL,815097,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",retail_store,adapt,current_list
+CDAY,CDAY,1725057,sic:7372,,saas_subscription,adapt,sec_sic_fallback
+CDNS,CDNS,813672,Information Technology,Application Software,saas_subscription,adapt,current_list
+CDW,CDW,1402057,Information Technology,Technology Distributors,retail_store,adapt,current_list
+CF,CF,1324404,Materials,Fertilizers & Agricultural Chemicals,commodity_cyclical,weak,current_list
+CFG,CFG,759944,Financials,Regional Banks,financial_interest,weak,current_list
+CHRW,CHRW,1043277,Industrials,Air Freight & Logistics,industrial_capacity,adapt,current_list
+CINF,CINF,20286,Financials,Property & Casualty Insurance,financial_interest,weak,current_list
+CMA,CMA,28412,sic:6021,,financial_interest,weak,sec_sic_fallback
+CMG,CMG,1058090,Consumer Discretionary,Restaurants,retail_store,adapt,current_list
+CMI,CMI,26172,Industrials,Construction Machinery & Heavy Transportation Equipment,industrial_capacity,adapt,current_list
+COF,COF,927628,Financials,Consumer Finance,financial_interest,weak,current_list
+COP,COP,1163165,Energy,Oil & Gas Exploration & Production,commodity_cyclical,weak,current_list
+COST,COST,909832,Consumer Staples,Consumer Staples Merchandise Retail,retail_store,adapt,current_list
+CRM,CRM,1108524,Information Technology,Application Software,saas_subscription,adapt,current_list
+CSCO,CSCO,858877,Information Technology,Communications Equipment,consumer_electronics,strong,current_list
+CSX,CSX,277948,Industrials,Rail Transportation,industrial_capacity,adapt,current_list
+CTRA,CTRA,858470,Energy,Oil & Gas Exploration & Production,commodity_cyclical,weak,current_list
+CTVA,CTVA,1755672,Materials,Fertilizers & Agricultural Chemicals,commodity_cyclical,weak,current_list
+CVX,CVX,93410,Energy,Integrated Oil & Gas,commodity_cyclical,weak,current_list
+CZR,CZR,1590895,Consumer Discretionary,Casinos & Gaming,retail_store,adapt,current_list
+DAL,DAL,27904,Industrials,Passenger Airlines,industrial_capacity,adapt,current_list
+DD,DD,1666700,Materials,Specialty Chemicals,commodity_cyclical,weak,current_list
+DG,DG,29534,Consumer Staples,Consumer Staples Merchandise Retail,retail_store,adapt,current_list
+DHI,DHI,882184,Consumer Discretionary,Homebuilding,industrial_capacity,adapt,current_list
+DIS,DIS,1744489,Communication Services,Movies & Entertainment,saas_subscription,adapt,current_list
+DLTR,DLTR,935703,Consumer Staples,Consumer Staples Merchandise Retail,retail_store,adapt,current_list
+DOV,DOV,29905,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+DOW,DOW,1751788,Materials,Commodity Chemicals,commodity_cyclical,weak,current_list
+DPZ,DPZ,1286681,Consumer Discretionary,Restaurants,retail_store,adapt,current_list
+DRI,DRI,940944,Consumer Discretionary,Restaurants,retail_store,adapt,current_list
+DVN,DVN,1090012,Energy,Oil & Gas Exploration & Production,commodity_cyclical,weak,current_list
+EA,EA,712515,Communication Services,Interactive Home Entertainment,saas_subscription,adapt,current_list
+EBAY,EBAY,1065088,Consumer Discretionary,Broadline Retail,retail_store,adapt,current_list
+ECL,ECL,31462,Materials,Specialty Chemicals,commodity_cyclical,weak,current_list
+EG,EG,1095073,Financials,Reinsurance,financial_interest,weak,current_list
+EMN,EMN,915389,Materials,Specialty Chemicals,commodity_cyclical,weak,current_list
+EMR,EMR,32604,Industrials,Electrical Components & Equipment,industrial_capacity,adapt,current_list
+ENPH,ENPH,1463101,Information Technology,Semiconductor Materials & Equipment,semiconductor,strong,current_list
+EOG,EOG,821189,Energy,Oil & Gas Exploration & Production,commodity_cyclical,weak,current_list
+EQT,EQT,33213,Energy,Oil & Gas Exploration & Production,commodity_cyclical,weak,current_list
+ETN,ETN,1551182,Industrials,Electrical Components & Equipment,industrial_capacity,adapt,current_list
+EXPD,EXPD,746515,Industrials,Air Freight & Logistics,industrial_capacity,adapt,current_list
+EXPE,EXPE,1324424,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",retail_store,adapt,current_list
+F,F,37996,Consumer Discretionary,Automobile Manufacturers,industrial_capacity,adapt,current_list
+FANG,FANG,1539838,Energy,Oil & Gas Exploration & Production,commodity_cyclical,weak,current_list
+FAST,FAST,815556,Industrials,Trading Companies & Distributors,retail_store,adapt,current_list
+FCX,FCX,831259,Materials,Copper,commodity_cyclical,weak,current_list
+FDX,FDX,1048911,Industrials,Air Freight & Logistics,industrial_capacity,adapt,current_list
+FFIV,FFIV,1048695,Information Technology,Communications Equipment,consumer_electronics,strong,current_list
+FICO,FICO,814547,Information Technology,Application Software,saas_subscription,adapt,current_list
+FITB,FITB,35527,Financials,Regional Banks,financial_interest,weak,current_list
+FMC,FMC,37785,sic:2800,,commodity_cyclical,weak,sec_sic_fallback
+FSLR,FSLR,1274494,Information Technology,Semiconductors,semiconductor,strong,current_list
+FTNT,FTNT,1262039,Information Technology,Systems Software,saas_subscription,adapt,current_list
+FTV,FTV,1659166,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+GD,GD,40533,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+GE,GE,40545,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+GEN,GEN,849399,Information Technology,Systems Software,saas_subscription,adapt,current_list
+GL,GL,320335,Financials,Life & Health Insurance,financial_interest,weak,current_list
+GM,GM,1467858,Consumer Discretionary,Automobile Manufacturers,industrial_capacity,adapt,current_list
+GNRC,GNRC,1474735,Industrials,Electrical Components & Equipment,industrial_capacity,adapt,current_list
+GOOG,GOOG,1652044,Communication Services,Interactive Media & Services,advertising,adapt,current_list
+GOOGL,GOOGL,1652044,Communication Services,Interactive Media & Services,advertising,adapt,current_list
+GRMN,GRMN,1121788,Consumer Discretionary,Consumer Electronics,consumer_electronics,strong,current_list
+GS,GS,886982,Financials,Investment Banking & Brokerage,financial_interest,weak,current_list
+GWW,GWW,277135,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+HAL,HAL,45012,Energy,Oil & Gas Equipment & Services,commodity_cyclical,weak,current_list
+HAS,HAS,46080,Consumer Discretionary,Leisure Products,consumer_electronics,strong,current_list
+HBAN,HBAN,49196,Financials,Regional Banks,financial_interest,weak,current_list
+HES,HES,4447,sic:2911,,commodity_cyclical,weak,sec_sic_fallback
+HIG,HIG,874766,Financials,Property & Casualty Insurance,financial_interest,weak,current_list
+HII,HII,1501585,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+HLT,HLT,1585689,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",retail_store,adapt,current_list
+HON,HON,773840,Industrials,Industrial Conglomerates,industrial_capacity,adapt,current_list
+HPE,HPE,1645590,Information Technology,"Technology Hardware, Storage & Peripherals",consumer_electronics,strong,current_list
+HPQ,HPQ,47217,Information Technology,"Technology Hardware, Storage & Peripherals",consumer_electronics,strong,current_list
+HUBB,HUBB,48898,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+HWM,HWM,4281,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+IEX,IEX,832101,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+IFF,IFF,51253,Materials,Specialty Chemicals,commodity_cyclical,weak,current_list
+INTC,INTC,50863,Information Technology,Semiconductors,semiconductor,strong,current_list
+INTU,INTU,896878,Information Technology,Application Software,saas_subscription,adapt,current_list
+IP,IP,51434,Materials,Paper & Plastic Packaging Products & Materials,industrial_capacity,adapt,current_list
+IR,IR,1699150,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+ITW,ITW,49826,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+IVZ,IVZ,914208,Financials,Asset Management & Custody Banks,financial_interest,weak,current_list
+J,J,52988,Industrials,Construction & Engineering,industrial_capacity,adapt,current_list
+JBL,JBL,898293,Information Technology,Electronic Manufacturing Services,consumer_electronics,strong,current_list
+JCI,JCI,833444,Industrials,Building Products,industrial_capacity,adapt,current_list
+JNPR,JNPR,1043604,sic:3576,,consumer_electronics,strong,sec_sic_fallback
+JPM,JPM,19617,Financials,Diversified Banks,financial_interest,weak,current_list
+KEY,KEY,91576,Financials,Regional Banks,financial_interest,weak,current_list
+KEYS,KEYS,1601046,Information Technology,Electronic Equipment & Instruments,consumer_electronics,strong,current_list
+KLAC,KLAC,319201,Information Technology,Semiconductor Materials & Equipment,semiconductor,strong,current_list
+KMI,KMI,1506307,Energy,Oil & Gas Storage & Transportation,commodity_cyclical,weak,current_list
+KMX,KMX,1170010,Consumer Discretionary,Automotive Retail,retail_store,adapt,current_list
+KR,KR,56873,Consumer Staples,Food Retail,retail_store,adapt,current_list
+L,L,60086,Financials,Multi-line Insurance,financial_interest,weak,current_list
+LEN,LEN,920760,Consumer Discretionary,Homebuilding,industrial_capacity,adapt,current_list
+LHX,LHX,202058,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+LIN,LIN,1707925,Materials,Industrial Gases,industrial_capacity,adapt,current_list
+LMT,LMT,936468,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+LRCX,LRCX,707549,Information Technology,Semiconductor Materials & Equipment,semiconductor,strong,current_list
+LUV,LUV,92380,Industrials,Passenger Airlines,industrial_capacity,adapt,current_list
+LVS,LVS,1300514,Consumer Discretionary,Casinos & Gaming,retail_store,adapt,current_list
+LYB,LYB,1489393,Materials,Specialty Chemicals,commodity_cyclical,weak,current_list
+LYV,LYV,1335258,Communication Services,Movies & Entertainment,saas_subscription,adapt,current_list
+MAR,MAR,1048286,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",retail_store,adapt,current_list
+MAS,MAS,62996,Industrials,Building Products,industrial_capacity,adapt,current_list
+MCD,MCD,63908,Consumer Discretionary,Restaurants,retail_store,adapt,current_list
+MCHP,MCHP,827054,Information Technology,Semiconductors,semiconductor,strong,current_list
+MET,MET,1099219,Financials,Life & Health Insurance,financial_interest,weak,current_list
+META,META,1326801,Communication Services,Interactive Media & Services,advertising,adapt,current_list
+MGM,MGM,789570,Consumer Discretionary,Casinos & Gaming,retail_store,adapt,current_list
+MLM,MLM,916076,Materials,Construction Materials,commodity_cyclical,weak,current_list
+MMC,MMC,62709,Financials,Insurance Brokers,financial_interest,weak,current_list
+MMM,MMM,66740,Industrials,Industrial Conglomerates,industrial_capacity,adapt,current_list
+MOS,MOS,1285785,Materials,Fertilizers & Agricultural Chemicals,commodity_cyclical,weak,current_list
+MPC,MPC,1510295,Energy,Oil & Gas Refining & Marketing,commodity_cyclical,weak,current_list
+MPWR,MPWR,1280452,Information Technology,Semiconductors,semiconductor,strong,current_list
+MRO,MRO,101778,sic:1311,,commodity_cyclical,weak,sec_sic_fallback
+MS,MS,895421,Financials,Investment Banking & Brokerage,financial_interest,weak,current_list
+MSFT,MSFT,789019,Information Technology,Systems Software,saas_subscription,adapt,current_list
+MSI,MSI,68505,Information Technology,Communications Equipment,consumer_electronics,strong,current_list
+MTB,MTB,36270,Financials,Regional Banks,financial_interest,weak,current_list
+MTCH,MTCH,891103,Communication Services,Interactive Media & Services,advertising,adapt,current_list
+MU,MU,723125,Information Technology,Semiconductors,semiconductor,strong,current_list
+NCLH,NCLH,1513761,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",retail_store,adapt,current_list
+NDSN,NDSN,72331,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+NEM,NEM,1164727,Materials,Gold,commodity_cyclical,weak,current_list
+NFLX,NFLX,1065280,Communication Services,Movies & Entertainment,saas_subscription,adapt,current_list
+NOC,NOC,1133421,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+NOW,NOW,1373715,Information Technology,Systems Software,saas_subscription,adapt,current_list
+NSC,NSC,702165,Industrials,Rail Transportation,industrial_capacity,adapt,current_list
+NTAP,NTAP,1002047,Information Technology,"Technology Hardware, Storage & Peripherals",consumer_electronics,strong,current_list
+NTRS,NTRS,73124,Financials,Asset Management & Custody Banks,financial_interest,weak,current_list
+NUE,NUE,73309,Materials,Steel,commodity_cyclical,weak,current_list
+NVDA,NVDA,1045810,Information Technology,Semiconductors,semiconductor,strong,current_list
+NVR,NVR,906163,Consumer Discretionary,Homebuilding,industrial_capacity,adapt,current_list
+NWS,NWS,1564708,Communication Services,Publishing,saas_subscription,adapt,current_list
+NWSA,NWSA,1564708,Communication Services,Publishing,saas_subscription,adapt,current_list
+NXPI,NXPI,1413447,Information Technology,Semiconductors,semiconductor,strong,current_list
+OKE,OKE,1039684,Energy,Oil & Gas Storage & Transportation,commodity_cyclical,weak,current_list
+ON,ON,1097864,Information Technology,Semiconductors,semiconductor,strong,current_list
+ORCL,ORCL,1341439,Information Technology,Application Software,saas_subscription,adapt,current_list
+ORLY,ORLY,898173,Consumer Discretionary,Automotive Retail,retail_store,adapt,current_list
+OTIS,OTIS,1781335,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+OXY,OXY,797468,Energy,Oil & Gas Exploration & Production,commodity_cyclical,weak,current_list
+PANW,PANW,1327567,Information Technology,Systems Software,saas_subscription,adapt,current_list
+PARA,PARA,1826011,sic:7372,,saas_subscription,adapt,sec_sic_fallback
+PCAR,PCAR,75362,Industrials,Construction Machinery & Heavy Transportation Equipment,industrial_capacity,adapt,current_list
+PFG,PFG,1126328,Financials,Life & Health Insurance,financial_interest,weak,current_list
+PGR,PGR,80661,Financials,Property & Casualty Insurance,financial_interest,weak,current_list
+PH,PH,76334,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+PHM,PHM,822416,Consumer Discretionary,Homebuilding,industrial_capacity,adapt,current_list
+PKG,PKG,75677,Materials,Paper & Plastic Packaging Products & Materials,industrial_capacity,adapt,current_list
+PNC,PNC,713676,Financials,Diversified Banks,financial_interest,weak,current_list
+PNR,PNR,77360,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+PPG,PPG,79879,Materials,Specialty Chemicals,commodity_cyclical,weak,current_list
+PRU,PRU,1137774,Financials,Life & Health Insurance,financial_interest,weak,current_list
+PSX,PSX,1534701,Energy,Oil & Gas Refining & Marketing,commodity_cyclical,weak,current_list
+PTC,PTC,857005,Information Technology,Application Software,saas_subscription,adapt,current_list
+PWR,PWR,1050915,Industrials,Construction & Engineering,industrial_capacity,adapt,current_list
+PXD,PXD,1038357,sic:1311,,commodity_cyclical,weak,sec_sic_fallback
+QCOM,QCOM,804328,Information Technology,Semiconductors,semiconductor,strong,current_list
+QRVO,QRVO,1604778,sic:3674,,semiconductor,strong,sec_sic_fallback
+RCL,RCL,884887,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",retail_store,adapt,current_list
+RF,RF,1281761,Financials,Regional Banks,financial_interest,weak,current_list
+RJF,RJF,720005,Financials,Investment Banking & Brokerage,financial_interest,weak,current_list
+ROK,ROK,1024478,Industrials,Electrical Components & Equipment,industrial_capacity,adapt,current_list
+ROP,ROP,882835,Information Technology,Electronic Equipment & Instruments,consumer_electronics,strong,current_list
+ROST,ROST,745732,Consumer Discretionary,Apparel Retail,retail_store,adapt,current_list
+RTX,RTX,101829,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+SBUX,SBUX,829224,Consumer Discretionary,Restaurants,retail_store,adapt,current_list
+SCHW,SCHW,316709,Financials,Investment Banking & Brokerage,financial_interest,weak,current_list
+SHW,SHW,89800,Materials,Specialty Chemicals,commodity_cyclical,weak,current_list
+SLB,SLB,87347,Energy,Oil & Gas Equipment & Services,commodity_cyclical,weak,current_list
+SNA,SNA,91440,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+SNPS,SNPS,883241,Information Technology,Application Software,saas_subscription,adapt,current_list
+STLD,STLD,1022671,Materials,Steel,commodity_cyclical,weak,current_list
+STT,STT,93751,Financials,Asset Management & Custody Banks,financial_interest,weak,current_list
+STX,STX,1137789,Information Technology,"Technology Hardware, Storage & Peripherals",consumer_electronics,strong,current_list
+SWK,SWK,93556,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+SWKS,SWKS,4127,Information Technology,Semiconductors,semiconductor,strong,current_list
+SYF,SYF,1601712,Financials,Consumer Finance,financial_interest,weak,current_list
+T,T,732717,Communication Services,Integrated Telecommunication Services,telecom_subscriber,adapt,current_list
+TDG,TDG,1260221,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+TDY,TDY,1094285,Information Technology,Electronic Equipment & Instruments,consumer_electronics,strong,current_list
+TEL,TEL,1385157,Information Technology,Electronic Manufacturing Services,consumer_electronics,strong,current_list
+TER,TER,97210,Information Technology,Semiconductor Materials & Equipment,semiconductor,strong,current_list
+TFC,TFC,92230,Financials,Diversified Banks,financial_interest,weak,current_list
+TGT,TGT,27419,Consumer Staples,Consumer Staples Merchandise Retail,retail_store,adapt,current_list
+TJX,TJX,109198,Consumer Discretionary,Apparel Retail,retail_store,adapt,current_list
+TMUS,TMUS,1283699,Communication Services,Wireless Telecommunication Services,telecom_subscriber,adapt,current_list
+TRGP,TRGP,1389170,Energy,Oil & Gas Storage & Transportation,commodity_cyclical,weak,current_list
+TRMB,TRMB,864749,Information Technology,Electronic Equipment & Instruments,consumer_electronics,strong,current_list
+TROW,TROW,1113169,Financials,Asset Management & Custody Banks,financial_interest,weak,current_list
+TRV,TRV,86312,Financials,Property & Casualty Insurance,financial_interest,weak,current_list
+TSCO,TSCO,916365,Consumer Discretionary,Other Specialty Retail,retail_store,adapt,current_list
+TSLA,TSLA,1318605,Consumer Discretionary,Automobile Manufacturers,industrial_capacity,adapt,current_list
+TT,TT,1466258,Industrials,Building Products,industrial_capacity,adapt,current_list
+TTWO,TTWO,946581,Communication Services,Interactive Home Entertainment,saas_subscription,adapt,current_list
+TXN,TXN,97476,Information Technology,Semiconductors,semiconductor,strong,current_list
+TXT,TXT,217346,Industrials,Aerospace & Defense,industrial_capacity,adapt,current_list
+TYL,TYL,860731,Information Technology,Application Software,saas_subscription,adapt,current_list
+UAL,UAL,100517,Industrials,Passenger Airlines,industrial_capacity,adapt,current_list
+UBER,UBER,1543151,Industrials,Passenger Ground Transportation,industrial_capacity,adapt,current_list
+ULTA,ULTA,1403568,Consumer Discretionary,Other Specialty Retail,retail_store,adapt,current_list
+UNP,UNP,100885,Industrials,Rail Transportation,industrial_capacity,adapt,current_list
+UPS,UPS,1090727,Industrials,Air Freight & Logistics,industrial_capacity,adapt,current_list
+URI,URI,1067701,Industrials,Trading Companies & Distributors,retail_store,adapt,current_list
+USB,USB,36104,Financials,Diversified Banks,financial_interest,weak,current_list
+VLO,VLO,1035002,Energy,Oil & Gas Refining & Marketing,commodity_cyclical,weak,current_list
+VMC,VMC,1396009,Materials,Construction Materials,commodity_cyclical,weak,current_list
+VZ,VZ,732712,Communication Services,Integrated Telecommunication Services,telecom_subscriber,adapt,current_list
+WAB,WAB,943452,Industrials,Construction Machinery & Heavy Transportation Equipment,industrial_capacity,adapt,current_list
+WBA,WBA,1618921,Consumer Staples,Drug Retail,retail_store,adapt,current_list
+WDC,WDC,106040,Information Technology,"Technology Hardware, Storage & Peripherals",consumer_electronics,strong,current_list
+WFC,WFC,72971,Financials,Diversified Banks,financial_interest,weak,current_list
+WMB,WMB,107263,Energy,Oil & Gas Storage & Transportation,commodity_cyclical,weak,current_list
+WMT,WMT,104169,Consumer Staples,Consumer Staples Merchandise Retail,retail_store,adapt,current_list
+WRB,WRB,11544,Financials,Property & Casualty Insurance,financial_interest,weak,current_list
+WTW,WTW,1140536,Financials,Insurance Brokers,financial_interest,weak,current_list
+WYNN,WYNN,1174922,Consumer Discretionary,Casinos & Gaming,retail_store,adapt,current_list
+XOM,XOM,34088,Energy,Integrated Oil & Gas,commodity_cyclical,weak,current_list
+XYL,XYL,1524472,Industrials,Industrial Machinery & Supplies & Components,industrial_capacity,adapt,current_list
+YUM,YUM,1041061,Consumer Discretionary,Restaurants,retail_store,adapt,current_list
+ZBRA,ZBRA,877212,Information Technology,Electronic Equipment & Instruments,consumer_electronics,strong,current_list
+ZION,ZION,109380,sic:6021,,financial_interest,weak,sec_sic_fallback

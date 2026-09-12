@@ -325,8 +325,13 @@ point forecast collapsed.
 
 ![NVIDIA Gaming vs Data Center — actual vs driver extrapolation](examples/nvda_demo/nvda_backtest.png)
 
-> Accuracy is a property of the **industry**, not the model. See
-> [`examples/nvda_demo/`](examples/nvda_demo/) and the flagship methodology doc
+> Accuracy is a property of the **industry's growth mechanism**, not the
+> model — and the claim is now pre-registered-tested: at the driver layer the
+> profile defaults beat naive per-driver trending on 3 of 4 testable trees,
+> while at the company-total layer statistics (Naive/damped) dominates. See
+> [`docs/profile-validation.md`](docs/profile-validation.md) for the full
+> scorecard, [`examples/nvda_demo/`](examples/nvda_demo/) and the flagship
+> methodology doc
 > [`docs/industry-fit-analysis.md`](docs/industry-fit-analysis.md) — the
 > industry-fit matrix, five techniques for event-driven growth, and why this
 > library chooses honesty over false precision.
@@ -362,6 +367,18 @@ regime_shift_tech`) redirects you before the hold-out ever opens. Full story:
 [`examples/industry_demo/`](examples/industry_demo/). Also new on `Driver`:
 `extrapolate_mean_reversion` / `extrapolate_erosion` / `extrapolate_growth` /
 `extrapolate_hold`.
+
+**Pre-registered validation (2026-09).** 244 S&P 500 constituents
+(anti-survivorship anchor 2023-12-31) + six hand-built driver trees tested
+the matrix out-of-sample. Verdict: driver-layer defaults win where the
+mechanism is testable (SBUX 0.7% vs 3.6%, META 4.6% vs 6.7%, NVDA Gaming
+3.0% vs 10.9% sMAPE vs naive trending), the weak-fit redirect is a validated
+deliverable (warning hit 2/2, false alarms 0/4, MC P10-P90 framed all three
+weak-fit test years) — and the company-total layer belongs to statistical
+baselines, exactly as the backtest doc found. One shape method (decelerating
+CAGR) graduated with double significance; one (growth-revert) was honestly
+falsified at home. Full scorecard:
+[`docs/profile-validation.md`](docs/profile-validation.md).
 
 ## Segment extraction (from annual reports)
 

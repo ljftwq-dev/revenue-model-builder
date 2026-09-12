@@ -1,0 +1,85 @@
+TRACK B -- DRIVER-LAYER RESULTS (v0.16 API, hand-built trees)
+test year touched once; NVDA trees use their legacy FY24-25 split
+
+====================================================================================
+ SBUX  [retail_store / adapt]  -- units x AUV decomposition; revenue/stores derived [B]
+====================================================================================
+   WARN  : [retail_store] adapt fit — driver tree works with swapped factors (stores × sales-per-store: openings are company-controlled (trend), same-store sales mean-revert to CPI + low single digits).
+     year       actual      profile  naive-trend
+     2025     37,184.4     37,739.1     39,922.0
+   sMAPE: profile-default   0.7%   naive per-driver trend   3.6%
+   profile-mode drivers: base[4.16e+04]  penetration[1]  share[1]  price[0.908]
+   naive-mode drivers:    base[4.16e+04]  penetration[1]  share[1]  price[0.961]
+
+====================================================================================
+ META-ads  [advertising / adapt]  -- revenue = anchor x disclosed impressions x disclosed price
+====================================================================================
+   CHECK : ad load 100% — well above the 10–30% platform norm; user experience (and regulation) typically caps further load growth.
+   WARN  : [advertising] adapt fit — driver tree works with swapped factors (traffic × ad-load × eCPM: ad load is sticky (product choice), eCPM is cyclical and mean-reverts with the ad market).
+   WARN  : ad load 100% — well above the 10–30% platform norm; user experience (and regulation) typically caps further load growth.
+     year       actual      profile  naive-trend
+     2025    196,175.0    178,744.4    171,702.7
+   sMAPE: profile-default   4.6%   naive per-driver trend   6.7%
+   profile-mode drivers: base[1.73e+05]  penetration[1]  share[1]  price[1.03]
+   naive-mode drivers:    base[1.73e+05]  penetration[1]  share[1]  price[0.992]
+
+====================================================================================
+ NFLX  [saas_subscription / adapt]  -- members x ARM; ARM derived on EOP convention [B]
+====================================================================================
+   WARN  : [saas_subscription] adapt fit — driver tree works with swapped factors (MAU/customers × ARPU: adoption follows an S-curve, ARPU grows by escalator — the tree works with swapped factors).
+     year       actual      profile  naive-trend
+     2025     45,183.0     41,158.0     42,963.8
+   sMAPE: profile-default   4.7%   naive per-driver trend   2.5%
+   profile-mode drivers: base[1.34e+03]  penetration[0.232]  share[1]  price[132]
+   naive-mode drivers:    base[1.34e+03]  penetration[0.236]  share[1]  price[136]
+
+====================================================================================
+ JPM-NII  [financial_interest / weak]  -- balance-sheet-first tree; the weak-fit warning should fire
+====================================================================================
+   WARN  : [financial_interest] weak fit — point forecasts are structurally unreliable here. anchor the yield to the forward policy-rate curve and run rate scenarios; treat the balance-sheet growth as a credit-cycle variable, not a trend
+     year       actual      profile  naive-trend
+     2025         95.4        136.5         88.4
+   sMAPE: profile-default  17.7%   naive per-driver trend   3.8%
+   profile-mode drivers: base[4.32e+03]  penetration[1]  share[1]  price[0.0316]
+   naive-mode drivers:    base[4.28e+03]  penetration[1]  share[1]  price[0.0207]
+   MC FY2025: P10=80.3 P50=96.9 P90=113.4 | actual 95.4 = P46 -> COVERED
+
+====================================================================================
+ NVDA-Gaming  [semiconductor / strong]  -- legacy industry_demo split (holdout FY24-25)
+====================================================================================
+   WARN  : [semiconductor] strong fit — mature-semi factors trend until they don't (NVDA Gaming 1.0% sMAPE); ASPs hold rather than erode (pricing power per node), attach rates are structural product-cycle choices (held).
+     year       actual      profile  naive-trend
+     2024     10,447.0     10,067.9     12,557.3
+     2025     11,047.0     10,162.0     14,265.9
+   sMAPE: profile-default   3.0%   naive per-driver trend  10.9%
+   profile-mode drivers: base[291]  penetration[0.14]  share[0.8]  price[311]
+   naive-mode drivers:    base[291]  penetration[0.174]  share[0.836]  price[337]
+
+====================================================================================
+ NVDA-DC  [regime_shift_tech / weak]  -- legacy industry_demo split; MC close-out expected
+====================================================================================
+   CHECK : regime-shift industry: the breakout is not in the training data, so ANY trend-based point forecast is a known-unreliable baseline (NVDA Data Center: actual $115B vs trend $18B). Report Monte Carlo scenarios (simulate_segment) with wide, honest ranges — the P90 tail framing the breakout is the deliverable, not the point.
+   WARN  : [regime_shift_tech] weak fit — point forecasts are structurally unreliable here. the point forecast below is a *baseline, not a forecast*: report Monte Carlo scenarios (simulate_segment) with wide honest ranges plus explicit trigger conditions; update fast as the regime reveals itself
+   WARN  : regime-shift industry: the breakout is not in the training data, so ANY trend-based point forecast is a known-unreliable baseline (NVDA Data Center: actual $115B vs trend $18B). Report Monte Carlo scenarios (simulate_segment) with wide, honest ranges — the P90 tail framing the breakout is the deliverable, not the point.
+     year       actual      profile  naive-trend
+     2024     47,525.0     17,517.9     17,517.9
+     2025    115,186.0     20,545.2     20,545.2
+   sMAPE: profile-default  57.9%   naive per-driver trend  57.9%
+   profile-mode drivers: base[3.18]  penetration[1]  share[1.06]  price[6.1e+03]
+   naive-mode drivers:    base[3.18]  penetration[1]  share[1.06]  price[6.1e+03]
+   MC FY2024: P10=23,910.5 P50=37,316.8 P90=56,621.3 | actual 47,525.0 = P75 -> COVERED
+   MC FY2025: P10=47,984.9 P50=93,502.9 P90=163,912.2 | actual 115,186.0 = P66 -> COVERED
+
+====================================================================================
+ WARNING LEDGER (H3: the engine must say so in advance)
+ alarm = weak-redirect text; adapt/strong advisory notes are
+ method guidance, not alarms
+====================================================================================
+ SBUX           [adapt] false-alarm  : no
+ META-ads       [adapt] false-alarm  : no
+ NFLX           [adapt] false-alarm  : no
+ JPM-NII        [weak ] warned       : YES
+ NVDA-Gaming    [strong] false-alarm  : no
+ NVDA-DC        [weak ] warned       : YES
+ warning hit rate (weak warned): 2/2
+ false-alarm rate (strong/adapt warned): 0/4

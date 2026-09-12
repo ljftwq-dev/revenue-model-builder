@@ -1,0 +1,236 @@
+EXCLUDED(unmapped sub) A: sector='Health Care' sub='Life Sciences Tools & Services'
+EXCLUDED(leaver sic unmapped) AAL: cik=6201 sic=4512
+EXCLUDED(unmapped sub) ABBV: sector='Health Care' sub='Biotechnology'
+EXCLUDED(unmapped sub) ABT: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(staples/none) ACN: sub='IT Consulting & Other Services' maps to None
+EXCLUDED(unmapped sub) ADM: sector='Consumer Staples' sub='Agricultural Products & Services'
+EXCLUDED(staples/none) ADP: sub='Human Resource & Employment Services' maps to None
+EXCLUDED(unmapped sub) AEE: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(unmapped sub) AEP: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(unmapped sub) AES: sector='Utilities' sub='Independent Power Producers & Energy Traders'
+EXCLUDED(staples/none) AKAM: sub='Internet Services & Infrastructure' maps to None
+EXCLUDED(unmapped sub) ALGN: sector='Health Care' sub='Health Care Supplies'
+EXCLUDED(unmapped sub) AMGN: sector='Health Care' sub='Biotechnology'
+EXCLUDED(unmapped sub) AMT: sector='Real Estate' sub='Telecom Tower REITs'
+LEAVER->profile ANSS: cik=1013462 sic=7372 -> saas_subscription
+EXCLUDED(unmapped sub) APH: sector='Information Technology' sub='Electronic Components'
+EXCLUDED(unmapped sub) ARE: sector='Real Estate' sub='Office REITs'
+EXCLUDED(unmapped sub) ATO: sector='Utilities' sub='Gas Utilities'
+EXCLUDED(unmapped sub) AVB: sector='Real Estate' sub='Multi-Family Residential REITs'
+EXCLUDED(unmapped sub) AWK: sector='Utilities' sub='Water Utilities'
+EXCLUDED(unmapped sub) BAX: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(leaver sic unmapped) BBWI: cik=701985 sic=5990
+EXCLUDED(unmapped sub) BDX: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(unmapped sub) BF-B: sector='Consumer Staples' sub='Distillers & Vintners'
+EXCLUDED(unmapped sub) BG: sector='Consumer Staples' sub='Agricultural Products & Services'
+EXCLUDED(unmapped sub) BIIB: sector='Health Care' sub='Biotechnology'
+EXCLUDED(leaver sic unmapped) BIO: cik=12208 sic=3826
+EXCLUDED(unmapped sub) BMY: sector='Health Care' sub='Pharmaceuticals'
+EXCLUDED(unmapped sub) BR: sector='Industrials' sub='Data Processing & Outsourced Services'
+EXCLUDED(unmapped sub) BSX: sector='Health Care' sub='Health Care Equipment'
+LEAVER->profile BWA: cik=908255 sic=3714 -> industrial_capacity
+EXCLUDED(unmapped sub) BXP: sector='Real Estate' sub='Office REITs'
+EXCLUDED(staples/none) CAG: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(unmapped sub) CAH: sector='Health Care' sub='Health Care Distributors'
+EXCLUDED(staples/none) CBOE: sub='Financial Exchanges & Data' maps to None
+EXCLUDED(unmapped sub) CBRE: sector='Real Estate' sub='Real Estate Services'
+EXCLUDED(unmapped sub) CCI: sector='Real Estate' sub='Telecom Tower REITs'
+LEAVER->profile CDAY: cik=1725057 sic=7372 -> saas_subscription
+EXCLUDED(leaver sic unmapped) CE: cik=1306830 sic=2820
+EXCLUDED(unmapped sub) CEG: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(staples/none) CHD: sub='Household Products' maps to None
+EXCLUDED(unmapped sub) CHTR: sector='Communication Services' sub='Cable & Satellite'
+EXCLUDED(unmapped sub) CI: sector='Health Care' sub='Health Care Services'
+EXCLUDED(staples/none) CL: sub='Household Products' maps to None
+EXCLUDED(staples/none) CLX: sub='Household Products' maps to None
+LEAVER->profile CMA: cik=28412 sic=6021 -> financial_interest
+EXCLUDED(unmapped sub) CMCSA: sector='Communication Services' sub='Cable & Satellite'
+EXCLUDED(staples/none) CME: sub='Financial Exchanges & Data' maps to None
+EXCLUDED(unmapped sub) CMS: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(unmapped sub) CNC: sector='Health Care' sub='Managed Health Care'
+EXCLUDED(unmapped sub) CNP: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(unmapped sub) COO: sector='Health Care' sub='Health Care Supplies'
+EXCLUDED(unmapped sub) COR: sector='Health Care' sub='Health Care Distributors'
+EXCLUDED(staples/none) CPB: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(staples/none) CPRT: sub='Diversified Support Services' maps to None
+EXCLUDED(unmapped sub) CPT: sector='Real Estate' sub='Multi-Family Residential REITs'
+EXCLUDED(unmapped sub) CRL: sector='Health Care' sub='Life Sciences Tools & Services'
+EXCLUDED(unmapped sub) CSGP: sector='Real Estate' sub='Real Estate Services'
+EXCLUDED(staples/none) CTAS: sub='Diversified Support Services' maps to None
+EXCLUDED(leaver sic unmapped) CTLT: cik=1596783 sic=2834
+EXCLUDED(staples/none) CTSH: sub='IT Consulting & Other Services' maps to None
+EXCLUDED(unmapped sub) CVS: sector='Health Care' sub='Health Care Services'
+EXCLUDED(unmapped sub) D: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(unmapped sub) DE: sector='Industrials' sub='Agricultural & Farm Machinery'
+EXCLUDED(leaver sic unmapped) DFS: cik=1393612 sic=6141
+EXCLUDED(unmapped sub) DGX: sector='Health Care' sub='Health Care Services'
+EXCLUDED(unmapped sub) DHR: sector='Health Care' sub='Life Sciences Tools & Services'
+EXCLUDED(unmapped sub) DLR: sector='Real Estate' sub='Data Center REITs'
+EXCLUDED(unmapped sub) DTE: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(unmapped sub) DUK: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(unmapped sub) DVA: sector='Health Care' sub='Health Care Services'
+EXCLUDED(unmapped sub) DXCM: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(unmapped sub) ED: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(staples/none) EFX: sub='Research & Consulting Services' maps to None
+EXCLUDED(unmapped sub) EIX: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(staples/none) EL: sub='Personal Care Products' maps to None
+EXCLUDED(unmapped sub) ELV: sector='Health Care' sub='Managed Health Care'
+EXCLUDED(staples/none) EPAM: sub='IT Consulting & Other Services' maps to None
+EXCLUDED(unmapped sub) EQIX: sector='Real Estate' sub='Data Center REITs'
+EXCLUDED(unmapped sub) EQR: sector='Real Estate' sub='Multi-Family Residential REITs'
+EXCLUDED(unmapped sub) ES: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(unmapped sub) ESS: sector='Real Estate' sub='Multi-Family Residential REITs'
+EXCLUDED(unmapped sub) ETR: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(leaver sic unmapped) ETSY: cik=1370637 sic=7389
+EXCLUDED(unmapped sub) EVRG: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(unmapped sub) EW: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(unmapped sub) EXC: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(unmapped sub) EXR: sector='Real Estate' sub='Self-Storage REITs'
+EXCLUDED(staples/none) FDS: sub='Financial Exchanges & Data' maps to None
+EXCLUDED(unmapped sub) FE: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(staples/none) FI: sub='Transaction & Payment Processing Services' maps to None
+EXCLUDED(staples/none) FIS: sub='Transaction & Payment Processing Services' maps to None
+EXCLUDED(leaver sic unmapped) FLT: cik=1175454 sic=7389
+LEAVER->profile FMC: cik=37785 sic=2800 -> commodity_cyclical
+EXCLUDED(unmapped sub) FOX: sector='Communication Services' sub='Broadcasting'
+EXCLUDED(unmapped sub) FOXA: sector='Communication Services' sub='Broadcasting'
+EXCLUDED(unmapped sub) FRT: sector='Real Estate' sub='Retail REITs'
+EXCLUDED(unmapped sub) GEHC: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(unmapped sub) GILD: sector='Health Care' sub='Biotechnology'
+EXCLUDED(staples/none) GIS: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(unmapped sub) GLW: sector='Information Technology' sub='Electronic Components'
+EXCLUDED(unmapped sub) GPC: sector='Consumer Discretionary' sub='Distributors'
+EXCLUDED(staples/none) GPN: sub='Transaction & Payment Processing Services' maps to None
+EXCLUDED(unmapped sub) HCA: sector='Health Care' sub='Health Care Facilities'
+EXCLUDED(unmapped sub) HD: sector='Consumer Discretionary' sub='Home Improvement Retail'
+LEAVER->profile HES: cik=4447 sic=2911 -> commodity_cyclical
+EXCLUDED(unmapped sub) HOLX: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(staples/none) HRL: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(unmapped sub) HSIC: sector='Health Care' sub='Health Care Distributors'
+EXCLUDED(unmapped sub) HST: sector='Real Estate' sub='Hotel & Resort REITs'
+EXCLUDED(staples/none) HSY: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(unmapped sub) HUM: sector='Health Care' sub='Managed Health Care'
+EXCLUDED(staples/none) IBM: sub='IT Consulting & Other Services' maps to None
+EXCLUDED(staples/none) ICE: sub='Financial Exchanges & Data' maps to None
+EXCLUDED(unmapped sub) IDXX: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(leaver sic unmapped) ILMN: cik=1110803 sic=3826
+EXCLUDED(unmapped sub) INCY: sector='Health Care' sub='Biotechnology'
+EXCLUDED(unmapped sub) INVH: sector='Real Estate' sub='Single-Family Residential REITs'
+EXCLUDED(unmapped sub) IPG: sector='Communication Services' sub='Advertising'
+EXCLUDED(unmapped sub) IQV: sector='Health Care' sub='Life Sciences Tools & Services'
+EXCLUDED(unmapped sub) IRM: sector='Real Estate' sub='Other Specialized REITs'
+EXCLUDED(unmapped sub) ISRG: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(staples/none) IT: sub='IT Consulting & Other Services' maps to None
+EXCLUDED(unmapped sub) JBHT: sector='Industrials' sub='Cargo Ground Transportation'
+EXCLUDED(staples/none) JKHY: sub='Transaction & Payment Processing Services' maps to None
+EXCLUDED(unmapped sub) JNJ: sector='Health Care' sub='Pharmaceuticals'
+LEAVER->profile JNPR: cik=1043604 sic=3576 -> consumer_electronics
+EXCLUDED(staples/none) K: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(staples/none) KDP: sub='Soft Drinks & Non-alcoholic Beverages' maps to None
+EXCLUDED(staples/none) KHC: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(unmapped sub) KIM: sector='Real Estate' sub='Retail REITs'
+EXCLUDED(staples/none) KMB: sub='Household Products' maps to None
+EXCLUDED(staples/none) KO: sub='Soft Drinks & Non-alcoholic Beverages' maps to None
+EXCLUDED(staples/none) KVUE: sub='Personal Care Products' maps to None
+EXCLUDED(staples/none) LDOS: sub='Diversified Support Services' maps to None
+EXCLUDED(unmapped sub) LH: sector='Health Care' sub='Health Care Services'
+EXCLUDED(unmapped sub) LKQ: sector='Consumer Discretionary' sub='Distributors'
+EXCLUDED(unmapped sub) LLY: sector='Health Care' sub='Pharmaceuticals'
+EXCLUDED(unmapped sub) LNT: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(unmapped sub) LOW: sector='Consumer Discretionary' sub='Home Improvement Retail'
+EXCLUDED(staples/none) LULU: sub='Apparel, Accessories & Luxury Goods' maps to None
+EXCLUDED(staples/none) LW: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(staples/none) MA: sub='Transaction & Payment Processing Services' maps to None
+EXCLUDED(unmapped sub) MAA: sector='Real Estate' sub='Multi-Family Residential REITs'
+EXCLUDED(unmapped sub) MCK: sector='Health Care' sub='Health Care Distributors'
+EXCLUDED(staples/none) MCO: sub='Financial Exchanges & Data' maps to None
+EXCLUDED(staples/none) MDLZ: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(unmapped sub) MDT: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(unmapped sub) MHK: sector='Consumer Discretionary' sub='Home Furnishings'
+EXCLUDED(staples/none) MKC: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(staples/none) MKTX: sub='Financial Exchanges & Data' maps to None
+EXCLUDED(staples/none) MNST: sub='Soft Drinks & Non-alcoholic Beverages' maps to None
+EXCLUDED(staples/none) MO: sub='Tobacco' maps to None
+EXCLUDED(unmapped sub) MOH: sector='Health Care' sub='Managed Health Care'
+EXCLUDED(unmapped sub) MRK: sector='Health Care' sub='Pharmaceuticals'
+EXCLUDED(unmapped sub) MRNA: sector='Health Care' sub='Biotechnology'
+LEAVER->profile MRO: cik=101778 sic=1311 -> commodity_cyclical
+EXCLUDED(staples/none) MSCI: sub='Financial Exchanges & Data' maps to None
+EXCLUDED(unmapped sub) MTD: sector='Health Care' sub='Life Sciences Tools & Services'
+EXCLUDED(staples/none) NDAQ: sub='Financial Exchanges & Data' maps to None
+EXCLUDED(unmapped sub) NEE: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(unmapped sub) NI: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(staples/none) NKE: sub='Apparel, Accessories & Luxury Goods' maps to None
+EXCLUDED(unmapped sub) NRG: sector='Utilities' sub='Independent Power Producers & Energy Traders'
+EXCLUDED(unmapped sub) O: sector='Real Estate' sub='Retail REITs'
+EXCLUDED(unmapped sub) ODFL: sector='Industrials' sub='Cargo Ground Transportation'
+EXCLUDED(unmapped sub) OMC: sector='Communication Services' sub='Advertising'
+LEAVER->profile PARA: cik=1826011 sic=7372 -> saas_subscription
+EXCLUDED(staples/none) PAYC: sub='Human Resource & Employment Services' maps to None
+EXCLUDED(staples/none) PAYX: sub='Human Resource & Employment Services' maps to None
+EXCLUDED(unmapped sub) PCG: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(leaver sic unmapped) PEAK: cik=765880 sic=6798
+EXCLUDED(unmapped sub) PEG: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(staples/none) PEP: sub='Soft Drinks & Non-alcoholic Beverages' maps to None
+EXCLUDED(unmapped sub) PFE: sector='Health Care' sub='Pharmaceuticals'
+EXCLUDED(staples/none) PG: sub='Personal Care Products' maps to None
+EXCLUDED(unmapped sub) PLD: sector='Real Estate' sub='Industrial REITs'
+EXCLUDED(staples/none) PM: sub='Tobacco' maps to None
+EXCLUDED(unmapped sub) PNW: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(unmapped sub) PODD: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(unmapped sub) POOL: sector='Consumer Discretionary' sub='Distributors'
+EXCLUDED(unmapped sub) PPL: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(unmapped sub) PSA: sector='Real Estate' sub='Self-Storage REITs'
+LEAVER->profile PXD: cik=1038357 sic=1311 -> commodity_cyclical
+EXCLUDED(staples/none) PYPL: sub='Transaction & Payment Processing Services' maps to None
+LEAVER->profile QRVO: cik=1604778 sic=3674 -> semiconductor
+EXCLUDED(unmapped sub) REG: sector='Real Estate' sub='Retail REITs'
+EXCLUDED(unmapped sub) REGN: sector='Health Care' sub='Biotechnology'
+EXCLUDED(leaver sic unmapped) RHI: cik=315213 sic=7363
+EXCLUDED(staples/none) RL: sub='Apparel, Accessories & Luxury Goods' maps to None
+EXCLUDED(unmapped sub) RMD: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(staples/none) ROL: sub='Environmental & Facilities Services' maps to None
+EXCLUDED(staples/none) RSG: sub='Environmental & Facilities Services' maps to None
+EXCLUDED(no cik) RVTY (Previously PKI): not in tickers file nor EDGAR search
+EXCLUDED(unmapped sub) SBAC: sector='Real Estate' sub='Telecom Tower REITs'
+EXCLUDED(staples/none) SJM: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(unmapped sub) SO: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(unmapped sub) SPG: sector='Real Estate' sub='Retail REITs'
+EXCLUDED(staples/none) SPGI: sub='Financial Exchanges & Data' maps to None
+EXCLUDED(unmapped sub) SRE: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(unmapped sub) STE: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(unmapped sub) STZ: sector='Consumer Staples' sub='Distillers & Vintners'
+EXCLUDED(unmapped sub) SYK: sector='Health Care' sub='Health Care Equipment'
+EXCLUDED(unmapped sub) SYY: sector='Consumer Staples' sub='Food Distributors'
+EXCLUDED(unmapped sub) TAP: sector='Consumer Staples' sub='Brewers'
+EXCLUDED(unmapped sub) TECH: sector='Health Care' sub='Life Sciences Tools & Services'
+EXCLUDED(leaver sic unmapped) TFX: cik=96943 sic=3841
+EXCLUDED(unmapped sub) TMO: sector='Health Care' sub='Life Sciences Tools & Services'
+EXCLUDED(staples/none) TPR: sub='Apparel, Accessories & Luxury Goods' maps to None
+EXCLUDED(staples/none) TSN: sub='Packaged Foods & Meats' maps to None
+EXCLUDED(unmapped sub) UDR: sector='Real Estate' sub='Multi-Family Residential REITs'
+EXCLUDED(unmapped sub) UHS: sector='Health Care' sub='Health Care Facilities'
+EXCLUDED(unmapped sub) UNH: sector='Health Care' sub='Managed Health Care'
+EXCLUDED(staples/none) V: sub='Transaction & Payment Processing Services' maps to None
+EXCLUDED(leaver sic unmapped) VFC: cik=103379 sic=2320
+EXCLUDED(unmapped sub) VICI: sector='Real Estate' sub='Hotel & Resort REITs'
+EXCLUDED(staples/none) VLTO: sub='Environmental & Facilities Services' maps to None
+EXCLUDED(staples/none) VRSK: sub='Research & Consulting Services' maps to None
+EXCLUDED(staples/none) VRSN: sub='Internet Services & Infrastructure' maps to None
+EXCLUDED(unmapped sub) VRTX: sector='Health Care' sub='Biotechnology'
+EXCLUDED(unmapped sub) VTR: sector='Real Estate' sub='Health Care REITs'
+EXCLUDED(unmapped sub) VTRS: sector='Health Care' sub='Pharmaceuticals'
+EXCLUDED(unmapped sub) WAT: sector='Health Care' sub='Life Sciences Tools & Services'
+EXCLUDED(unmapped sub) WBD: sector='Communication Services' sub='Broadcasting'
+EXCLUDED(unmapped sub) WEC: sector='Utilities' sub='Electric Utilities'
+EXCLUDED(unmapped sub) WELL: sector='Real Estate' sub='Health Care REITs'
+EXCLUDED(leaver sic unmapped) WHR: cik=106640 sic=3630
+EXCLUDED(staples/none) WM: sub='Environmental & Facilities Services' maps to None
+EXCLUDED(leaver sic unmapped) WRK: cik=1732845 sic=2650
+EXCLUDED(unmapped sub) WST: sector='Health Care' sub='Health Care Supplies'
+EXCLUDED(unmapped sub) WY: sector='Real Estate' sub='Timber REITs'
+EXCLUDED(unmapped sub) XEL: sector='Utilities' sub='Multi-Utilities'
+EXCLUDED(leaver sic unmapped) XRAY: cik=818479 sic=3843
+EXCLUDED(unmapped sub) ZBH: sector='Health Care' sub='Health Care Equipment'
+LEAVER->profile ZION: cik=109380 sic=6021 -> financial_interest
+EXCLUDED(unmapped sub) ZTS: sector='Health Care' sub='Pharmaceuticals'

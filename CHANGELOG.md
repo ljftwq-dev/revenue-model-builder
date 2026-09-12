@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Profile validation — the pre-registered experiment, run and reported**
+  (`docs/profile-validation.md`, `examples/profile_validation/`). The v0.16
+  industry-fit matrix tested out-of-sample: Track A (244 S&P 500
+  constituents, anti-survivorship anchor 2023-12-31, 8 methods × FY2023-25,
+  pure-stdlib Wilcoxon + Bonferroni + rank-biserial) and Track B (six
+  hand-built driver trees exercising the real v0.16 API, FY2025 touched
+  once). Verdicts: H1 rejected at the company-total layer but supported at
+  the driver layer (NVDA Gaming 3.0% vs 10.9%); H2 partial (Damped −1.2pp
+  validation / −1.6pp test vs Naive on adapt); H3 clean (warning hit 2/2,
+  false alarms 0/4, MC P10-P90 framed all three weak-fit test years).
+  DecelCAGR graduates with double significance (saas home profile,
+  −5.7pp / −7.2pp, r ≈ −0.7); GrowthRevert honestly falsified at home
+  (+9.3pp validation). README claim narrowed accordingly (driver layer vs
+  totals layer). API finding recorded: `_apply_spec` resolves logistic
+  params before checking hand coverage (v0.17 fix candidate).
+
 ## [0.16.0] - 2026-09-11
 
 ### Added

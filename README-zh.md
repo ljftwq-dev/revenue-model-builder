@@ -262,7 +262,10 @@ $115.2B vs 预测 $18.4B）。demo 接着闭环：用 Monte Carlo 情景分布�
 
 ![NVIDIA Gaming vs Data Center —— 真实 vs driver 外推](examples/nvda_demo/nvda_backtest.png)
 
-> 准确性是**行业**的属性，不是模型的属性。见
+> 准确性是**行业增长机制**的属性，不是模型的属性——且该论点已通过
+> **预注册外样本检验**：driver 层画像默认在可测的 4 棵树里 3 棵胜过朴素
+> 逐因子趋势外推，而公司总收入层由统计基线（Naive/阻尼）主导。完整记分牌见
+> [`docs/profile-validation.md`](docs/profile-validation.md)；
 > [`examples/nvda_demo/`](examples/nvda_demo/) 与旗舰方法论文档
 > [`docs/industry-fit-analysis.md`](docs/industry-fit-analysis.md)——行业适配性矩阵、
 > 事件驱动增长的五招、以及为什么本库选择诚实而非虚假精度。
@@ -297,6 +300,15 @@ for w in segment_warnings(fc):                     # 适配判定 + 行业检查
 [`examples/industry_demo/`](examples/industry_demo/)。`Driver` 同步新增 4 个
 外推法：`extrapolate_mean_reversion` / `extrapolate_erosion` /
 `extrapolate_growth` / `extrapolate_hold`。
+
+**预注册验证（2026-09）。** 244 家标普 500 成分股（防幸存者偏差，锚定
+2023-12-31 时点）+ 六棵手工 driver 树对适配矩阵做了外样本检验。裁决：driver
+层默认在机制可测处胜出（SBUX 0.7% vs 3.6%、META 4.6% vs 6.7%、NVDA Gaming
+3.0% vs 10.9% sMAPE，对手均为朴素趋势），weak 档重定向成为**验证过的交付物**
+（警告命中 2/2、误报 0/4、蒙特卡洛 P10-P90 框住全部三个 weak 档测试年）——
+而公司总收入层属于统计基线，与回测文档的发现完全一致。一个形状方法（减速
+CAGR）双显著毕业；一个（增长回归）在主场被诚实否证。完整记分牌：
+[`docs/profile-validation.md`](docs/profile-validation.md)。
 
 ## 主营业务抽取（从年报）
 
