@@ -15,12 +15,18 @@ stage — with the human where automation genuinely breaks.
    called them. Acceptance for every stage below is a *wiring test*: the
    pipeline log must show the stage ran, not merely that the module
    exists.
-2. **Gate H — the human-download gate.** Some sources (IR press pages,
-   transcripts behind logins) cannot be fetched by playwright reliably.
-   When automation genuinely breaks, the pipeline *stops and delegates*:
-   it prints a concrete download checklist into a watch directory,
-   the user drops the files in, `--resume` picks up. Same status as
-   gates 1/2: a human gate is design, not failure.
+2. **Gate H — the human-download gate, and the DOCUMENT-LAYER MAIN PATH.**
+   IR sites are where the rich documents live (full quarterly Business
+   Update decks: customer counts, TCV, NRR, segment detail, guidance —
+   far beyond the few pages SEC's 8-K EX-99 carries), and they are
+   exactly where automation breaks (verified live: PLTR's IR news page
+   JS-crashes under playwright; downloads sit behind interactions).
+   So the pipeline's job is *navigation and digestion*, not downloading:
+   playwright opens the exact IR page for the analyst, stops, prints the
+   download checklist; the human clicks download (one minute, trivially
+   defeats what blocks the bot), drops files into the watch directory;
+   `--resume` takes over — OCR → extractor → evidence cards. SEC 8-K
+   EX-99 is the *numeric* fallback, not the document path.
 3. **Filings are the core; news is concentric.** Evidence is organized
    in rings around the filings (ground truth): self news (guidance,
    orders, management) → upstream/downstream (supply constraints,
@@ -36,7 +42,7 @@ stage — with the human where automation genuinely breaks.
 | analyst action | stage | parts | status |
 |---|---|---|---|
 | read quarterlies for momentum | **quarterly layer**: 10-Q totals via `fetch_fiscal_quarters`, momentum detector (recent-4Q vs prior-4Q CAGR, turning-point alarm) | wire + new detector | v0.21a |
-| read press / calls / MD&A | **document layer**: SEC 8-K EX-99 (free, structured) auto-fetch → Gate H for the rest → Unlimited-OCR (local) → extractor signal mode → EvidenceCards | wire q4cdn/8-K, new Gate H, extractor signal prompts | v0.21b |
+| read press / calls / MD&A | **document layer via Gate H (main path)**: playwright navigates to the IR page and hands over — the analyst downloads the full Business Update decks / transcripts (rich content SEC never carries), drops them in the watch directory; `--resume` → Unlimited-OCR (local) → extractor signal mode → EvidenceCards. SEC 8-K EX-99 = numeric fallback | wire navigation + Gate H + OCR; extractor signal prompts | v0.21b |
 | scan self / upstream / macro news | **shock layer**: `news_impact` + `macro_revision` wired into the pipeline post-forecast; evidence organized by ring | wire (the omission that started this) | v0.21c |
 | report | **Evidence appendix**: per driver — numeric extrapolation + evidence cards + the analyst's recorded adjustments | report builder extension | v0.21c |
 
