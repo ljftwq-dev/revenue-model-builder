@@ -74,3 +74,20 @@ that a non-coder can drive.
 2. PLTR demo: Government (trend) + Commercial (saas + ABOVE-band story)
    end-to-end in one command — the third showcase after NVDA/Luxun.
 3. Docs: `docs/auto-pipeline.md` cookbook page.
+
+## Road to 1.0.0
+
+v0.20 completes the 0.x mission (methodology validated across 0.16–0.19;
+API de-facto stable with zero breaking changes since 0.16). Once the
+pipeline closes the loop, the project declares its first stable release:
+
+- **Path**: v0.20a/b/c (interfaces free to settle during orchestration work)
+  → *if* core APIs needed surgery, insert a v0.21 hardening release →
+  **1.0.0** otherwise directly.
+- **1.0.0 means**: semver contract starts — no breaking public-API changes
+  within 1.x without a deprecation cycle.
+- **1.0.0 acceptance** (on top of v0.20's):
+  1. Fresh `pip install` → first model within 5 minutes (quickstart,
+     actually timed on a clean venv).
+  2. README declares the stability policy.
+  3. PLTR / NVDA / Luxun all reproduce with one command each.
