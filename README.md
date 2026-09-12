@@ -1,549 +1,226 @@
+<div align="center">
+
+<img src="assets/logo.png" width="180" alt="revenue-model-builder logo"/>
+
 # revenue-model-builder
 
+**Forecast revenue the way sell-side analysts do — as a driver tree the
+engine can defend, grade, and stress-test.**
+
 [![CI](https://github.com/ljftwq-dev/revenue-model-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/ljftwq-dev/revenue-model-builder/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docs](https://img.shields.io/badge/docs-mkdocs%20Material-536DFE.svg)](https://ljftwq-dev.github.io/revenue-model-builder/)
+[![PyPI](https://img.shields.io/pypi/v/revenue-model-builder.svg)](https://pypi.org/project/revenue-model-builder/)
+[![Downloads](https://img.shields.io/pypi/dm/revenue-model-builder.svg)](https://pypi.org/project/revenue-model-builder/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
-[![Dependencies: zero](https://img.shields.io/badge/dependencies-0-success.svg)](#install)
+[![Dependencies: zero](https://img.shields.io/badge/core%20dependencies-0-success.svg)](#install)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**中文文档：[README-zh.md](README-zh.md)**
+中文文档：[README-zh.md](README-zh.md)
 
-A **bottom-up revenue forecasting framework** — turn a driver tree
-(`market_base × penetration × share × price`) into an **auditable** revenue
-model that aligns to reported totals via a structural residual line. Core
-engine has **zero third-party dependencies** (pure Python stdlib), including the
-Monte Carlo + sensitivity layer.
+<img src="assets/demo.gif" width="640" alt="60-second demo: validate, forecast with industry defaults, Monte Carlo"/>
 
-The design encodes five hard-won modeling rules (see
-[design principles](docs/design-principles.md)): a **structural residual** that
-absorbs un-modeled business, **A/B/C data grading** for traceability,
-**incremental** (not growth-rate) penetration forecasts, a **certainty
-pyramid** for prioritizing forecast inputs, and a **history-first** workflow.
+*Zero dependencies. Pure stdlib Monte Carlo. Every number carries a source
+and a credibility grade.*
+
+`segment_revenue = market_base × penetration × share × price`
+`total_revenue  = Σ(segments) + residual`
+
+</div>
 
 ---
 
-## Why
+> ### Pre-registered, out-of-sample validated
+>
+> The v0.16 industry-fit claim was tested on **244 S&P 500 constituents**
+> (anti-survivorship anchor 2023-12-31) + six hand-built driver trees, per a
+> spec frozen before any test data was pulled:
+>
+> - **Driver layer**: industry-default forecasts beat naive per-driver
+>   trending on 3 of 4 testable trees (SBUX **0.7%** vs 3.6%, META 4.6% vs
+>   6.7%, NVDA Gaming **3.0%** vs 10.9% sMAPE)
+> - **Weak-fit redirect works**: warnings fired **2/2** with **0/4** false
+>   alarms, and Monte Carlo P10–P90 bands framed all three weak-fit test
+>   years (JPM NII landed at P46; NVDA Data Center at P75/P66)
+> - **Honest nulls published**: growth-revert falsified at home; totals
+>   layer belongs to statistical baselines
+>
+> Full scorecard: [docs/profile-validation.md](docs/profile-validation.md)
 
-Most open-source finance tooling covers **trading / backtesting** (zipline,
-backtrader, QuantLib) or **DCF valuation**. **Driver-based revenue forecasting**
-— decomposing revenue into `base × penetration × share × price`, what sell-side
-analysts and PE associates actually do — has almost no open-source presence.
+## Why this exists
 
-The closest neighbors are TAM/SAM/SOM **prompt skills** for AI agents
-(e.g. `slgoodrich/agents`, `deanpeters/Product-Manager-Skills`) — they describe
-the methodology in natural language, but **none is a runnable engine**. This
-project is: a minimal, pip-installable encoding of the workflow with the
-math enforced in code rather than left to a prompt.
+Open-source finance tooling covers trading and backtesting
+(zipline, QuantLib) and DCF valuation — but **driver-based revenue
+forecasting**, the `base × penetration × share × price` decomposition that
+sell-side analysts and PE associates actually build in Excel, has no
+runnable engine. Prompt skills describe the method; this library *is* the
+method — the math enforced in code, not left to a spreadsheet comment.
 
-A sell-side revenue model lives or dies on whether you can defend *every*
-number — "where did this penetration come from? why isn't it higher?" Manual
-spreadsheets answer that with cryptic comments. `revenue-model-builder` makes
-it structural: every driver carries a credibility grade and a source, the
-residual is a first-class line, and an alignment check catches the classic
-"back-solved penetration" trap before it poisons the forecast.
+A revenue model lives or dies on whether you can defend every number.
+Here every driver carries a **credibility grade (A/B/C)** and a source, the
+**residual is a first-class line** (not a fudge), and checks catch the
+classic traps — back-solved penetration, residual dominance — before they
+poison the forecast.
 
-## How it compares
-
-| | revenue-model-builder | market-sizing SKILLs | DCF valuation libs |
+| | revenue-model-builder | market-sizing prompt skills | DCF libs |
 |---|---|---|---|
-| Runnable code engine | ✅ | ❌ prompt only | ✅ |
-| Focus | revenue build-up | market size (TAM/SAM/SOM) | intrinsic value |
-| Aligns to reported total (residual) | ✅ structural | ❌ | n/a |
-| A/B/C data grading per number | ✅ | ❌ | ❌ |
-| Uncertainty (Monte Carlo + tornado) | ✅ | ❌ | sometimes |
-| Core dependency footprint | **zero** | n/a | usually numpy + data API |
+| Runnable engine | ✅ | ❌ prompt only | ✅ |
+| Industry-aware defaults (10 profiles) | ✅ | ❌ | ❌ |
+| Aligns to reported totals (structural residual) | ✅ | ❌ | n/a |
+| A/B/C grading per number | ✅ | ❌ | ❌ |
+| Uncertainty (MC + tornado, pure stdlib) | ✅ | ❌ | sometimes |
+| Core dependency footprint | **0** | n/a | usually numpy + API |
 
-## Core idea
+## One image: where driver trees work — and where they break
 
-```
-segment_revenue = market_base × penetration × share × price
-total_revenue   = Σ(segments) + residual          # residual absorbs un-modeled biz
-```
+![NVIDIA Gaming vs Data Center — actual vs driver extrapolation](examples/nvda_demo/nvda_backtest.png)
 
-Unit derivation: base in **million units** × price in **yuan** = **million
-yuan** (when penetration & share are fractions in [0,1]). So `Segment.revenue()`
-returns million yuan by construction.
+Same company, same formula, same engine — **Gaming** (mature market) tracks
+at **1.0% sMAPE** while **Data Center** (AI regime shift) misses 6× *and
+the engine flags it before the hold-out opens*, redirecting to Monte Carlo
+scenarios whose Bull tail frames the actual $115B. Accuracy is a property
+of the industry's growth mechanism — v0.16 encodes that as 10 mechanism
+profiles with strong/adapt/weak fit classes ([validated out-of-sample](
+docs/profile-validation.md)).
 
-## Install
+## 60-second start
 
 ```bash
-pip install -e .                  # core engine only (pure stdlib, zero deps)
-pip install -e ".[excel]"         # + openpyxl, to render .xlsx output
-pip install -e ".[docx]"          # + python-docx & matplotlib, to render .docx memos
-pip install -e ".[dev]"           # + pytest, to run the test suite
-pip install -e ".[backtest]"      # + statsmodels, for Holt/ARIMA backtesting
+pip install revenue-model-builder
 ```
 
-## Quick start
-
-**Build a model and validate it aligns to reported totals:**
-
 ```python
-from revenue_model import Driver, Segment, RevenueModel, BASE, PENETRATION, SHARE, PRICE
+from revenue_model import (
+    Driver, Segment, RevenueModel, BASE, PENETRATION, SHARE, PRICE,
+    forecast_segment, segment_warnings, simulate_segment,
+)
 
 seg = Segment(
-    name="cockpit-domestic",
+    "cockpit-domestic",
     base=Driver("China passenger car sales", BASE, {2022: 22.0, 2023: 23.0},
-                level="A", unit="million units", source="CAAM"),
+                level="A", unit="M units", source="CAAM"),
     penetration=Driver("DMS penetration", PENETRATION, {2022: 0.04, 2023: 0.06},
                        level="B", unit="fraction", source="research institute"),
     share=Driver("market share", SHARE, {2022: 0.10, 2023: 0.12},
                  level="C", unit="fraction", source="estimate"),
     price=Driver("ASP", PRICE, {2022: 600, 2023: 620},
                  level="C", unit="yuan", source="benchmark"),
+    industry="consumer_electronics",   # <- the one tag that changes everything
 )
-model = RevenueModel("DemoCo", [seg], total_revenue={2022: 110.0, 2023: 215.0})
+model = RevenueModel("DemoCo", [seg], total_revenue={2022: 78.0, 2023: 163.0})
 
-for r in model.validate_all():
-    print(r.year, f"segments={r.segment_sum:.1f}", f"residual={r.residual:.1f}",
-          f"({r.residual_ratio:.0%})", r.warnings)
-```
-
-**Run the fictional demo** (NovaTech, an automotive-AI company — all data fabricated):
-
-```bash
-python -m revenue_model.demo
-```
-
-**Render the model to a formatted .xlsx** (needs the `[excel]` extra):
-
-```bash
-python -m revenue_model.excel_builder output.xlsx
-```
-
-**Render the model to a Word research memo (.docx)** (needs the `[docx]` extra):
-
-> **Language**: the memo is bilingual — `lang="en"` (default, for the global /
-> PyPI audience) or `lang="zh"` (中文版). Every memo carries a footnote showing
-> the active language and how to switch.
-
-```python
-from revenue_model.docx_builder import build_docx
-
-build_docx(model, "memo.docx", lang="en")            # English (default)
-build_docx(model, "memo_zh.docx", lang="zh")         # 中文版
-```
-
-Or via CLI:
-
-```bash
-python -m revenue_model docx -o memo.docx --lang en      # default
-python -m revenue_model docx -o memo.docx --lang zh      # 中文版
-python -m revenue_model docx -o memo.docx --no-charts    # tables only (skip matplotlib)
-```
-
-The 7-section memo — Executive Summary → Company & Segment Overview →
-ABC-graded Driver Tables → Residual Alignment → Uncertainty & Scenarios (with
-embedded Monte Carlo distribution / tornado / forecast charts) → Limitations →
-Methodology — is the **narrative** counterpart to the Excel **working paper**.
-Two honest defaults: `ranges=None` flags the default ±10% Monte Carlo bands as
-illustrative; `forecast_years=None` produces a historical-only memo (or a
-`[not yet populated]` alarm if passed unfilled) — never silent.
-
-**Build a model from tushare (A-share, NEV / intelligent-driving)**:
-
-The structured-data adapter auto-fills `total_revenue` from tushare's income
-statement and seeds intelligent-driving segment drivers from an industry
-template (智能驾驶 / 智能座舱; values are `[adapter]` placeholders for you to
-fill — the machine gives the anchor + structure, the analyst fills the
-C-grade driver values).
-
-```python
-from revenue_model.tushare_adapter import build_model_from_tushare
-# load token via your secrets manager; never hardcode
-model = build_model_from_tushare("002405.SZ", token=TUSHARE_TOKEN)
-```
-
-Or via CLI:
-
-```bash
-TUSHARE_TOKEN=... python -m revenue_model tushare 002405.SZ
-python -m revenue_model tushare 002405.SZ --token ... --years 2020 2021 2022
-```
-
-Verified end-to-end on 德赛西威 (002405.SZ): 20 years of real revenue pulled
-and aligned as the residual anchor.
-
-**US equities via SEC EDGAR** (no key needed — SEC is public):
-
-```python
-from revenue_model.sec_adapter import build_model_from_sec
-model = build_model_from_sec("NVDA")   # US ticker
-```
-
-**HK equities via AKShare** (needs the `[data]` extra):
-
-```python
-from revenue_model.akshare_adapter import build_model_from_akshare
-model = build_model_from_akshare("01211")   # HK code, e.g. 比亚迪股份
-```
-
-Or via CLI: `python -m revenue_model sec NVDA` / `akshare 01211`.
-
-**Reported segment revenue via stockanalysis.com** (needs the `[scrape]` extra — playwright; SEC XBRL segment tags vary per issuer, so this fills the gap `sec_adapter` leaves):
-
-```python
-from revenue_model.sa_adapter import build_model_from_sa
-model = build_model_from_sa("NVDA")   # pulls Compute & Networking + Graphics
-```
-
-The three total-revenue adapters (`tushare` / `sec` / `akshare`) fill `total_revenue`
-from structured official sources and seed intelligent-driving segment drivers as
-placeholders. The segment adapter (`sa`) additionally fills each Segment's
-`reported_revenue` A-grade anchor (history-first, Principle 5); drivers stay as
-the forecast layer a human fills. Verified: NVDA FY22-FY26, Σ reported segments == total.
-
-**Quarterly market-platform detail via q4cdn IR PDFs** (needs the `[pdf]` extra — PyMuPDF; some companies publish a finer "Revenue by Market Platform" PDF supplement on Q4 Inc's CDN, e.g. NVDA's "Rev by Mkt Qtrly Trend"):
-
-```python
-from revenue_model.q4cdn_adapter import fetch_market_platform, fiscal_year_rollup
-# Quarterly granularity (Q1FY25..Q1FY27) + sub-market splits (Hyperscale / ACIE / Edge)
-data, quarters = fetch_market_platform(url)
-dc_annual, dc_complete = fiscal_year_rollup(data["Data Center"])   # quarters -> FY; dc_complete = years with all 4 quarters
-```
-
-Quarterly granularity and sub-market detail the annual adapters can't reach. The
-market-platform caliber differs from the business-segment caliber, so this adapter
-is a **data layer** (no `build_model_*`) — see `examples/web_scraping/`.
-
-**Caching** — the network adapters (`sec` / `sa` / `q4cdn`) cache their raw fetches to disk (default `~/.cache/rmb/`; override via `RMB_CACHE_DIR`, e.g. `RMB_CACHE_DIR=D:\rmb_cache`). Repeat calls read the cache instead of re-fetching (faster, fewer requests, warm-cache works offline); `refresh=True` forces a re-fetch. Injectable getters bypass the cache so tests stay offline.
-
-## Monte Carlo & sensitivity
-
-Turn point forecasts into **distributions** and find out **which assumption
-matters most** — pure stdlib, no numpy:
-
-```python
-from revenue_model import simulate_model, tornado
-
-# Revenue distribution: sample uncertain drivers, multiply, repeat
-mc = simulate_model(model, 2024, {
-    "market share": (0.10, 0.18),      # C-grade, wide band
-    "ASP": (620, 680),
-}, n=20000, seed=0)
-print(mc.median, mc.percentiles["p5"], mc.percentiles["p95"])  # P5/median/P95
-
-# Tornado: per-driver bands (NOT a uniform %) -> ranked swing
-for it in tornado(seg, 2024, {
-    "China passenger car sales": (23.5, 24.5),   # A-grade, narrow
-    "DMS penetration": (0.07, 0.12),             # B-grade
-    "market share": (0.10, 0.18),                # C-grade, wide
-    "ASP": (620, 680),
-}):
-    print(f"{it.driver:28s} swing {it.swing:.1f}")
-```
-
-> **Why per-driver bands, not a uniform ±%?** Revenue is a *product*
-> (`base × pen × share × price`), so perturbing every factor by the same
-> percentage yields **identical swings** — the tornado would have zero
-> discriminating power. A tornado is only meaningful when each band reflects
-> that driver's real uncertainty: narrow for A-grade hard data, wide for
-> C-grade estimates. (This is why A/B/C grading and sensitivity are linked.)
-
-## Stochastic processes (experimental)
-
-Upgrade uniform-sampling Monte Carlo to **driver-specific stochastic processes** —
-pure stdlib, no numpy. Prices follow geometric Brownian motion; bounded ratios
-(penetration, share) follow a logit-OU process that stays in (0, 1); drivers
-can be correlated via Cholesky.
-
-```python
-from revenue_model.stochastic import (
-    GBMDriver, LogitOUDriver, CorrelatedBundle, simulate_revenue, logit)
-
-price = GBMDriver("ASP", S0=650.0, mu=0.03, sigma=0.10)                # log-normal price
-share = LogitOUDriver("market share", p0=0.14, theta=2.0,
-                      mu_bar=logit(0.18), sigma=0.10)                  # bounded, mean-reverting
-bundle = CorrelatedBundle([price, share], rho=[[1.0, -0.3], [-0.3, 1.0]])
-
-mc = simulate_revenue(segment, 2024, bundle, n=20000, seed=0)         # -> MCResult
+print(model.validate_all())               # Σ segments + residual == reported
+fc = forecast_segment(seg, [2024, 2025])  # industry-default extrapolations
+for w in segment_warnings(fc):            # fit verdict, before you forecast
+    print(w)
+mc = simulate_segment(fc, 2024, {"market share": (0.10, 0.18)}, n=20000)
 print(mc.median, mc.percentiles["p5"], mc.percentiles["p95"])
 ```
 
-See [design principles: stochastic layer](docs/design-principles.md#stochastic-layer)
-for the SDEs and why logit-OU keeps bounded ratios bounded.
+Or watch the GIF above. CLI: `python -m revenue_model {build, simulate, excel, docx, extract, sec, akshare, tushare}`.
 
-> Experimental — the uniform Monte Carlo above remains the default. See
-> [`tests/test_stochastic.py`](tests/test_stochastic.py) for analytic-solution
-> validation (GBM mean, OU stationary variance, induced correlation).
+## What's inside
 
-## Backtesting
+| Feature | Benefit |
+|---|---|
+| **Driver-tree core** (pure stdlib, zero deps) | Auditable `base × penetration × share × price` with A/B/C grades and sources — no black box |
+| **Structural residual** | Segments align to reported totals; the un-modeled remainder is visible, not hidden |
+| **10 industry profiles** (v0.16) | Tag `industry=` and get analyst-first defaults, industry checks, and weak-fit scenario redirects — soft defaults, hand overrides always win |
+| **Monte Carlo + tornado** | Per-driver uncertainty bands (not uniform %); find which assumption actually moves revenue — pure stdlib |
+| **Honest backtesting** | Out-of-sample sMAPE across Naive/Linear/CAGR/Holt/ARIMA + profile-implied shape methods; the [validation report](docs/profile-validation.md) publishes its nulls |
+| **Data adapters** (optional extras) | SEC EDGAR / A-share tushare / HK akshare / Q4 IR PDFs — pull real filings into driver histories |
+| **Excel / Word output** | Model workbook with formulas; methodology memo with charts |
+| **LLM segment extraction** | Annual-report text → segment skeletons (injectable LLM, tests need no key) |
 
-How accurate is a revenue forecast, really? The `backtest` extra answers that
-with **honest out-of-sample evaluation** — fit on history, predict the next
-year, slide the window forward, and never let a method see the value it must
-predict.
+### Deep dives (each links to docs + runnable example)
 
-Five methods head-to-head: **Naive** (random walk — the benchmark to beat),
-**Linear** trend, **CAGR** (log-linear / constant-growth), **Holt** exponential
-smoothing, and **ARIMA**. Pure-stdlib metrics (`sMAPE` / `MAPE` / `MAE` / `RMSE`
-/ R² / directional accuracy); `sMAPE` is the headline number because it stays
-robust across companies of very different sizes. `Naive` / `Linear` / `CAGR`
-need nothing; `Holt` / `ARIMA` lazy-import statsmodels.
+- **Industry fit** — the matrix, NVDA/Luxun natural experiments →
+  [docs](docs/industry-fit-analysis.md) ·
+  [examples/industry_demo](examples/industry_demo/)
+- **Profile validation** — the pre-registered 244-company test →
+  [docs](docs/profile-validation.md) ·
+  [examples/profile_validation](examples/profile_validation/)
+- **News-impact validation** — do 8-K events predict revenue? (spoiler: no,
+  and that's the finding) → [docs](docs/news-impact-validation.md)
+- **Backtest** — adaptive methods vs driver structure on real data →
+  [examples/backtest_demo](examples/backtest_demo/)
+- **Real-data demos** — NVDA (SEC, quarterly granularity),
+  Luxun/Desay SV (A-share 20-year), zhipu ARR ladder →
 
-```python
-from revenue_model.backtest import (
-    Naive, LinearTrend, LogLinearCAGR, HoltLinear, ARIMA,
-    rolling_backtest, evaluate, score_table,
-)
+  [examples/](examples/)
 
-steps = rolling_backtest(
-    years, values,
-    [Naive(), LinearTrend(), LogLinearCAGR(), HoltLinear(), ARIMA()],
-    min_train=8, horizon=1)
-print(score_table(evaluate(steps)))
+## Install
+
+Core is dependency-free; extras opt in:
+
+```bash
+pip install revenue-model-builder                 # core, zero deps
+pip install revenue-model-builder[excel]          # openpyxl
+pip install revenue-model-builder[docx]           # python-docx + matplotlib
+pip install revenue-model-builder[backtest,data]  # statsmodels + akshare
 ```
 
-Real A-share data loads through the `data` extra (akshare, cached as CSV for
-reproducibility). **Ten companies spanning six growth regimes**:
-
-| method | avg sMAPE | wins (best / 10) |
-|---|---|---|
-| **Holt / ARIMA** (adaptive) | **~14%** | **10 / 10** |
-| Naive | 21% | 0 |
-| Linear / CAGR (fixed trend) | 36% / 31% | 0 |
-
-![sMAPE heatmap — company × method](examples/backtest_demo/heatmap_smape.png)
-
-> **What this teaches about the framework itself.** On the revenue *total*
-> level, adaptive statistical methods dominate fixed trends — high-growth
-> names grow exponentially, so a linear fit systematically under-predicts and
-> even gets the *direction* wrong. The value of the **driver decomposition**
-> is therefore *not* "guess the total more accurately" (statistics does that
-> better) but **locating structure**: which segment rides a trend and which
-> rides a one-off event (e.g. Luxun's 2025 Leoni acquisition — invisible to any
-> aggregate method). Accuracy and interpretability are complements, not
-> substitutes. See [`examples/backtest_demo/`](examples/backtest_demo/).
-
-## NVIDIA demo — where driver trees work, and where they break
-
-The first **U.S.-equity** demo. NVIDIA is a deliberately two-faced test: **same
-company, same `base × penetration × share × price` tree, same engine** — Gaming
-hold-out **sMAPE 1.0%** (mature trend market) vs Data Center **60%** (AI regime
-shift; FY2025 actual $115.2B vs forecast $18.4B). The demo then closes the loop
-with a Monte Carlo scenario band whose Bull tail frames the actual where the
-point forecast collapsed.
-
-![NVIDIA Gaming vs Data Center — actual vs driver extrapolation](examples/nvda_demo/nvda_backtest.png)
-
-> Accuracy is a property of the **industry's growth mechanism**, not the
-> model — and the claim is now pre-registered-tested: at the driver layer the
-> profile defaults beat naive per-driver trending on 3 of 4 testable trees,
-> while at the company-total layer statistics (Naive/damped) dominates. See
-> [`docs/profile-validation.md`](docs/profile-validation.md) for the full
-> scorecard, [`examples/nvda_demo/`](examples/nvda_demo/) and the flagship
-> methodology doc
-> [`docs/industry-fit-analysis.md`](docs/industry-fit-analysis.md) — the
-> industry-fit matrix, five techniques for event-driven growth, and why this
-> library chooses honesty over false precision.
-
-## Industry profiles — the fit matrix, executable (v0.16)
-
-The NVDA demo left the industry-fit lesson in a hand-written script. v0.16
-moves it into the engine: tag a segment with an **industry**, and it gets
-analyst-first forecast defaults, industry-specific checks, and — where the
-point forecast is a category error — the loud redirect to scenarios. **10
-mechanism profiles** (never hard blocks: hand extrapolations always win):
-
-| fit | profiles | engine behavior |
-|---|---|---|
-| **strong** | `consumer_electronics` (ASP erosion 5%/yr), `semiconductor` | trend/hold defaults; back-test will be tight |
-| **adapt** | `saas_subscription` (logistic adoption, ARPU escalator), `advertising` (sticky ad load, mean-reverting eCPM), `retail_store`, `telecom_subscriber` (subscriber S-curve), `industrial_capacity` (utilization reverts to 80%) | the tree with swapped factors + per-industry checks |
-| **weak** | `financial_interest` (yield → policy-rate anchor), `commodity_cyclical` (cycle-top check), `regime_shift_tech` | point forecast still runs *as a baseline*, but `segment_warnings()` fires the scenario-first redirect |
-
-```python
-from revenue_model import (
-    Segment, forecast_segment, segment_warnings, resolve_industry,
-)
-
-seg = Segment(..., industry="saas_subscription")   # or "40", "financials", "银行"
-fc  = forecast_segment(seg, [2026, 2027])          # profile-default extrapolations
-for w in segment_warnings(fc):                     # fit verdict + industry checks
-    print(w)
-```
-
-Checks fire **before** you forecast: tag NVDA Data Center `semiconductor` and
-the hypergrowth check (`base compounding +58%/yr → consider
-regime_shift_tech`) redirects you before the hold-out ever opens. Full story:
-[`examples/industry_demo/`](examples/industry_demo/). Also new on `Driver`:
-`extrapolate_mean_reversion` / `extrapolate_erosion` / `extrapolate_growth` /
-`extrapolate_hold`.
-
-**Pre-registered validation (2026-09).** 244 S&P 500 constituents
-(anti-survivorship anchor 2023-12-31) + six hand-built driver trees tested
-the matrix out-of-sample. Verdict: driver-layer defaults win where the
-mechanism is testable (SBUX 0.7% vs 3.6%, META 4.6% vs 6.7%, NVDA Gaming
-3.0% vs 10.9% sMAPE vs naive trending), the weak-fit redirect is a validated
-deliverable (warning hit 2/2, false alarms 0/4, MC P10-P90 framed all three
-weak-fit test years) — and the company-total layer belongs to statistical
-baselines, exactly as the backtest doc found. One shape method (decelerating
-CAGR) graduated with double significance; one (growth-revert) was honestly
-falsified at home. Full scorecard:
-[`docs/profile-validation.md`](docs/profile-validation.md).
-
-## Segment extraction (from annual reports)
-
-Automate the tedious part of segment build-up — pull a **segment skeleton**
-(business lines, revenue, share, YoY, margin, a driver-type tag, driver hints)
-out of an annual report's "main business analysis" text via an LLM. Pure stdlib
-HTTP (no SDK); the LLM call is injectable, so tests/CI need no API key.
-
-```python
-from revenue_model import extract_segments, alignment_check
-
-# text = the "main business analysis" section (extracted upstream via PyMuPDF)
-parsed = extract_segments(text, api_key="<your-llm-key>")   # load via secrets manager
-print(parsed["segments"])                                   # segment skeletons
-print(alignment_check(parsed))                             # Σ + residual ≈ reported total
-```
-
-The output matches the schema in
-[docs/proposal-segment-extraction.md](docs/proposal-segment-extraction.md) §4.
-Filling concrete driver *values* (C-grade estimates) remains a human step — see
-the proposal's semi-automated boundary (§7). **Proprietary / non-public
-company data must not enter the repo**; real-company demos (Luxun, NVIDIA) use
-only public disclosures (see [DISCLAIMER.md](DISCLAIMER.md)). The fictional
-NovaTech is the zero-real-data default.
-
-## News-impact validation (8-K events + honest event studies)
-
-Direction-3 asked whether filing events can improve revenue forecasts. The
-answer, after a six-company pooled validation (NVDA / AMD / SDGR / REGN /
-GILD / GM, 409 8-K events, 2019-2026): **not at monthly granularity for
-large caps** — a seductive single-company p-value (SDGR p = 0.033) dissolved
-under pooling, market adjustment and multiplicity control. The full story,
-including two `sec_adapter` data bugs the rebuild uncovered, is in
-[`docs/news-impact-validation.md`](docs/news-impact-validation.md).
-
-What ships from the exercise:
-
-```python
-from revenue_model import form8k_adapter, news_impact, sec_adapter
-from datetime import date
-
-events = form8k_adapter.fetch_8k_events("NVDA", since=date(2019, 1, 1))
-# [{"date": ..., "category": "Earnings"|"Agreement"|"M&A"|..., "items": ...}]
-
-quarters = sec_adapter.fetch_fiscal_quarters(cik)   # fiscal-year general,
-# concept-merged single quarters (NVDA's late-Jan FY handled; incomplete
-# trailing years excluded)
-
-res = news_impact.event_study(
-    events_by_sample={"NVDA": [(e["date"], e["category"]) for e in events],
-                      "AMD": ...},                  # pool, never one issuer
-    outcomes_by_sample={"NVDA": {q[2]: q[3] for q in quarters_yoy}, ...},
-    min_n=8)                                          # small n -> note, no test
-# res.rows[i].welch_p / mwu_p / significant / bonferroni_significant
-```
-
-- **`form8k_adapter`** — 8-K events from SEC's submissions API: universal
-  coverage, official item classification, no key, cached, `http_get`
-  injectable.
-- **`news_impact`** — pure-stdlib Welch t + Mann-Whitney U (scipy-verified),
-  pooled event studies with automatic Bonferroni family correction and
-  small-sample guards.
-- **`sec_adapter` fixes** — revenue-concept switching no longer drops years;
-  YTD/discrete period collisions no longer corrupt single-quarter
-  differencing; new `fetch_fiscal_quarters()` builds fiscal-general
-  quarterly series.
+Python 3.9–3.13 · MIT license ·
+[Documentation](https://ljftwq-dev.github.io/revenue-model-builder/) ·
+[Changelog](CHANGELOG.md)
 
 ## Design principles
 
-| # | Principle | What it prevents |
-|---|---|---|
-| 1 | **Residual is structural, never back-solved** | Inflating penetration to "tie out" poisons the forecast |
-| 2 | **A/B/C data grading** | Opaque spreadsheets — every number is traceable |
-| 3 | **Incremental, not growth-rate, for penetration** | Bounded ratios exploding exponentially |
-| 4 | **Forecast certainty pyramid** | Treating all inputs as equally knowable |
-| 5 | **History first, then forecast** | Forecasting before the model reproduces history |
+Five hard-won rules, enforced structurally: structural residual · A/B/C
+data grading · incremental (not growth-rate) penetration · certainty
+pyramid · history-first workflow →
+[docs/design-principles.md](docs/design-principles.md)
 
-Plus a validation layer (triangulation, assumption documentation, S-curves):
-**[docs/design-principles.md](docs/design-principles.md)**.
-
-## API
-
-```python
-Driver(name, kind, values, level="C", unit="", source="")
-#   kind ∈ {BASE, PENETRATION, SHARE, PRICE};  level ∈ {"A","B","C"}
-
-Segment(name, base, penetration, share, price, industry="")
-#   .revenue(year) -> float  (million yuan)
-#   industry: optional mechanism key / GICS alias -> forecast defaults + checks
-
-implied_driver(segment, year, target_revenue, solve_kind) -> float
-#   calibrate one driver to a known revenue (e.g. reported segment revenue);
-#   prefer solve_kind=PRICE/BASE over PENETRATION (avoids the back-solve trap)
-
-RevenueModel(company, segments, total_revenue)
-#   .validate(year)  -> YearResult   (segment_revenues, residual, warnings)
-#   .validate_all()  -> list[YearResult]
-
-simulate_segment(segment, year, ranges, n=10000, seed=0) -> MCResult
-simulate_model(model, year, ranges, n=10000, seed=0)     -> MCResult
-#   ranges: {driver_name: (low, high)};  MCResult has mean/median/stdev/percentiles
-
-tornado(segment, year, ranges) -> list[SensitivityItem]   # ranked by swing
-
-scenarios(mc, *, bear_p=0.10, bull_p=0.90) -> list[Scenario]  # Bear/Base/Bull from the distribution
-
-extract_segments(text, *, api_key=None, llm=None) -> dict  # segment skeleton from annual report
-alignment_check(parsed) -> dict                            # Σ + residual ≈ reported total
-
-resolve_industry("saas_subscription" | "40" | "financials" | "银行") -> IndustryProfile
-list_profiles() -> [(key, fit, label)]                     # the 10-mechanism catalog
-forecast_segment(seg, years, *, profile=None) -> Segment   # industry-default drivers
-check_segment(seg) / segment_warnings(seg) -> list[str]    # industry checks + fit verdict
-```
-
-## Project structure
-
-```
-revenue-model-builder/
-├── revenue_model/
-│   ├── driver.py        # Driver — one factor (base/pen/share/price) + ABC grade
-│   ├── segment.py       # Segment — revenue = base × pen × share × price
-│   ├── model.py         # RevenueModel — residual + alignment validation
-│   ├── monte_carlo.py   # revenue distribution + tornado sensitivity (pure stdlib)
-│   ├── industry.py      # 10 mechanism profiles: fit classes, forecast defaults, checks
-│   ├── extractor.py     # annual-report text -> segment skeleton (LLM, pure stdlib)
-│   ├── excel_builder.py # render to .xlsx (ABC colors, IF formulas, residual)
-│   ├── docx_builder.py  # render to .docx research memo (bilingual, ABC, charts)
-│   ├── backtest/        # out-of-sample backtesting (metrics / methods / rolling / data)
-│   ├── form8k_adapter.py # 8-K filing events from SEC submissions (item-classified)
-│   ├── news_impact.py   # honest event studies: Welch/MWU (stdlib) + Bonferroni guards
-│   └── demo.py          # NovaTech fictional example
-├── tests/               # 303 tests — formula, validation, residual, MC, tornado, extractor, backtest, docx, i18n, industry profiles, tushare/sec/akshare/sa/q4cdn/ir/form8k adapters + cache + news_impact
-├── docs/
-│   └── design-principles.md
-└── pyproject.toml
-```
+*Research/education tool, not investment advice — see
+[DISCLAIMER](DISCLAIMER).*
 
 ## Roadmap
 
-- [x] Monte Carlo revenue distribution + sensitivity (tornado) analysis
-- [x] Segment skeleton extraction from annual-report text (LLM)
-- [x] Driver extrapolation API (incremental / logistic / trend-fit)
-- [ ] Driver value estimation (C-grade, from industry data)
-- [x] Bear / Base / Bull scenarios (sliced from the Monte Carlo distribution)
-- [x] Multi-market data source adapters (A股 tushare / 美股 SEC EDGAR / 港股 AKShare)
-- [ ] Automated driver extraction from annual-report text
-- [x] Reported segment-revenue adapter (stockanalysis.com via playwright, [scrape] extra)
-- [x] q4cdn IR-PDF adapter (quarterly market-platform detail, [pdf] extra)
-- [x] Word memo builder (.docx research memo, bilingual, with embedded charts)
-- [x] PyPI release
-- [x] Visualization charts (distribution / tornado / waterfall / forecast)
-- [x] Interactive Streamlit app (driver sliders -> live charts)
-- [x] Backtesting — out-of-sample method comparison (Naive / Linear / CAGR / Holt / ARIMA)
-- [x] News-impact validation (8-K event layer + honest pooled event studies; monthly/large-cap null documented)
-- [x] Macro driver revisions — QESA adapter + event→driver→re-run loop (upstream cost/demand/fx shocks → C-grade revision suggestions with elasticity, lag and evidence; [qesa] extra for MySQL)
-- [x] Industry profiles — the fit matrix executable (10 mechanism profiles + GICS/zh aliases, per-industry forecast defaults, checks, weak-fit scenario redirect)
+- **v0.17 (math kernel)**: churn-survival dynamics for subscription
+  profiles (`base × (1+gross) − base × churn`), graduating the
+  double-significant decelerating-CAGR method into the backtest battery,
+  API fix for hand-coverage in `forecast_segment`
+- **v0.18 (data anchor)**: Damodaran industry benchmarks wired into
+  profile checks — thresholds become citations
+- **v0.19 (experience)**: profile auto-recommendation from backtest
+  fingerprints; profile catalog page
+
+Full history: [CHANGELOG.md](CHANGELOG.md) ·
+[Releases](https://github.com/ljftwq-dev/revenue-model-builder/releases)
 
 ## Who is this for
 
-Sell-side research, PE/VC investment teams, equity analysts, and students of
-fundamental analysis who want a **reusable, auditable** revenue-modeling
-scaffold rather than rebuilding the same spreadsheet structure by hand.
+Sell-side/PE associates who want their revenue model to be code; quants
+researching forecastability by industry mechanism; students learning
+driver-based valuation; FP&A teams escaping spreadsheet sprawl.
+Contributions welcome — the [docs](docs/) double as the design record.
 
-## License & disclaimer
+<details>
+<summary><b>API at a glance</b> (click to expand)</summary>
 
-MIT — see [LICENSE](LICENSE). This is a **research/education tool, not investment
-advice** — full statement in [DISCLAIMER.md](DISCLAIMER.md).
+```python
+from revenue_model import (
+    Driver, Segment, RevenueModel,            # core tree
+    BASE, PENETRATION, SHARE, PRICE,          # driver kinds
+    implied_driver,                           # calibrate one driver to a known
+                                              # revenue (prefer PRICE/BASE over
+                                              # PENETRATION: avoids back-solve)
+    forecast_segment, segment_warnings,       # industry defaults + checks
+    check_segment, list_profiles, resolve_industry,
+    simulate_model, simulate_segment, scenarios,   # Monte Carlo
+    tornado,                                  # per-driver sensitivity ranking
+)
+
+# Driver(name, kind, {year: value}, level="A"|"B"|"C", unit=..., source=...)
+# Segment(name, base=..., penetration=..., share=..., price=...,
+#         reported_revenue={...}, industry="saas_subscription" | "40" | "银行")
+# Segment.revenue(year) -> float
+# RevenueModel.validate_all() -> [YearResult(segment_sum, residual, warnings)]
+# CLI: python -m revenue_model {build, simulate, excel, docx, extract,
+#                               sec, akshare, tushare}
+```
+
+Layout: `revenue_model/` (engine) · `docs/` (methodology + validation
+reports) · `examples/` (NVDA, Luxun, industry demo, profile validation,
+backtest, ARR ladders) · tests (303, pure-stdlib CI).
+
+</details>

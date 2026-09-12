@@ -1,464 +1,203 @@
+<div align="center">
+
+<img src="assets/logo.png" width="180" alt="revenue-model-builder logo"/>
+
 # revenue-model-builder
 
+**像卖方分析师一样预测收入——一棵引擎能辩护、能分级、能压力测试的 driver tree。**
+
 [![CI](https://github.com/ljftwq-dev/revenue-model-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/ljftwq-dev/revenue-model-builder/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docs](https://img.shields.io/badge/docs-mkdocs%20Material-536DFE.svg)](https://ljftwq-dev.github.io/revenue-model-builder/)
+[![PyPI](https://img.shields.io/pypi/v/revenue-model-builder.svg)](https://pypi.org/project/revenue-model-builder/)
+[![Downloads](https://img.shields.io/pypi/dm/revenue-model-builder.svg)](https://pypi.org/project/revenue-model-builder/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
-[![Dependencies: zero](https://img.shields.io/badge/dependencies-0-success.svg)](#安装)
+[![Dependencies: zero](https://img.shields.io/badge/core%20dependencies-0-success.svg)](#安装)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**English: [README.md](README.md)**
+English documentation: [README.md](README.md)
 
-一个**自下而上的收入预测框架**——把 driver tree
-（`市场基数 × 渗透率 × 市占率 × 单价`）变成**可审计**的收入模型，通过一条
-结构性的差额行（residual）对齐到年报总收入。核心引擎**零第三方依赖**（纯 Python 标准库），
-蒙特卡洛 + 敏感度分析层也是。
+<img src="assets/demo.gif" width="640" alt="60 秒演示：校验对齐、行业默认预测、蒙特卡洛"/>
 
-设计上编码了五条踩过坑才总结出的建模铁律（详见
-[设计原则白皮书](docs/design-principles.md)）：**结构性差额行**、**ABC 数据等级**、
-**增量法**、**确定性金字塔**、**先历史后预测**。
+*零依赖。纯标准库蒙特卡洛。每个数字都带来源与可信度分级。*
+
+`分部收入 = 市场基数 × 渗透率 × 市占率 × 单价`
+`总收入   = Σ(分部) + 差额行`
+
+</div>
 
 ---
 
-## 为什么需要它
+> ### 预注册、外样本验证
+>
+> v0.16 的行业适配论点已在 **244 家标普 500 成分股**（防幸存者偏差，锚定
+> 2023-12-31 时点）+ 六棵手工 driver 树上按"测试集开启前冻结 spec"的纪律做过检验：
+>
+> - **Driver 层**：行业默认预测在可测的 4 棵树里 3 棵胜过朴素逐因子趋势
+>   （SBUX **0.7%** vs 3.6%、META 4.6% vs 6.7%、NVDA Gaming **3.0%** vs 10.9% sMAPE）
+> - **Weak 档重定向有效**：警告命中 **2/2**、误报 **0/4**，蒙特卡洛 P10–P90
+>   框住全部三个 weak 档测试年（JPM NII 落在 P46；NVDA 数据中心 P75/P66）
+> - **诚实公布零结果**：增长回归法在主场被否证；公司总收入层属于统计基线
+>
+> 完整记分牌：[docs/profile-validation.md](docs/profile-validation.md)
 
-市面上的开源金融工具，要么是**交易/回测**（zipline、backtrader、QuantLib），要么是
-**DCF 估值**。而卖方分析师、PE 投资经理真正在做的 **driver-based 收入拆解预测**
-（把收入拆成 `基数 × 渗透率 × 市占率 × 单价`），几乎没有开源实现。
+## 为什么做这个
 
-最接近的是给 AI agent 用的 TAM/SAM/SOM **prompt skill**（如 `slgoodrich/agents`、
-`deanpeters/Product-Manager-Skills`）——它们用自然语言描述方法论，但**没有一个是能跑的引擎**。
-本项目就是：把工作流用代码固化、数学由引擎强制执行，而不是交给一段 prompt。
+开源金融工具覆盖了交易回测与 DCF 估值，但卖方分析师每天在 Excel 里搭的
+**driver 分解收入预测**（`基数 × 渗透率 × 市占率 × 单价`）没有可运行的引擎。
+Prompt skill 只描述方法；本库**就是方法本身**——数学写进代码，不留在表格注释里。
 
-一份卖方收入模型，成败在于你能不能**为每一个数字辩护**——"这个渗透率哪来的？为什么不能再
-高点？" 手工 Excel 用晦涩的批注回答。`revenue-model-builder` 把它做成结构化的：每个 driver
-自带可信度等级和来源，差额行是一等公民，对齐校验会在"反推渗透率"污染预测期之前就拦住。
+收入模型生死取决于每个数字能否被追问。这里每个 driver 带 **A/B/C 可信度分级**
+与来源，**差额行是一等公民**（不是凑数），经典陷阱（反解渗透率、差额占比
+过高）在污染预测之前就被检查拦下。
 
-## 与同类对比
-
-| | revenue-model-builder | market-sizing SKILL | DCF 估值库 |
+| | revenue-model-builder | 市场规模 prompt skill | DCF 库 |
 |---|---|---|---|
-| 可运行的代码引擎 | ✅ | ❌ 仅 prompt | ✅ |
-| 聚焦点 | 收入拆解 | 市场容量 (TAM/SAM/SOM) | 内在价值 |
-| 对齐年报总收入（差额行）| ✅ 结构性 | ❌ | 不适用 |
-| 每个数字 ABC 分级 | ✅ | ❌ | ❌ |
-| 不确定性（蒙特卡洛 + tornado）| ✅ | ❌ | 部分有 |
-| 核心依赖 | **零** | 不适用 | 通常 numpy + 数据 API |
+| 可运行引擎 | ✅ | ❌ 仅 prompt | ✅ |
+| 行业感知默认（10 画像） | ✅ | ❌ | ❌ |
+| 对齐报告总收入（结构性差额行） | ✅ | ❌ | 不适用 |
+| 每个数字 A/B/C 分级 | ✅ | ❌ | ❌ |
+| 不确定性（MC + 龙卷风，纯标准库） | ✅ | ❌ | 部分有 |
+| 核心依赖 | **0** | 不适用 | 通常 numpy + API |
 
-## 核心公式
-
-```
-分项收入 = 市场基数 × 渗透率 × 市占率 × 单价
-总收入   = Σ(分项) + 差额行          # 差额行吸收未建模业务
-```
-
-单位推导：基数（百万辆）× 单价（元）= **百万元**（渗透率、市占率是 [0,1] 的小数）。
-所以 `Segment.revenue()` 按定义返回百万元。
-
-## 安装
-
-```bash
-pip install -e .                  # 仅核心引擎（纯标准库，零依赖）
-pip install -e ".[excel]"         # + openpyxl，用于输出 .xlsx
-pip install -e ".[docx]"          # + python-docx & matplotlib，用于输出 .docx 底稿
-pip install -e ".[dev]"           # + pytest，用于跑测试
-pip install -e ".[backtest]"      # + statsmodels，用于 Holt/ARIMA 回测
-```
-
-## 快速上手
-
-**建模型并校验是否对齐年报总收入：**
-
-```python
-from revenue_model import Driver, Segment, RevenueModel, BASE, PENETRATION, SHARE, PRICE
-
-seg = Segment(
-    name="舱内-国内",
-    base=Driver("中国乘用车销量", BASE, {2022: 22.0, 2023: 23.0},
-                level="A", unit="百万辆", source="CAAM"),
-    penetration=Driver("DMS 前装渗透率", PENETRATION, {2022: 0.04, 2023: 0.06},
-                       level="B", unit="小数", source="高工产业研究院"),
-    share=Driver("市占率", SHARE, {2022: 0.10, 2023: 0.12},
-                 level="C", unit="小数", source="估算"),
-    price=Driver("单价", PRICE, {2022: 600, 2023: 620},
-                 level="C", unit="元", source="对标"),
-)
-model = RevenueModel("DemoCo", [seg], total_revenue={2022: 110.0, 2023: 215.0})
-
-for r in model.validate_all():
-    print(r.year, f"分项合计={r.segment_sum:.1f}", f"差额={r.residual:.1f}",
-          f"({r.residual_ratio:.0%})", r.warnings)
-```
-
-**跑虚构公司 demo**（NovaTech，车载 AI 公司，所有数据均为虚构）：
-
-```bash
-python -m revenue_model.demo
-```
-
-**渲染成带格式的 .xlsx**（需 `[excel]` extra）：
-
-```bash
-python -m revenue_model.excel_builder 输出.xlsx
-```
-
-**渲染成 Word 研究底稿（.docx）**（需 `[docx]` extra）：
-
-> **语言**：底稿支持双语——`lang="en"`（默认，面向全球 / PyPI）或 `lang="zh"`（中文版）。
-> 每份底稿脚注都标注当前语言及切换方式。
-
-```python
-from revenue_model.docx_builder import build_docx
-
-build_docx(model, "memo.docx", lang="en")            # 英文（默认）
-build_docx(model, "memo_zh.docx", lang="zh")         # 中文版
-```
-
-或用 CLI：
-
-```bash
-python -m revenue_model docx -o memo.docx --lang en      # 默认
-python -m revenue_model docx -o memo.docx --lang zh      # 中文版
-python -m revenue_model docx -o memo.docx --no-charts    # 仅表格，不嵌图（跳过 matplotlib）
-```
-
-7 节底稿——执行摘要 → 公司与分部概述 → ABC 分级 driver 表 → 差额对齐 →
-不确定性与情景（嵌入蒙特卡洛分布 / tornado / 趋势图）→ 局限性 → 方法论——是
-Excel **工作底稿**的**叙述版**。两个诚实缺省：`ranges=None` 时蒙特卡洛用默认
-±10% 区间并标注"仅示意"；`forecast_years=None` 时只生成历史底稿（传了但没填则
-弹出 `[预测 driver 未填充]` 告警）——绝不静默。
-
-**从 tushare 构建模型（A股，新能源汽车 / 智能驾驶）**：
-
-结构化数据 adapter：自动从 tushare 利润表填 `total_revenue`（锚点），并用智能驾驶行业模板预填 segment driver（智能驾驶 / 智能座舱；值是 `[adapter]` 占位符，待你填——机器给锚点+结构，分析师填 C 级 driver 值）。
-
-```python
-from revenue_model.tushare_adapter import build_model_from_tushare
-# token 用你的密钥管理器加载，绝不硬编码
-model = build_model_from_tushare("002405.SZ", token=TUSHARE_TOKEN)
-```
-
-或用 CLI：
-
-```bash
-TUSHARE_TOKEN=... python -m revenue_model tushare 002405.SZ
-python -m revenue_model tushare 002405.SZ --token ... --years 2020 2021 2022
-```
-
-已在德赛西威（002405.SZ）端到端验证：拉取 20 年真实收入并对齐为差额锚点。
-
-**美股（SEC EDGAR，无需 key，SEC 公开）**：
-
-```python
-from revenue_model.sec_adapter import build_model_from_sec
-model = build_model_from_sec("NVDA")   # 美股代码
-```
-
-**港股（AKShare，需 `[data]` extra）**：
-
-```python
-from revenue_model.akshare_adapter import build_model_from_akshare
-model = build_model_from_akshare("01211")   # 港股代码，如比亚迪股份
-```
-
-或 CLI：`python -m revenue_model sec NVDA` / `akshare 01211`。
-
-**已披露 segment 收入（stockanalysis.com，需 `[scrape]` extra —— playwright；SEC XBRL 的 segment tag 各家公司写法不同，这个 adapter 补上 `sec_adapter` 的缺口）**：
-
-```python
-from revenue_model.sa_adapter import build_model_from_sa
-model = build_model_from_sa("NVDA")   # 抓 Compute & Networking + Graphics
-```
-
-三个总收入 adapter（`tushare` / `sec` / `akshare`）从结构化官方源填 `total_revenue`，并预填智能驾驶 segment driver 占位符。segment adapter（`sa`）额外把每个 Segment 的 `reported_revenue` A 级锚点填上（history-first，原则五）；driver 仍是分析师要填的预测层。已验证：NVDA FY22-FY26，Σ 已披露 segment == total。
-
-**季度市场平台细分（q4cdn IR PDF，需 `[pdf]` extra —— PyMuPDF；部分公司在 Q4 Inc CDN 发布更细的「Revenue by Market Platform」PDF 补充材料，如 NVDA 的「Rev by Mkt Qtrly Trend」）**：
-
-```python
-from revenue_model.q4cdn_adapter import fetch_market_platform, fiscal_year_rollup
-# 季度颗粒度（Q1FY25..Q1FY27）+ 子市场细分（Hyperscale / ACIE / Edge）
-data, quarters = fetch_market_platform(url)
-dc_annual, dc_complete = fiscal_year_rollup(data["Data Center"])   # 季度 -> 财年; dc_complete = 满4季度的年
-```
-
-季度颗粒度 + 子市场细分，年度 adapter 拿不到。市场平台口径 ≠ 业务分部口径，所以这个 adapter 是**数据层**（无 `build_model_*`）—— 见 `examples/web_scraping/`。
-
-**缓存** —— 网络 adapter（`sec` / `sa` / `q4cdn`）会把原始抓取结果缓存到磁盘（默认 `~/.cache/rmb/`；用 `RMB_CACHE_DIR` 覆盖，如 `RMB_CACHE_DIR=D:\rmb_cache`）。重复调用读缓存不再抓（更快、少请求、缓存命中时断网也能跑）；`refresh=True` 强制重抓。注入式 getter 绕过缓存，测试保持离线。
-
-## 蒙特卡洛 + 敏感度
-
-把单点预测变成**分布**，并找出**哪个假设最关键**——纯标准库，不用 numpy：
-
-```python
-from revenue_model import simulate_model, tornado
-
-# 收入分布：对不确定的 driver 采样、相乘、重复
-mc = simulate_model(model, 2024, {
-    "市占率": (0.10, 0.18),          # C 级，区间宽
-    "单价": (620, 680),
-}, n=20000, seed=0)
-print(mc.median, mc.percentiles["p5"], mc.percentiles["p95"])   # P5/中位/P95
-
-# Tornado：用每个 driver 各自的区间（不是统一 %）→ 排序摆动
-for it in tornado(seg, 2024, {
-    "中国乘用车销量": (23.5, 24.5),          # A 级，区间窄
-    "DMS 前装渗透率": (0.07, 0.12),          # B 级
-    "市占率": (0.10, 0.18),                  # C 级，区间宽
-    "单价": (620, 680),
-}):
-    print(f"{it.driver:20s} swing {it.swing:.1f}")
-```
-
-> **为什么用每个 driver 各自的区间，而不是统一 ±%？** 收入是个**乘积**
-> （`基数 × 渗透 × 市占 × 单价`），对每个因子用相同的百分比扰动，会得到**完全相同的摆动**——
-> tornado 毫无区分度。只有当每个区间反映该 driver 的真实不确定性（A 级硬数据窄、C 级估算宽），
-> tornado 才有意义。（这也正是 ABC 分级与敏感度分析相互印证的地方。）
-
-## 回测
-
-一份收入预测到底准不准？`backtest` extra 用**诚实的样本外评估**回答——
-用历史拟合、预测下一年、滑动窗口前进，绝不让方法看到它要预测的那个值。
-
-五种方法正面交锋：**Naive**（随机游走，要击败的基准）、**Linear** 趋势、
-**CAGR**（对数线性/恒定增速）、**Holt** 指数平滑、**ARIMA**。纯标准库指标
-（`sMAPE` / `MAPE` / `MAE` / `RMSE` / R² / 方向命中率）；`sMAPE` 是主指标，因为它在
-体量差异极大的公司间依然稳健。Naive/Linear/CAGR 零依赖；Holt/ARIMA 惰性导入 statsmodels。
-
-```python
-from revenue_model.backtest import (
-    Naive, LinearTrend, LogLinearCAGR, HoltLinear, ARIMA,
-    rolling_backtest, evaluate, score_table,
-)
-
-steps = rolling_backtest(
-    years, values,
-    [Naive(), LinearTrend(), LogLinearCAGR(), HoltLinear(), ARIMA()],
-    min_train=8, horizon=1)
-print(score_table(evaluate(steps)))
-```
-
-真实 A 股数据通过 `data` extra（akshare）加载，缓存为 CSV 保证可复现。
-**十家公司覆盖六种增长模式**：
-
-| 方法 | 平均 sMAPE | 最优次数 (10 家中) |
-|---|---|---|
-| **Holt / ARIMA**（自适应） | **~14%** | **10 / 10** |
-| Naive | 21% | 0 |
-| Linear / CAGR（固定趋势） | 36% / 31% | 0 |
-
-![sMAPE 热力图 — 公司 × 方法](examples/backtest_demo/heatmap_smape.png)
-
-> **这对框架本身的启示。** 在收入**总量**层面，自适应统计方法碾压固定趋势——
-> 高成长股是指数级增长，线性拟合会系统性低估，连**方向**都判错。所以 **driver 分解**
-> 的价值**不在于"把总量猜得更准"**（统计方法做得更好），而在于**定位结构**：哪块业务
-> 靠趋势、哪块靠一次性事件（如立讯 2025 年收购 Leoni——任何总量方法都看不见）。精度
-> 与可解释性是互补，不是替代。见 [`examples/backtest_demo/`](examples/backtest_demo/)。
-
-## NVIDIA demo —— driver tree 在哪准、在哪崩
-
-第一个**美股** demo。NVIDIA 是一个刻意的"双面测试"：**同一公司、同一套
-`base × penetration × share × price` 公式、同一引擎**——Gaming hold-out
-**sMAPE 1.0%**（成熟趋势市场）vs Data Center **60%**（AI 范式跳变；FY2025 真实
-$115.2B vs 预测 $18.4B）。demo 接着闭环：用 Monte Carlo 情景分布的 Bull 尾把
-真实爆发框住——点预测崩了，但情景带兜住了真相。
+## 一张图：driver tree 在哪准、在哪崩
 
 ![NVIDIA Gaming vs Data Center —— 真实 vs driver 外推](examples/nvda_demo/nvda_backtest.png)
 
-> 准确性是**行业增长机制**的属性，不是模型的属性——且该论点已通过
-> **预注册外样本检验**：driver 层画像默认在可测的 4 棵树里 3 棵胜过朴素
-> 逐因子趋势外推，而公司总收入层由统计基线（Naive/阻尼）主导。完整记分牌见
-> [`docs/profile-validation.md`](docs/profile-validation.md)；
-> [`examples/nvda_demo/`](examples/nvda_demo/) 与旗舰方法论文档
-> [`docs/industry-fit-analysis.md`](docs/industry-fit-analysis.md)——行业适配性矩阵、
-> 事件驱动增长的五招、以及为什么本库选择诚实而非虚假精度。
+同一家公司、同一个公式、同一个引擎——**Gaming**（成熟市场）hold-out
+**sMAPE 1.0%**，**数据中心**（AI 范式跳变）差 6 倍，且**引擎在打开 hold-out
+之前就报警**，重定向到蒙特卡洛情景，Bull 尾把真实 $115B 框住。准确性是行业
+增长机制的属性——v0.16 把它编码为 10 个机制画像 × strong/adapt/weak 三档
+（[已外样本验证](docs/profile-validation.md)）。
 
-## 行业画像 —— 适配矩阵，可执行（v0.16）
+## 60 秒上手
 
-NVDA demo 把行业适配的教训留在了手写脚本里；v0.16 把它搬进了引擎：给
-segment 打一个**行业标签**，就自动获得"分析师第一直觉"的预测默认值、行业
-专属检查，以及——在点预测属于范畴错误的地方——切行情景的响亮重定向。
-**10 个机制型画像**（永不硬性阻断：手工外推永远优先）：
-
-| 适配档 | 画像 | 引擎行为 |
-|---|---|---|
-| **强契合** | `consumer_electronics`（ASP 年降 5%）、`semiconductor` | 趋势/持平默认；回测会很紧 |
-| **改造契合** | `saas_subscription`（logistic 扩散 + ARPU 温和上调）、`advertising`（ad load 粘性、eCPM 均值回归）、`retail_store`、`telecom_subscriber`（用户数 S 曲线）、`industrial_capacity`（利用率回归 80%） | 换因子后用树 + 行业检查 |
-| **不契合** | `financial_interest`（收益率锚定政策利率）、`commodity_cyclical`（周期顶检查）、`regime_shift_tech` | 点预测仍会跑（作为基线），但 `segment_warnings()` 触发"切情景"重定向 |
+```bash
+pip install revenue-model-builder
+```
 
 ```python
 from revenue_model import (
-    Segment, forecast_segment, segment_warnings, resolve_industry,
+    Driver, Segment, RevenueModel, BASE, PENETRATION, SHARE, PRICE,
+    forecast_segment, segment_warnings, simulate_segment,
 )
 
-seg = Segment(..., industry="saas_subscription")   # 也接受 "40" / "financials" / "银行"
-fc  = forecast_segment(seg, [2026, 2027])          # 行业默认外推
-for w in segment_warnings(fc):                     # 适配判定 + 行业检查
+seg = Segment(
+    "座舱-国内",
+    base=Driver("中国乘用车销量", BASE, {2022: 22.0, 2023: 23.0},
+                level="A", unit="百万辆", source="中汽协"),
+    penetration=Driver("DMS 前装渗透率", PENETRATION, {2022: 0.04, 2023: 0.06},
+                       level="B", unit="比例", source="行业研究院"),
+    share=Driver("市占率", SHARE, {2022: 0.10, 2023: 0.12},
+                 level="C", unit="比例", source="估计"),
+    price=Driver("ASP", PRICE, {2022: 600, 2023: 620},
+                 level="C", unit="元", source="对标"),
+    industry="consumer_electronics",   # <- 一个标签改变一切
+)
+model = RevenueModel("DemoCo", [seg], total_revenue={2022: 78.0, 2023: 163.0})
+
+print(model.validate_all())               # Σ 分项 + 差额行 == 报告总收入
+fc = forecast_segment(seg, [2024, 2025])  # 行业默认外推
+for w in segment_warnings(fc):            # 预测之前就给出适配判定
     print(w)
+mc = simulate_segment(fc, 2024, {"市占率": (0.10, 0.18)}, n=20000)
+print(mc.median, mc.percentiles["p5"], mc.percentiles["p95"])
 ```
 
-检查在**预测之前**就会触发：把 NVDA Data Center 标成 `semiconductor`，
-超高增速检查（`base 年化 +58% → 考虑 regime_shift_tech`）会在打开 hold-out
-之前就重定向你。完整故事见
-[`examples/industry_demo/`](examples/industry_demo/)。`Driver` 同步新增 4 个
-外推法：`extrapolate_mean_reversion` / `extrapolate_erosion` /
-`extrapolate_growth` / `extrapolate_hold`。
+或看上方 GIF。CLI：`python -m revenue_model {build, simulate, excel, docx, extract, sec, akshare, tushare}`。
 
-**预注册验证（2026-09）。** 244 家标普 500 成分股（防幸存者偏差，锚定
-2023-12-31 时点）+ 六棵手工 driver 树对适配矩阵做了外样本检验。裁决：driver
-层默认在机制可测处胜出（SBUX 0.7% vs 3.6%、META 4.6% vs 6.7%、NVDA Gaming
-3.0% vs 10.9% sMAPE，对手均为朴素趋势），weak 档重定向成为**验证过的交付物**
-（警告命中 2/2、误报 0/4、蒙特卡洛 P10-P90 框住全部三个 weak 档测试年）——
-而公司总收入层属于统计基线，与回测文档的发现完全一致。一个形状方法（减速
-CAGR）双显著毕业；一个（增长回归）在主场被诚实否证。完整记分牌：
-[`docs/profile-validation.md`](docs/profile-validation.md)。
+## 里面有什么
 
-## 主营业务抽取（从年报）
+| 能力 | 价值 |
+|---|---|
+| **Driver 树核心**（纯标准库，零依赖） | 可审计的 `基数×渗透率×市占率×单价`，带 A/B/C 分级与来源——没有黑箱 |
+| **结构性差额行** | 分项对齐报告总收入，未建模的部分看得见、藏不住 |
+| **10 个行业画像**（v0.16） | 打一个 `industry=` 标签即获得分析师直觉默认、行业检查、weak 档情景重定向——软默认，手工覆盖永远优先 |
+| **蒙特卡洛 + 龙卷风** | 按 driver 自身的不确定性区间摆动（不是统一百分比），找出真正驱动收入的假设——纯标准库 |
+| **诚实回测** | Naive/Linear/CAGR/Holt/ARIMA + 画像形状方法的外样本 sMAPE；[验证报告](docs/profile-validation.md)连零结果一起发表 |
+| **数据适配器**（可选 extra） | SEC EDGAR / A 股 tushare / 港股 akshare / Q4 IR PDF——真实财报直通 driver 历史 |
+| **Excel / Word 输出** | 带公式的模型工作簿；带图表的方法论备忘录 |
+| **LLM 分部抽取** | 年报文本 → 分部骨架（LLM 可注入，测试无需 key） |
 
-把 segment build-up 里最繁琐的部分自动化——用 LLM 从年报「主营业务分析」文本里抽出
-**segment 骨架**（业务线、收入、占比、YoY、毛利率、driver_type 标签、driver 线索）。纯标准库
-HTTP（无 SDK）；LLM 调用可注入，测试/CI 不需要 API key。
+### 深入专题（每个都有文档 + 可运行示例）
 
-```python
-from revenue_model import extract_segments, alignment_check
+- **行业适配**——适配矩阵与 NVDA/立讯自然实验 →
+  [文档](docs/industry-fit-analysis.md) ·
+  [examples/industry_demo](examples/industry_demo/)
+- **画像验证**——预注册的 244 家公司检验 →
+  [文档](docs/profile-validation.md) ·
+  [examples/profile_validation](examples/profile_validation/)
+- **新闻冲击验证**——8-K 事件能预测收入吗？（剧透：不能，这本身就是发现）→
+  [文档](docs/news-impact-validation.md)
+- **回测**——自适应方法 vs driver 结构，真实数据 →
+  [examples/backtest_demo](examples/backtest_demo/)
+- **真实数据 demo**——NVDA（SEC 季度粒度）、立讯/德赛西威（A 股 20 年）、
+  智谱 ARR 阶梯 → [examples/](examples/)
 
-# text = 「主营业务分析」章节文本（上游用 PyMuPDF 从年报 PDF 抽取）
-parsed = extract_segments(text, api_key="<your-llm-key>")   # 经 secrets 管理器加载
-print(parsed["segments"])                                   # segment 骨架列表
-print(alignment_check(parsed))                             # Σ + 差额 ≈ 年报总收入
+## 安装
+
+核心零依赖，按需装 extra：
+
+```bash
+pip install revenue-model-builder                 # 核心，零依赖
+pip install revenue-model-builder[excel]          # openpyxl
+pip install revenue-model-builder[docx]           # python-docx + matplotlib
+pip install revenue-model-builder[backtest,data]  # statsmodels + akshare
 ```
 
-输出 schema 见 [docs/proposal-segment-extraction.md](docs/proposal-segment-extraction.md) §4。
-填入 driver 的**具体数值**（C 级估算）仍是人工步骤——见提案的半自动边界（§7）。
-**专有/非公开的
-公司数据不入库**；真实公司 demo（立讯、NVIDIA）只用公开披露数据（见
-[DISCLAIMER.md](DISCLAIMER.md)）。虚构的 NovaTech 是零真实数据的默认示例。
+Python 3.9–3.13 · MIT 许可证 ·
+[文档站](https://ljftwq-dev.github.io/revenue-model-builder/) ·
+[更新日志](CHANGELOG.md)
 
-## 新闻冲击验证（8-K 事件 + 诚实版事件研究）
+## 设计原则
 
-方向三的问题是：公告/申报事件能否改进收入预测？六公司池化验证
-（NVDA / AMD / SDGR / REGN / GILD / GM，409 个 8-K 事件，2019-2026）给出的答案是：
-**大盘股 + 月度粒度上不行**——诱人的单公司 p 值（SDGR p=0.033）在池化、市场调整
-和多重检验校正下消散。完整故事（含重建过程中揪出的两个 sec_adapter 数据 bug）
-见 [docs/news-impact-validation.md](docs/news-impact-validation.md)。
+五条硬规则，结构化强制：结构性差额行 · A/B/C 数据分级 · 增量式（非增长率）
+渗透率外推 · 确定性金字塔 · 历史优先工作流 →
+[docs/design-principles.md](docs/design-principles.md)
 
-这次验证沉淀出的库能力：
-
-```python
-from revenue_model import form8k_adapter, news_impact, sec_adapter
-from datetime import date
-
-events = form8k_adapter.fetch_8k_events("NVDA", since=date(2019, 1, 1))
-# [{"date": ..., "category": "Earnings"|"Agreement"|"M&A"|..., "items": ...}]
-
-quarters = sec_adapter.fetch_fiscal_quarters(cik)   # 财年通用、concept 合并的
-# 单季收入序列（NVDA 一月底财年正确处理；不完整尾年按 M7 规则排除）
-
-res = news_impact.event_study(
-    events_by_sample={"NVDA": [(e["date"], e["category"]) for e in events],
-                      "AMD": ...},                  # 池化，绝不单公司
-    outcomes_by_sample={"NVDA": {q[2]: q[3] for q in quarters_yoy}, ...},
-    min_n=8)                                          # 小样本 → 只报告不检验
-# res.rows[i].welch_p / mwu_p / significant / bonferroni_significant
-```
-
-- **`form8k_adapter`**——SEC submissions API 的 8-K 事件层：全市场覆盖、官方
-  item 分类、免 key、带缓存、`http_get` 可注入。
-- **`news_impact`**——纯标准库 Welch t + Mann-Whitney U（与 scipy 对拍至小数点后
-  8 位）、池化事件研究、自动 Bonferroni 族校正、小样本守卫。
-- **`sec_adapter` 修复**——revenue concept 切换不再丢年；YTD/单季期间碰撞不再
-  算出负的单季值；新增 `fetch_fiscal_quarters()` 构建财年通用季度序列。
-
-## 五条设计原则
-
-| # | 原则 | 防止什么 |
-|---|---|---|
-| 1 | **差额行是结构性设计，绝不反推** | 为了"对齐"而抬高渗透率，污染预测期 |
-| 2 | **ABC 数据等级** | 黑箱表格——让每个数字可追溯 |
-| 3 | **渗透率用增量法，不用增速法** | 有界变量指数爆炸 |
-| 4 | **预测确定性金字塔** | 把所有输入当成同样可知 |
-| 5 | **先历史后预测** | 模型还没复现历史就开始预测未来 |
-
-外加验证层（三角验证、假设文档化、S 曲线）：**[docs/design-principles.md](docs/design-principles.md)**。
-
-## API
-
-```python
-Driver(name, kind, values, level="C", unit="", source="")
-#   kind ∈ {BASE, PENETRATION, SHARE, PRICE};  level ∈ {"A","B","C"}
-
-Segment(name, base, penetration, share, price, industry="")
-#   .revenue(year) -> float  (百万元)
-#   industry: 可选机制键 / GICS 别名 → 预测默认值 + 行业检查
-
-implied_driver(segment, year, target_revenue, solve_kind) -> float
-#   把某个 driver 对齐到已知收入（如年报分项收入）；优先解 PRICE/BASE，避免解 PENETRATION（反推陷阱）
-
-RevenueModel(company, segments, total_revenue)
-#   .validate(year)  -> YearResult   (分项收入、差额、告警)
-#   .validate_all()  -> list[YearResult]
-
-simulate_segment(segment, year, ranges, n=10000, seed=0) -> MCResult
-simulate_model(model, year, ranges, n=10000, seed=0)     -> MCResult
-#   ranges: {driver名: (low, high)};  MCResult 含 mean/median/stdev/percentiles
-
-tornado(segment, year, ranges) -> list[SensitivityItem]   # 按 swing 排序
-
-scenarios(mc, *, bear_p=0.10, bull_p=0.90) -> list[Scenario]  # 从分布切片 Bear/Base/Bull
-
-extract_segments(text, *, api_key=None, llm=None) -> dict  # 从年报抽 segment 骨架
-alignment_check(parsed) -> dict                            # Σ + 差额 ≈ 年报总收入
-
-resolve_industry("saas_subscription" | "40" | "financials" | "银行") -> IndustryProfile
-list_profiles() -> [(key, fit, label)]                     # 10 机制画像目录
-forecast_segment(seg, years, *, profile=None) -> Segment   # 行业默认外推
-check_segment(seg) / segment_warnings(seg) -> list[str]    # 行业检查 + 适配判定
-```
-
-## 目录结构
-
-```
-revenue-model-builder/
-├── revenue_model/
-│   ├── driver.py        # Driver — 单个因子（基数/渗透/市占/单价）+ ABC 等级
-│   ├── segment.py       # Segment — 收入 = 基数 × 渗透 × 市占 × 单价
-│   ├── model.py         # RevenueModel — 差额行 + 对齐校验
-│   ├── monte_carlo.py   # 收入分布 + tornado 敏感度（纯标准库）
-│   ├── industry.py      # 10 机制画像：适配档、预测默认值、行业检查
-│   ├── extractor.py     # 年报文本 → segment 骨架（LLM，纯标准库）
-│   ├── excel_builder.py # 渲染成 .xlsx（ABC 颜色、IF 公式、差额行）
-│   ├── docx_builder.py  # 渲染成 .docx 研究底稿（双语、ABC、嵌图）
-│   ├── backtest/        # 样本外回测（metrics / methods / rolling / data）
-│   └── demo.py          # NovaTech 虚构示例
-├── tests/               # 303 个测试 — 公式、校验、差额、蒙特卡洛、tornado、抽取、回测、docx、i18n、行业画像、tushare/sec/akshare/sa/q4cdn/ir/form8k 多市场 adapter + 缓存 + news_impact
-├── docs/
-│   └── design-principles.md
-└── pyproject.toml
-```
+*研究/教育工具，非投资建议——见 [DISCLAIMER](DISCLAIMER)。*
 
 ## 路线图
 
-- [x] 蒙特卡洛收入分布 + 敏感度（tornado）分析
-- [x] 从年报文本抽 segment 骨架（LLM）
-- [x] driver 外推 API（增量法 / logistic / 趋势拟合）
-- [ ] driver 数值估算（C 级，来自行业数据）
-- [x] Bear / Base / Bull 情景（从蒙特卡洛分布切片）
-- [x] 多市场数据源适配器（A股 tushare / 美股 SEC EDGAR / 港股 AKShare）
-- [ ] 从年报文本自动抽取 driver
-- [x] 已披露 segment 收入 adapter（stockanalysis.com，playwright，[scrape] extra）
-- [x] q4cdn IR-PDF adapter（季度市场平台细分，[pdf] extra）
-- [x] Word 底稿生成器（.docx 研究底稿，双语，嵌图）
-- [x] PyPI 发布
-- [x] 可视化图表（分布 / 龙卷风 / 瀑布 / 历史+预测趋势）
-- [x] 交互式 Streamlit app（driver 滑块 → 图实时变）
-- [x] 回测 — 样本外方法对比（Naive / Linear / CAGR / Holt / ARIMA）
-- [x] 新闻冲击验证（8-K 事件层 + 诚实版池化事件研究；大盘股/月度粒度的零结果已文档化）
-- [x] 宏观 driver 修正 — QESA adapter + event→driver→re-run 闭环（上游成本/需求/汇率冲击 → 带弹性、滞后与证据链的 C 级修正建议；MySQL 需 [qesa] extra）
-- [x] 行业画像 —— 适配矩阵可执行（10 机制画像 + GICS/中文别名，行业预测默认值、检查、weak 档切情景重定向）
+- **v0.17（数学内核）**：订阅画像的流失存活动力学（`基数×(1+毛增) − 基数×churn`）、
+  双显著的减速 CAGR 方法毕业进回测电池、修复 `forecast_segment` 手工覆盖检查
+- **v0.18（数据之锚）**：Damodaran 行业基准接入画像检查——阈值变成引用
+- **v0.19（体验）**：基于回测指纹的画像自动推荐；画像目录页
 
-## 适用人群
+完整历史：[CHANGELOG.md](CHANGELOG.md) ·
+[Releases](https://github.com/ljftwq-dev/revenue-model-builder/releases)
 
-卖方研究、PE/VC 投资团队、股票分析师，以及正在学基本面分析的同学——想要一个
-**可复用、可审计**的收入建模脚手架，而不是每次都手工重建同样的 Excel 结构。
+## 适合谁
 
-## 许可证与免责声明
+想让收入模型变成代码的卖方/PE 同学；研究"预测精度是否是行业机制属性"的
+量化；学 driver 建模估值的学生；想逃离表格 sprawl 的 FP&A 团队。欢迎贡献——
+[docs](docs/) 本身就是设计记录。
 
-MIT — 见 [LICENSE](LICENSE)。本项目是**研究/教育工具，非投资建议**——完整声明见
-[DISCLAIMER.md](DISCLAIMER.md)。
+<details>
+<summary><b>API 速览</b>（点击展开）</summary>
+
+```python
+from revenue_model import (
+    Driver, Segment, RevenueModel,            # 核心树
+    BASE, PENETRATION, SHARE, PRICE,          # driver 种类
+    implied_driver,                           # 用已知收入反标一个 driver
+                                              # （优先 PRICE/BASE，避免反解渗透率陷阱）
+    forecast_segment, segment_warnings,       # 行业默认 + 检查
+    check_segment, list_profiles, resolve_industry,
+    simulate_model, simulate_segment, scenarios,   # 蒙特卡洛
+    tornado,                                  # 按 driver 的敏感度排序
+)
+
+# Driver(名称, 种类, {年份: 值}, level="A"|"B"|"C", unit=..., source=...)
+# Segment(名称, base=..., penetration=..., share=..., price=...,
+#         reported_revenue={...}, industry="saas_subscription" | "40" | "银行")
+# Segment.revenue(年份) -> float
+# RevenueModel.validate_all() -> [YearResult(分项和, 差额行, 警告)]
+# CLI：python -m revenue_model {build, simulate, excel, docx, extract,
+#                               sec, akshare, tushare}
+```
+
+目录：`revenue_model/`（引擎）· `docs/`（方法论 + 验证报告）· `examples/`
+（NVDA、立讯、行业 demo、画像验证、回测、ARR 阶梯）· tests（303 个，
+纯标准库 CI）。
+
+</details>
