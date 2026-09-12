@@ -77,6 +77,9 @@ files = [
     "revenue_model/industry.py",
 ]
 ignore_missing_imports = true
+# pymysql installs without stubs on some CI pythons (import-untyped is not
+# silenced by ignore_missing_imports when the package IS installed)
+disable_error_code = ["import-untyped"]
 
 [tool.setuptools.packages.find]
 include = ["revenue_model*"]
