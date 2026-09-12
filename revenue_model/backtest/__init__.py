@@ -26,6 +26,8 @@ from .methods import (
     LogLinearCAGR,
     HoltLinear,
     ARIMA,
+    DampedTrend,
+    DeceleratingCAGR,
     default_methods,
 )
 from .rolling import (
@@ -44,6 +46,8 @@ __all__ = [
     "LogLinearCAGR",
     "HoltLinear",
     "ARIMA",
+    "DampedTrend",
+    "DeceleratingCAGR",
     "default_methods",
     "StepResult",
     "MethodScore",

@@ -175,14 +175,19 @@ pyramid · history-first workflow →
 
 ## Roadmap
 
-- **v0.17 (math kernel)**: churn-survival dynamics for subscription
-  profiles (`base × (1+gross) − base × churn`), graduating the
-  double-significant decelerating-CAGR method into the backtest battery,
-  API fix for hand-coverage in `forecast_segment`
 - **v0.18 (data anchor)**: Damodaran industry benchmarks wired into
   profile checks — thresholds become citations
 - **v0.19 (experience)**: profile auto-recommendation from backtest
   fingerprints; profile catalog page
+
+**Shipped — v0.17 (math kernel)**: churn-survival dynamics for
+subscription bases (`base × (1+gross) − base × churn` as the saas/telecom
+default, with a net-churn check that no ARPU escalator offsets a shrinking
+base); DampedTrend + DeceleratingCAGR graduated from the pre-registered
+validation into the standard backtest battery (7 methods); hand-coverage
+fix in `forecast_segment`; G1 code gate in CI (ruff, pinned ruleset +
+mypy on the kernel); FIG teaching-consensus citations for the weak-fit
+financials class.
 
 Full history: [CHANGELOG.md](CHANGELOG.md) ·
 [Releases](https://github.com/ljftwq-dev/revenue-model-builder/releases)
@@ -209,6 +214,9 @@ from revenue_model import (
     simulate_model, simulate_segment, scenarios,   # Monte Carlo
     tornado,                                  # per-driver sensitivity ranking
 )
+# Driver extrapolations: trend (fit_trend), mean_reversion, erosion, growth,
+# hold, logistic, incremental — and net_growth (v0.17): subscriber bases as
+# base x (1+gross) - base x churn, the two knobs kept separate.
 
 # Driver(name, kind, {year: value}, level="A"|"B"|"C", unit=..., source=...)
 # Segment(name, base=..., penetration=..., share=..., price=...,

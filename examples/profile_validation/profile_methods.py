@@ -5,14 +5,21 @@ revenue-series level (spec §2 Track A-2; they graduate into
 ``revenue_model/backtest/`` only if they win on validation):
 
 - DampedTrend        <- industrial_capacity / mean_revert intuition:
-                       absolute trend with geometrically decaying contribution
+                        absolute trend with geometrically decaying contribution
 - DeceleratingCAGR   <- saas_subscription / logistic intuition:
-                       fitted growth compounds with a decaying exponent
+                        fitted growth compounds with a decaying exponent
 - GrowthRevert       <- commodity_cyclical / mean_revert intuition:
-                       recent growth pulled toward the series' own long-run
-                       growth (extrapolate_mean_reversion at the growth level)
+                        recent growth pulled toward the series' own long-run
+                        growth (extrapolate_mean_reversion at the growth level)
 
 All pure stdlib, following the backtest ForecastMethod protocol.
+
+v0.17 OUTCOME (post-test, recorded not retro-fitted): DampedTrend and
+DeceleratingCAGR graduated into ``revenue_model.backtest.methods`` as
+first-class methods (docs/profile-validation.md section 2); GrowthRevert
+stays here only — honestly falsified at home. This frozen copy is kept
+verbatim for experiment reproducibility; import the canonical classes from
+``revenue_model.backtest`` instead.
 """
 import math
 from typing import List, Sequence

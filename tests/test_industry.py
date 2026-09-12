@@ -87,6 +87,31 @@ class TestForecastSegment:
         with pytest.raises(ValueError, match="industry"):
             forecast_segment(_seg(), YEARS)
 
+    def test_hand_coverage_wins_before_param_resolution(self):
+        """Soft-default contract: a driver already extended to ALL target
+        years is returned untouched — spec params are not even resolved.
+        Regression for the Track-B API finding: a structural constant at 1.0
+        on a logistic-default kind used to raise ValueError from the anchor
+        check despite the hand extension (profile-validation.md section 4)."""
+        held = Driver("pen", PENETRATION,
+                      {2022: 1.0, 2023: 1.0, 2024: 1.0, 2025: 1.0, 2026: 1.0},
+                      level="A", unit="fraction")
+        seg = _seg(industry="saas_subscription", pen=held)   # logistic L=0.6
+        out = forecast_segment(seg, YEARS)                   # must not raise
+        assert out.penetration.values[2025] == 1.0
+        assert out.penetration.values[2026] == 1.0
+        assert out.penetration.level == "A"                  # hand grade kept
+
+    def test_partial_coverage_still_extrapolates(self):
+        partly = Driver("pen", PENETRATION,
+                        {2022: 0.2, 2023: 0.25, 2024: 0.3, 2025: 0.3},
+                        level="A", unit="fraction")
+        out = forecast_segment(_seg(industry="saas_subscription", pen=partly),
+                               YEARS)
+        assert out.penetration.values[2025] == 0.3           # hand year kept
+        assert 2026 in out.penetration.values               # 2026 filled by spec
+        assert out.penetration.values[2026] != 1.0          # actually modeled
+
     def test_reads_segment_tag(self):
         out = forecast_segment(_seg(industry="consumer_electronics"), YEARS)
         assert out.industry == "consumer_electronics"
@@ -140,11 +165,38 @@ class TestForecastSegment:
         assert out.price.values[2025] == pytest.approx(100.0)
         assert out.price.values[2026] == pytest.approx(100.0)
 
-    def test_telecom_base_logistic_relative_cap(self):
+    def test_telecom_base_net_growth(self):
+        """v0.17: telecom base = water-in/water-out (gross 5%, churn 3.5%)."""
         out = forecast_segment(_seg(industry="telecom_subscriber"), YEARS)
-        # L resolved as 1.3 × last (120 → 156); logistic moves toward it
-        assert out.base.values[2025] > 120.0
-        assert out.base.values[2025] < 156.0
+        net = 1.0 + 0.05 - 0.035                    # 1.015
+        assert out.base.values[2025] == pytest.approx(120.0 * net)
+        assert out.base.values[2026] == pytest.approx(120.0 * net ** 2)
+
+    def test_saas_base_net_growth(self):
+        """v0.17: saas base = gross adds 30% - churn 12% (Direction B)."""
+        out = forecast_segment(_seg(industry="saas_subscription"), YEARS)
+        net = 1.0 + 0.30 - 0.12                    # 1.18
+        assert out.base.values[2025] == pytest.approx(120.0 * net)
+
+    def test_net_growth_rejects_extinguishing_base(self):
+        with pytest.raises(ValueError, match="net growth"):
+            Driver("subs", BASE, {2024: 100.0}).extrapolate_net_growth(
+                [2025], gross_rate=0.05, churn=1.10)   # net = -0.05 <= 0
+
+    def test_net_churn_positive_check_fires(self):
+        """Base shrinking faster than ARPU grows -> the check says so."""
+        shrinking = Driver("subs", BASE,
+                           {2022: 100.0, 2023: 95.0, 2024: 89.0}, unit="M")
+        escalator = Driver("arpu", PRICE,
+                           {2022: 100.0, 2023: 101.5, 2024: 103.0}, unit="$")
+        seg = _seg(industry="saas_subscription",
+                   base=shrinking, price=escalator)
+        msgs = check_segment(seg)
+        assert any("net churn" in m and "escalator" in m for m in msgs)
+
+    def test_net_churn_positive_check_silent_when_growing(self):
+        seg = _seg(industry="saas_subscription")    # base 100/110/120 grows
+        assert not any("net churn" in m for m in check_segment(seg))
 
     def test_regime_shift_all_trend_baseline(self):
         out = forecast_segment(_seg(industry="regime_shift_tech"), YEARS)

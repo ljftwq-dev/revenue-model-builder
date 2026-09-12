@@ -193,3 +193,40 @@ def test_holt_and_arima_run_with_statsmodels():
         pred = m.fit_predict(years, values, 1)
         assert len(pred) == 1
         assert pred[0] > 0 and math.isfinite(pred[0])
+
+
+# ---- graduated profile-implied methods (v0.17) ------------------------------
+
+def test_damped_between_linear_and_naive():
+    from revenue_model.backtest.methods import DampedTrend
+    years = list(range(2015, 2025))
+    values = [100.0 + 12.0 * i for i in range(10)]      # exactly linear
+    lin = LinearTrend().fit_predict(years, values, 1)[0]
+    nai = Naive().fit_predict(years, values, 1)[0]
+    dam = DampedTrend().fit_predict(years, values, 1)[0]
+    assert nai < dam < lin                              # damped sits between
+    assert dam == pytest.approx(nai + 0.85 * 12.0)      # phi=0.85 of one step
+    assert DampedTrend(phi=1.0).fit_predict(years, values, 1)[0] == \
+        pytest.approx(lin)                              # phi=1 collapses to Linear
+
+
+def test_decel_cagr_decelerates_below_cagr():
+    from revenue_model.backtest.methods import DeceleratingCAGR
+    years, values = _series(n=10, growth=0.20)          # fast grower
+    cagr = LogLinearCAGR().fit_predict(years, values, 2)
+    dec = DeceleratingCAGR().fit_predict(years, values, 2)
+    assert dec[0] < cagr[0] and dec[1] < cagr[1]        # growth matures early
+    assert dec[0] > values[-1]                          # still grows
+
+
+def test_decel_cagr_rejects_nonpositive():
+    from revenue_model.backtest.methods import DeceleratingCAGR
+    with pytest.raises(ValueError):
+        DeceleratingCAGR().fit_predict([2020, 2021], [100.0, -1.0], 1)
+
+
+def test_default_methods_include_graduated():
+    methods = default_methods()
+    names = [m.name for m in methods]
+    assert names.count("Damped") == 1 and names.count("DecelCAGR") == 1
+    assert len(names) == len(set(names))

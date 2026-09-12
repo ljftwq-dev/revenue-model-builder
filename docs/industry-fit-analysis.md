@@ -188,6 +188,38 @@ Three practical rules of thumb:
 
 ---
 
+## 6a. Why financials are weak-fit: the sell-side teaching consensus
+
+Classifying banks and insurers as *weak-fit for driver trees* is not this
+project's invention — it codifies what sell-side teaching has converged on.
+
+- **The teaching lineage**: the standard FIG (financial institutions group)
+  modeling courses — Mergers & Inquisitions / Breaking Into Wall Street
+  ("banks are modeled differently: balance-sheet-first, not
+  revenue-first"), and edbodmer's FIG materials — all teach the same
+  decomposition: model *loans/deposits and the interest-earning asset
+  stack* first, drive NIM spreads off the **forward policy-rate curve**,
+  and build revenue as NII + fees. Units × price × market-share trees are
+  structurally the wrong shape: the "price" (net yield) is a policy
+  variable, not a company-controlled lever, and the balance sheet is a
+  credit-cycle variable, not a trend.
+- **The engine independently re-derived it (Track B, FY2025 test)**: on a
+  hand-built JPM net-interest-income tree the engine warned, *before the
+  test year opened*, to "anchor the yield to the forward policy-rate curve
+  and treat balance-sheet growth as a credit-cycle variable, not a trend."
+  The point forecast then missed by +43% (yield mean-reverted toward its
+  long-run target — structurally wrong for a rate-path asset) while the
+  wide-band Monte Carlo placed the actual $95.4B at P46. The redirect was
+  the forecast ([full protocol](profile-validation.md) §3).
+- **The Chinese-perspective note**: A-share bank research uses the same
+  two-wheel decomposition — 规模（生息资产扩张）× 息差（NIM，由 LPR 与
+  存款利率传导决定）— with 非息收入（中收）as the third line. 息差 here
+  is even more explicitly a policy variable (LPR repricing schedules),
+  reinforcing the classification: the honest model anchors the spread to
+  the rate path and runs scenarios, exactly the weak-fit redirect.
+
+---
+
 ## The differentiator
 
 The market is saturated with projects that advertise accuracy. Almost none use a
@@ -203,7 +235,7 @@ prints a confident number and is wrong by 6×.
 
 - **核心论点**：driver tree（自下而上收入分解）的准确性取决于**行业增长机制是否可趋势外推**，而非公式本身。趋势延续型行业（消费电子/半导体）极准，事件驱动型（AI 爆发/收购/周期）结构性失效——而任何趋势拟合都无法弥补后者，因为未来不在训练数据里。
 - **NVDA 实证**：同一公司、同一公式、同一年份——Gaming sMAPE **1.0%**（趋势准），Data Center sMAPE **60%**（AI 爆发崩，真实 \$115B vs 预测 \$18B）。60 倍差距，变量只有行业。
-- **行业适配性**：契合（趋势型）/ 改造（SaaS·MAU×ARPU、广告·流量×eCPM）/ 不契合（周期品、金融、资源、范式跳变科技）。
+- **行业适配性**：契合（趋势型）/ 改造（SaaS·MAU×ARPU、广告·流量×eCPM）/ 不契合（周期品、金融、资源、范式跳变科技）。金融归不契合档有卖方教学共识背书（M&I/BIWS/edbodmer 的 FIG 体系：资产负债表优先、息差锚政策利率曲线）——v0.16.1 验证实验中 JPM 树的引擎警告与 MC 覆盖独立复现了该共识。
 - **事件驱动怎么办**：点预测注定错，改用 5 招——情景分析（Bear/Base/Bull + 触发条件）、领先指标监测、S 曲线/Bass 扩散、因果推理、贝叶斯更新。
 - **为什么 rmb 选择诚实**：ABC 数据分级 + 结构性 residual + certainty pyramid + 回测主动暴露局限——把不确定性当一等公民，让用户永远不被模型"突袭"。
 - **差异化**：市面上几乎没有用真实美股案例诚实论证 driver tree 边界的方法论。多数项目只吹"多准"，rmb 敢说"哪里准、哪里崩、崩了怎么办"——这才是有用的。

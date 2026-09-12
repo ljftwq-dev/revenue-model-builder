@@ -158,10 +158,14 @@ Python 3.9–3.13 · MIT 许可证 ·
 
 ## 路线图
 
-- **v0.17（数学内核）**：订阅画像的流失存活动力学（`基数×(1+毛增) − 基数×churn`）、
-  双显著的减速 CAGR 方法毕业进回测电池、修复 `forecast_segment` 手工覆盖检查
 - **v0.18（数据之锚）**：Damodaran 行业基准接入画像检查——阈值变成引用
 - **v0.19（体验）**：基于回测指纹的画像自动推荐；画像目录页
+
+**已发布——v0.17（数学内核）**：订阅基数的流失存活动力学（`基数×(1+毛增) − 基数×churn`
+成为 saas/telecom 默认，附带"ARPU 增长救不了萎缩基数"的净流失检查）；
+DampedTrend + DeceleratingCAGR 从预注册验证毕业进标准回测电池（7 方法）；
+`forecast_segment` 手工覆盖修复；CI 挂 G1 代码门控（ruff 固定规则集 + 内核
+mypy）；金融 weak 档补 FIG 教学共识引用。
 
 完整历史：[CHANGELOG.md](CHANGELOG.md) ·
 [Releases](https://github.com/ljftwq-dev/revenue-model-builder/releases)

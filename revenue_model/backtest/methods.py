@@ -168,12 +168,70 @@ class ARIMA(ForecastMethod):
             return [values[-1]] * horizon
 
 
+class DampedTrend(ForecastMethod):
+    """Damped trend: OLS slope with geometrically decaying contribution.
+
+    ``y[T+h] = y_T + slope * (phi + phi^2 + ... + phi^h)`` — between
+    LinearTrend (phi=1) and Naive (phi=0). Graduated into the battery from
+    the pre-registered profile validation (v0.16.1): best adapt-bucket
+    method vs Naive on validation (-1.2pp, p_adj=0.020) and the best
+    directional accuracy on test (74%); the revenue-layer translation of
+    the industrial_capacity / mean-revert driver defaults.
+    See docs/profile-validation.md."""
+
+    name = "Damped"
+
+    def __init__(self, phi: float = 0.85):
+        self.phi = phi
+
+    def fit_predict(self, years, values, horizon):
+        slope, _intercept = _ols(list(years), list(values))
+        level = values[-1]
+        out, cum = [], 0.0
+        for h in range(1, horizon + 1):
+            cum += self.phi ** h
+            out.append(level + slope * cum)
+        return out
+
+
+class DeceleratingCAGR(ForecastMethod):
+    """Fitted CAGR applied with a decaying exponent: growth matures as the
+    base grows (the logistic/S-curve intuition, linearized).
+
+    ``y[T+h] = y_T * (1+g)^(phi + phi^2 + ... + phi^h)``. Graduated with
+    the strongest result in the validation battery: beats Naive on its
+    home saas_subscription profile with double significance (-5.7pp
+    p_adj=0.0009 validation, -7.2pp p_adj=0.0164 test, rank-biserial
+    r ~= -0.7). See docs/profile-validation.md."""
+
+    name = "DecelCAGR"
+
+    def __init__(self, phi: float = 0.80):
+        self.phi = phi
+
+    def fit_predict(self, years, values, horizon):
+        if any(v <= 0 for v in values):
+            raise ValueError("DeceleratingCAGR needs all values > 0")
+        logs = [math.log(v) for v in values]
+        slope, _intercept = _ols(list(years), logs)
+        g = math.exp(slope) - 1.0
+        level = values[-1]
+        out, exponent = [], 0.0
+        for h in range(1, horizon + 1):
+            exponent += self.phi ** h
+            out.append(level * (1.0 + g) ** exponent)
+        return out
+
+
 def default_methods() -> List[ForecastMethod]:
     """The standard method set used in cross-company comparisons.
 
     Naive (benchmark), LinearTrend (project's aggregate-trend stand-in),
     LogLinearCAGR (constant-growth), HoltLinear (adaptive trend), ARIMA
-    (statistical). Callers may pass a subset — e.g. drop the statsmodels-based
+    (statistical), plus the two profile-implied shape methods graduated
+    from the pre-registered validation (DampedTrend, DeceleratingCAGR —
+    v0.17). Callers may pass a subset — e.g. drop the statsmodels-based
     ones for a zero-dependency run.
     """
-    return [Naive(), LinearTrend(), LogLinearCAGR(), HoltLinear(), ARIMA()]
+    return [Naive(), LinearTrend(), LogLinearCAGR(), HoltLinear(), ARIMA(),
+            DampedTrend(), DeceleratingCAGR()]

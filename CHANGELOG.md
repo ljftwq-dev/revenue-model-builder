@@ -4,6 +4,53 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.17.0] - 2026-09-12
+
+### Added
+- **Churn-survival dynamics (Direction B of the v0.16 optimization study)** —
+  subscription bases get their water-in/water-out math:
+  - `Driver.extrapolate_net_growth(years, gross_rate, churn)` —
+    `base_t = base_{t-1} x (1+gross) - base_{t-1} x churn`; the two knobs stay
+    separate because the analyst defends acquisition and retention separately.
+    A net rate <= 0 raises (an extinguishing base needs scenarios, not a
+    forecast).
+  - `saas_subscription` / `telecom_subscriber` base defaults switched to
+    `net_growth` (30%/12% and 5%/3.5% analyst-first soft defaults; hand
+    overrides always win).
+  - New `net_churn_positive` check (both profiles): base compounding negative
+    while ARPU compounds positive, with the sum still negative — "no realistic
+    price escalator offsets a shrinking base."
+- **DampedTrend + DeceleratingCAGR graduated into `revenue_model.backtest`**
+  as first-class methods (per the pre-registered validation: DecelCAGR beat
+  Naive on its home saas profile with double significance, r ~= -0.7;
+  Damped won the adapt bucket with the best directional accuracy, 74%).
+  `default_methods()` now returns 7 methods. The experiment's frozen copies
+  stay in `examples/profile_validation/` for reproducibility.
+- **G1 code gate in CI**: ruff with an explicitly pinned ruleset
+  (E4/E7/E9/F/B, line-length 99, target py39 — immune to ruff's evolving
+  defaults) + mypy scoped to the pure-stdlib kernel
+  (driver/segment/model/monte_carlo/industry). 37 lint findings and 6 type
+  findings fixed on adoption, including 6x closure-over-loop-variable
+  (B023) bound via default args before they become real bugs.
+- **FIG teaching-consensus citations (Direction D)**: the weak-fit financials
+  classification now cites the sell-side teaching lineage (M&I/BIWS/edbodmer
+  balance-sheet-first FIG modeling) and the A-share 规模×息差 perspective —
+  with the Track-B JPM warning + MC coverage as the engine's independent
+  re-derivation of that consensus.
+
+### Fixed
+- **`forecast_segment` hand-coverage bug (the Track-B API finding)**: a driver
+  already extended by hand to *all* target years is now returned untouched —
+  spec params are not even resolved. Previously a hand-held structural
+  constant (e.g. 1.0) on a logistic-default kind raised ValueError from the
+  anchor check despite the hand extension. Partial coverage still gets spec
+  treatment for missing years. Regression-tested with the exact Track-B
+  scenario.
+
+### Changed
+- `telecom_subscriber` base default: logistic (1.3x last) → `net_growth`.
+- Default backtest battery: 5 → 7 methods (score tables gain two rows).
+
 ## [0.16.1] - 2026-09-12
 
 ### Added

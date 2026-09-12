@@ -124,6 +124,20 @@ def _ck_hypergrowth_base(seg: Segment) -> List[str]:
     return []
 
 
+def _ck_net_churn_positive(seg: Segment) -> List[str]:
+    """saas/telecom: base shrinking faster than ARPU grows — revenue math
+    is already lost regardless of the price escalator (v0.17 Direction B)."""
+    base_c = _recent_cagr(seg.base.values)
+    price_c = _recent_cagr(seg.price.values)
+    if base_c is not None and price_c is not None \
+            and base_c < 0 and base_c + price_c < 0:
+        return [f"implied net churn: base compounding {base_c:+.1%}/yr while "
+                f"ARPU compounds {price_c:+.1%}/yr — net {base_c + price_c:+.1%} "
+                f"still negative. No realistic price escalator offsets a "
+                f"shrinking base; fix retention or cut to scenarios."]
+    return []
+
+
 def _ck_arpu_accelerating(seg: Segment) -> List[str]:
     """saas_subscription: ARPU compounding >10%/yr is rare without repricing."""
     c = _recent_cagr(seg.price.values)
@@ -211,6 +225,7 @@ _CHECKS: Dict[str, Callable[[Segment], List[str]]] = {
     "asp_rising": _ck_asp_rising,
     "hypergrowth_base": _ck_hypergrowth_base,
     "arpu_accelerating": _ck_arpu_accelerating,
+    "net_churn_positive": _ck_net_churn_positive,
     "adload_high": _ck_adload_high,
     "shrinking_base": _ck_shrinking_base,
     "base_saturated": _ck_base_saturated,
@@ -265,13 +280,14 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
         fit_note="MAU/customers × ARPU: adoption follows an S-curve, ARPU grows "
                  "by escalator — the tree works with swapped factors",
         defaults={
-            BASE: ExtrapolationSpec("trend"),
+            BASE: ExtrapolationSpec("net_growth",
+                                    {"gross_rate": 0.30, "churn": 0.12}),
             PENETRATION: ExtrapolationSpec("logistic",
                                            {"L": 0.6, "k": 0.35, "t0": "anchor_last"}),
             SHARE: ExtrapolationSpec("hold"),
             PRICE: ExtrapolationSpec("growth", {"rate": 0.02}),
         },
-        checks=("arpu_accelerating",),
+        checks=("arpu_accelerating", "net_churn_positive"),
     ),
     "advertising": IndustryProfile(
         key="advertising",
@@ -311,13 +327,13 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
         fit_note="subscribers × ARPU: subscriber growth saturates (logistic), "
                  "ARPU drifts slowly and is policy-capped",
         defaults={
-            BASE: ExtrapolationSpec("logistic",
-                                    {"L": "1.3*last", "k": 0.3, "t0": "anchor_last"}),
+            BASE: ExtrapolationSpec("net_growth",
+                                    {"gross_rate": 0.05, "churn": 0.035}),
             PENETRATION: ExtrapolationSpec("hold"),
             SHARE: ExtrapolationSpec("hold"),
             PRICE: ExtrapolationSpec("hold"),
         },
-        checks=("base_saturated",),
+        checks=("base_saturated", "net_churn_positive"),
     ),
     "industrial_capacity": IndustryProfile(
         key="industrial_capacity",
@@ -482,7 +498,15 @@ def _logistic_t0_through_last(driver: Driver, *, L: float, k: float) -> float:
 
 
 def _apply_spec(driver: Driver, years: List[int], spec: ExtrapolationSpec) -> Driver:
-    """Dispatch an ExtrapolationSpec to its Driver.extrapolate_* method."""
+    """Dispatch an ExtrapolationSpec to its Driver.extrapolate_* method.
+
+    Soft-default rule: a driver the analyst already extended to *all* target
+    years wins untouched — no spec params are even resolved (a hand-held
+    structural constant must not trip, say, a logistic anchor check).
+    Partial coverage still gets spec treatment for the missing years.
+    """
+    if years and all(y in driver.values for y in years):
+        return driver
     p = _resolve_params(spec.params, driver)
     if spec.method == "incremental":
         return driver.extrapolate_incremental(years, p.get("delta_pp", 0.02))
@@ -499,6 +523,9 @@ def _apply_spec(driver: Driver, years: List[int], spec: ExtrapolationSpec) -> Dr
         return driver.extrapolate_erosion(years, p.get("rate", 0.05))
     if spec.method == "growth":
         return driver.extrapolate_growth(years, p.get("rate", 0.08))
+    if spec.method == "net_growth":
+        return driver.extrapolate_net_growth(
+            years, p.get("gross_rate", 0.20), p.get("churn", 0.10))
     if spec.method == "hold":
         return driver.extrapolate_hold(years)
     raise ValueError(f"unknown extrapolation method: {spec.method!r}")

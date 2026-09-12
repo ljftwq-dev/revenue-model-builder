@@ -102,6 +102,39 @@ class Driver:
                       unit=self.unit,
                       source=f"logistic L={L} k={k} t0={t0} extrapolated")
 
+    def extrapolate_net_growth(self, years: List[int], gross_rate: float,
+                               churn: float) -> "Driver":
+        """Subscriber-style base with separate water-in / water-out knobs:
+
+        ``base_t = base_{t-1} * (1 + gross_rate) - base_{t-1} * churn``
+
+        i.e. compounding at the *net* rate (gross - churn), but the two knobs
+        stay separate because the analyst defends them separately (acquisition
+        engine vs retention). Subscription businesses live or die on this
+        decomposition — a single blended growth rate hides a leaky bucket
+        (high gross adds masking high churn). Churn > gross also trips the
+        ``net_churn_positive`` profile check downstream: no realistic ARPU
+        escalator offsets a shrinking base.
+
+        Returns a new Driver downgraded to C-grade.
+        """
+        net = (1.0 + gross_rate) - churn
+        if net <= 0:
+            raise ValueError(
+                f"net growth (1+gross) - churn must be > 0, got {net:.3f} "
+                f"(gross={gross_rate:.3f}, churn={churn:.3f}); a base that "
+                f"extinguishes itself needs scenario analysis, not a forecast")
+        last_yr = max(self.values)
+        last_val = self.values[last_yr]
+        new_values = dict(self.values)
+        for y in years:
+            if y > last_yr:
+                new_values[y] = last_val * net ** (y - last_yr)
+        return Driver(self.name, self.kind, new_values, level=LEVEL_C,
+                      unit=self.unit,
+                      source=f"net growth gross={gross_rate:.1%} "
+                             f"churn={churn:.1%} extrapolated")
+
     def extrapolate_mean_reversion(self, years: List[int],
                                     *, target: Optional[float] = None,
                                     speed: float = 0.5) -> "Driver":
