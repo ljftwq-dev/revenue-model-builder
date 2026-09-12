@@ -7,6 +7,8 @@ knowledge is in the engine:
 
 1. ``list_profiles()``          — the catalog (mechanism → defaults → checks)
 2. tag segments                 — Gaming→semiconductor, Data Center→?
+2b. ``benchmark_warnings()``    — v0.18: growth reads vs Damodaran bands,
+   citation inside the warning text (in-band = silent)
 3. ``check_segment()``          — the mis-tag teaching moment: DC tagged
    "semiconductor" trips the hypergrowth check → retag regime_shift_tech
 4. ``forecast_segment()``       — profile-default forecasts (no hand tuning)
@@ -28,8 +30,8 @@ sys.path.insert(0, ROOT)
 from revenue_model import (
     Driver, Segment, BASE, PENETRATION, SHARE, PRICE, implied_driver,
     simulate_segment, scenarios,
-    list_profiles, resolve_industry, forecast_segment,
-    check_segment, segment_warnings,
+    list_profiles, forecast_segment,
+    check_segment, benchmark_warnings, segment_warnings,
 )
 
 TRAIN = [2019, 2020, 2021, 2022, 2023]
@@ -95,6 +97,21 @@ def main():
     print("\n[2] Mis-tag teaching moment — DC tagged 'semiconductor' (wrong):")
     for w in check_segment(dc):
         print("    CHECK:", w)
+
+    print("\n[2b] v0.18 citation layer — the same reads, now with evidence")
+    print("     (segment growth vs Damodaran industry bands, in-band = silent):")
+    print("     Gaming (a TRUE semiconductor segment, but growing below the")
+    print("     cluster band — NVDA Gaming underperformed its industry):")
+    for w in benchmark_warnings(gaming):
+        print("    BENCH:", w)
+    print("     Data Center (the mis-tag — the band check fires ABOVE with")
+    print("     the full citation in the warning text):")
+    for w in benchmark_warnings(dc):
+        print("    BENCH:", w)
+    print("     -> v0.16 checks said 'that's rare'; v0.18 says 'the industry")
+    print("        historical band is 9.8-10.7%/yr across 97 firms — yours is")
+    print("        far outside, cite why'. Same soft philosophy: evidence,")
+    print("        not roadblocks.")
 
     print("\n    -> retag: regime_shift_tech")
     dc.industry = "regime_shift_tech"

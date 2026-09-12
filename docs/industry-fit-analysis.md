@@ -220,6 +220,40 @@ project's invention — it codifies what sell-side teaching has converged on.
 
 ---
 
+## 6b. From thresholds to citations (v0.18)
+
+The profile checks above encode analyst heuristics — "ARPU compounding
+above 10%/yr is rare", "ad load above 30% hits the UX cap". True, but
+*unsourced*: the reader has to trust the authors. v0.18 anchors the
+growth-side checks in Aswath Damodaran's free industry dataset (January 2026
+update, trailing data through 2025Q3, ~96 US industries): each of the nine
+mechanism profiles carries a `Benchmark` quartile band per metric — the
+cluster's revenue 5y CAGR and the analyst-expected next-2y growth — with the
+industry list, firm count, vintage, and data grade (B: annual hand update)
+stored inside the band.
+
+`benchmark_warnings()` then reads softly:
+
+> last-3y revenue CAGR **+50%/yr** sits ABOVE the industry band
+> **10%–11%/yr** (P50 10%; cluster: Semiconductor, Semiconductor Equip
+> (97 firms); 2026-01, grade B) — beating the industry needs a story
+> (share gains, pricing power, a new segment); carry it into the driver
+> tree explicitly, don't let the trend imply it.
+
+In-band → silence; out-of-band → one line per side, citation inside the
+text; the heuristic checks stay as the backstop layer for profiles and
+metrics without external benchmarks (`regime_shift_tech` is deliberately
+unanchored — an AI inflection has no industry history to appeal to).
+
+The bands cannot rot: `python -m revenue_model.damodaran_adapter verify`
+re-fetches the free dataset (stdlib-only, 30-day disk cache), re-computes
+every cluster band, and diffs it against the shipped literals — exit 0 on
+match, drift lines plus upstream-vs-shipped vintage on mismatch. Verified
+live against the January 2026 update: 96 industries parsed, all 18 bands
+match. Run it each January when Damodaran refreshes.
+
+---
+
 ## The differentiator
 
 The market is saturated with projects that advertise accuracy. Almost none use a

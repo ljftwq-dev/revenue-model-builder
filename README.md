@@ -175,10 +175,17 @@ pyramid · history-first workflow →
 
 ## Roadmap
 
-- **v0.18 (data anchor)**: Damodaran industry benchmarks wired into
-  profile checks — thresholds become citations
 - **v0.19 (experience)**: profile auto-recommendation from backtest
   fingerprints; profile catalog page
+
+**Shipped — v0.18 (data anchor)**: `Benchmark` bands on 9 of 10 profiles
+(Damodaran histgr industry clusters — revenue 5y CAGR + expected growth,
+Jan 2026 vintage, grade B) and `benchmark_warnings()`: in-band → silence,
+out-of-band → one line carrying the numbers, the cluster, the vintage, and
+the grade. `python -m revenue_model.damodaran_adapter verify` re-fetches and
+re-computes the bands (stdlib-only) so the shipped literals can't rot —
+regime_shift_tech stays deliberately unanchored. See
+`examples/industry_demo`.
 
 **Shipped — v0.17 (math kernel)**: churn-survival dynamics for
 subscription bases (`base × (1+gross) − base × churn` as the saas/telecom

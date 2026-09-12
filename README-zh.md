@@ -158,8 +158,15 @@ Python 3.9–3.13 · MIT 许可证 ·
 
 ## 路线图
 
-- **v0.18（数据之锚）**：Damodaran 行业基准接入画像检查——阈值变成引用
 - **v0.19（体验）**：基于回测指纹的画像自动推荐；画像目录页
+
+**已发布——v0.18（数据之锚）**：10 个画像中的 9 个挂上 `Benchmark` 数值带
+（Damodaran histgr 行业簇——收入 5 年 CAGR + 预期增速，2026-01 版本，
+B 级数据），配 `benchmark_warnings()` 引用式检查：带内静默，带外一条线
+带着数字、行业簇、数据年份、数据分级全文。`python -m
+revenue_model.damodaran_adapter verify` 一条命令重新抓取并复算全部带子
+（纯 stdlib），库内字面量想烂都烂不了——regime_shift_tech 按设计不锚定。
+见 `examples/industry_demo`。
 
 **已发布——v0.17（数学内核）**：订阅基数的流失存活动力学（`基数×(1+毛增) − 基数×churn`
 成为 saas/telecom 默认，附带"ARPU 增长救不了萎缩基数"的净流失检查）；
