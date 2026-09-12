@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **`auto_pipeline` — the offline spine (v0.20a)**: one call from raw
+  segment data to a report, zero network / zero LLM. Stages: build drivers
+  (omitted ratio drivers default to constant 1.0) → suggest shortlists →
+  **gate 1** (explicit tags, or `"auto"` adopting the top candidate loudly;
+  untagged segments park in `gate1_pending` and are not forecast) →
+  forecast → citation checks → **gate 2** (ABOVE-band segments require a
+  story in `stories`, else `gate2_pending`) → assemble → optional `.docx`
+  report (python-docx imported lazily — the pipeline itself stays
+  zero-dependency). Returns `PipelineResult` with everything the pipeline
+  did and everything still waiting on you.
+- **PLTR demo** (`examples/pltr_demo`): real FY2021–24 10-K disclosure
+  end-to-end in one command — explicit tag + auto-adoption + both gates +
+  a hand override closing the soft-default loop.
+- **`docs/auto-pipeline.md`** cookbook: input format, gate contract,
+  override pattern.
+- mypy: `auto_pipeline.py` joins the kernel scope; `__init__`-reachable
+  stub-less extras (statsmodels, pymysql) and the report builder are
+  scoped out via per-module overrides.
+
 ## [0.19.0] - 2026-09-12
 
 ### Added

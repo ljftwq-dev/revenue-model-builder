@@ -76,10 +76,22 @@ files = [
     "revenue_model/monte_carlo.py",
     "revenue_model/industry.py",
     "revenue_model/suggest.py",
+    "revenue_model/auto_pipeline.py",
 ]
+
+[[tool.mypy.overrides]]
+# report rendering lives behind an extra (python-docx/matplotlib); it is
+# imported lazily by auto_pipeline and is out of the type gate's scope
+module = "revenue_model.docx_builder"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+# pulled into the type graph via the package __init__: installed extras
+# without stubs (statsmodels, pymysql) are not kernel-type-signal
+# (import-untyped is not silenced by ignore_missing_imports when the
+# package IS installed)
+module = ["revenue_model.backtest.methods", "revenue_model.qesa_adapter"]
 ignore_missing_imports = true
-# pymysql installs without stubs on some CI pythons (import-untyped is not
-# silenced by ignore_missing_imports when the package IS installed)
 disable_error_code = ["import-untyped"]
 
 [tool.setuptools.packages.find]
