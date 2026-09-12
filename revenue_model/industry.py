@@ -58,6 +58,44 @@ class ExtrapolationSpec:
 
 
 @dataclass(frozen=True)
+class Benchmark:
+    """One sourced industry benchmark band for a growth-related metric.
+
+    ``p25``/``p50``/``p75`` are the quartile band of the metric across the
+    profile's reference industry cluster (the exact industries are listed in
+    ``note``), in annualized fraction units (0.08 = 8%/yr). Per-industry
+    values behind the band are cluster *averages* of firm-level CAGRs, so the
+    band describes cross-industry spread, not firm-level dispersion.
+
+    ``grade`` follows the package's A/B/C data grading: Damodaran's dataset is
+    hand-updated once a year from filings (grade B), not live exchange data.
+    """
+    metric: str          # e.g. "revenue_cagr_5y", "revenue_exp_growth_2y"
+    p25: float
+    p50: float
+    p75: float
+    unit: str = "fraction"
+    source: str = ""     # citation with dataset, scope, and update date
+    vintage: str = ""    # data-as-of, "YYYY-MM"
+    grade: str = "B"
+    note: str = ""       # reference industry cluster + coverage
+
+
+_DM_HISTGR = ("Damodaran US industry data — histgr (historical & expected "
+              "revenue growth), January 2026 update (trailing data through "
+              "2025Q3). https://pages.stern.nyu.edu/~adamodar/New_Home_Page/"
+              "datacurrent.html")
+
+
+def _dm_band(metric: str, p25: float, p50: float, p75: float,
+             note: str) -> Benchmark:
+    """Shorthand for a Damodaran histgr quartile band (grade B)."""
+    return Benchmark(metric=metric, p25=p25, p50=p50, p75=p75,
+                     source=_DM_HISTGR, vintage="2026-01", grade="B",
+                     note=note)
+
+
+@dataclass(frozen=True)
 class IndustryProfile:
     """One industry's forecasting defaults, checks, and fit verdict."""
     key: str
@@ -68,6 +106,9 @@ class IndustryProfile:
     defaults: Dict[DriverKind, ExtrapolationSpec]
     checks: Tuple[str, ...] = ()   # names into _CHECKS registry
     advice: str = ""               # what to do instead when fit == weak
+    # sourced benchmark bands for citation-based checks (v0.18); empty means
+    # "no external benchmark" and the profile's checks stay heuristic
+    benchmarks: Tuple[Benchmark, ...] = ()
 
     def fit_label(self, lang: str = "en") -> str:
         labels = {"strong": {"en": "strong fit", "zh": "强契合"},
@@ -255,6 +296,16 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
             PRICE: ExtrapolationSpec("erosion", {"rate": 0.05}),
         },
         checks=("asp_rising",),
+        benchmarks=(
+            _dm_band("revenue_cagr_5y", 0.0416, 0.0699, 0.0748,
+                     "cluster: Electronics (Consumer & Office), Electronics "
+                     "(General), Computers/Peripherals, Office Equipment & "
+                     "Services (172 firms)"),
+            _dm_band("revenue_exp_growth_2y", 0.0119, 0.1020, 0.1979,
+                     "cluster: Electronics (Consumer & Office), Electronics "
+                     "(General), Computers/Peripherals, Office Equipment & "
+                     "Services (172 firms)"),
+        ),
     ),
     "semiconductor": IndustryProfile(
         key="semiconductor",
@@ -271,6 +322,12 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
             PRICE: ExtrapolationSpec("hold"),
         },
         checks=("hypergrowth_base",),
+        benchmarks=(
+            _dm_band("revenue_cagr_5y", 0.0983, 0.1028, 0.1073,
+                     "cluster: Semiconductor, Semiconductor Equip (97 firms)"),
+            _dm_band("revenue_exp_growth_2y", 0.1920, 0.2644, 0.3368,
+                     "cluster: Semiconductor, Semiconductor Equip (97 firms)"),
+        ),
     ),
     "saas_subscription": IndustryProfile(
         key="saas_subscription",
@@ -288,6 +345,16 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
             PRICE: ExtrapolationSpec("growth", {"rate": 0.02}),
         },
         checks=("arpu_accelerating", "net_churn_positive"),
+        benchmarks=(
+            _dm_band("revenue_cagr_5y", 0.1637, 0.2333, 0.2762,
+                     "cluster: Software (System & Application), Software "
+                     "(Internet), Computer Services, Information Services "
+                     "(417 firms)"),
+            _dm_band("revenue_exp_growth_2y", 0.1195, 0.1868, 0.2640,
+                     "cluster: Software (System & Application), Software "
+                     "(Internet), Computer Services, Information Services "
+                     "(417 firms)"),
+        ),
     ),
     "advertising": IndustryProfile(
         key="advertising",
@@ -303,6 +370,14 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
             PRICE: ExtrapolationSpec("mean_revert", {"target": None, "speed": 0.3}),
         },
         checks=("adload_high",),
+        benchmarks=(
+            _dm_band("revenue_cagr_5y", 0.0632, 0.1242, 0.1674,
+                     "cluster: Advertising, Entertainment, Publishing & "
+                     "Newspapers, Broadcasting (187 firms)"),
+            _dm_band("revenue_exp_growth_2y", 0.0051, 0.0463, 0.0832,
+                     "cluster: Advertising, Entertainment, Publishing & "
+                     "Newspapers, Broadcasting (187 firms)"),
+        ),
     ),
     "retail_store": IndustryProfile(
         key="retail_store",
@@ -318,6 +393,16 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
             PRICE: ExtrapolationSpec("mean_revert", {"target": None, "speed": 0.5}),
         },
         checks=("shrinking_base",),
+        benchmarks=(
+            _dm_band("revenue_cagr_5y", 0.0229, 0.0844, 0.1007,
+                     "cluster: Retail (General), Retail (Special Lines), "
+                     "Retail (Automotive), Retail (Building Supply), Retail "
+                     "(Grocery and Food), Retail (Distributors) (242 firms)"),
+            _dm_band("revenue_exp_growth_2y", 0.0416, 0.0492, 0.0700,
+                     "cluster: Retail (General), Retail (Special Lines), "
+                     "Retail (Automotive), Retail (Building Supply), Retail "
+                     "(Grocery and Food), Retail (Distributors) (242 firms)"),
+        ),
     ),
     "telecom_subscriber": IndustryProfile(
         key="telecom_subscriber",
@@ -334,6 +419,14 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
             PRICE: ExtrapolationSpec("hold"),
         },
         checks=("base_saturated", "net_churn_positive"),
+        benchmarks=(
+            _dm_band("revenue_cagr_5y", 0.0863, 0.1357, 0.2026,
+                     "cluster: Telecom (Wireless), Telecom. Services, Cable "
+                     "TV (60 firms)"),
+            _dm_band("revenue_exp_growth_2y", -0.0421, -0.0293, 0.2592,
+                     "cluster: Telecom (Wireless), Telecom. Services, Cable "
+                     "TV (60 firms)"),
+        ),
     ),
     "industrial_capacity": IndustryProfile(
         key="industrial_capacity",
@@ -350,6 +443,14 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
             PRICE: ExtrapolationSpec("trend"),
         },
         checks=("utilization_cap",),
+        benchmarks=(
+            _dm_band("revenue_cagr_5y", 0.0881, 0.1103, 0.1357,
+                     "cluster: Machinery, Electrical Equipment, Engineering/"
+                     "Construction, Building Materials (306 firms)"),
+            _dm_band("revenue_exp_growth_2y", 0.0862, 0.1141, 0.2839,
+                     "cluster: Machinery, Electrical Equipment, Engineering/"
+                     "Construction, Building Materials (306 firms)"),
+        ),
     ),
     "financial_interest": IndustryProfile(
         key="financial_interest",
@@ -369,6 +470,14 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
                                      {"target": 0.04, "speed": 0.5}),
         },
         checks=("balance_growth_hot",),
+        benchmarks=(
+            _dm_band("revenue_cagr_5y", 0.0830, 0.0855, 0.0880,
+                     "cluster: Bank (Money Center), Banks (Regional) "
+                     "(583 firms)"),
+            _dm_band("revenue_exp_growth_2y", 0.0977, 0.1099, 0.1221,
+                     "cluster: Bank (Money Center), Banks (Regional) "
+                     "(583 firms)"),
+        ),
     ),
     "commodity_cyclical": IndustryProfile(
         key="commodity_cyclical",
@@ -387,6 +496,16 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
             PRICE: ExtrapolationSpec("mean_revert", {"target": None, "speed": 0.3}),
         },
         checks=("cycle_top",),
+        benchmarks=(
+            _dm_band("revenue_cagr_5y", 0.0935, 0.1449, 0.1883,
+                     "cluster: Metals & Mining, Coal & Related Energy, Oil/Gas "
+                     "(Integrated), Oil/Gas (Production and Exploration), "
+                     "Steel, Precious Metals (310 firms)"),
+            _dm_band("revenue_exp_growth_2y", 0.0680, 0.2341, 0.4683,
+                     "cluster: Metals & Mining, Coal & Related Energy, Oil/Gas "
+                     "(Integrated), Oil/Gas (Production and Exploration), "
+                     "Steel, Precious Metals (310 firms)"),
+        ),
     ),
     "regime_shift_tech": IndustryProfile(
         key="regime_shift_tech",
@@ -407,6 +526,8 @@ INDUSTRY_PROFILES: Dict[str, IndustryProfile] = {
             PRICE: ExtrapolationSpec("trend"),
         },
         checks=("regime_always",),
+        # benchmarks=() by design: an AI-inflection breakout has no meaningful
+        # industry history to anchor to — the whole profile is the warning
     ),
 }
 

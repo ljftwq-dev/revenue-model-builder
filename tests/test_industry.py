@@ -273,6 +273,53 @@ class TestWarningsChecks:
 
 
 # ---------------------------------------------------------------------------
+# benchmarks — sourced industry bands (v0.18)
+# ---------------------------------------------------------------------------
+
+class TestBenchmarks:
+    def test_nine_profiles_anchored_regime_shift_empty(self):
+        for key, p in INDUSTRY_PROFILES.items():
+            if key == "regime_shift_tech":
+                assert p.benchmarks == ()   # no benchmark by design
+            else:
+                assert len(p.benchmarks) >= 2, f"{key} missing benchmarks"
+
+    def test_band_ordering_and_complete_citation(self):
+        for p in INDUSTRY_PROFILES.values():
+            for b in p.benchmarks:
+                assert b.p25 <= b.p50 <= b.p75, (p.key, b.metric)
+                assert b.unit == "fraction"
+                assert b.source and "Damodaran" in b.source
+                assert b.vintage == "2026-01"
+                assert b.grade == "B"
+                assert "cluster:" in b.note
+
+    def test_growth_metrics_present(self):
+        for key, p in INDUSTRY_PROFILES.items():
+            if key == "regime_shift_tech":
+                continue
+            metrics = {b.metric for b in p.benchmarks}
+            assert "revenue_cagr_5y" in metrics, key
+            assert "revenue_exp_growth_2y" in metrics, key
+
+    def test_cross_profile_ordering_sanity(self):
+        def p50(key, metric):
+            return next(b.p50 for b in INDUSTRY_PROFILES[key].benchmarks
+                        if b.metric == metric)
+        # SaaS historical growth far above retail — the bands must preserve
+        # this well-known ordering, else the citations are suspect
+        assert p50("saas_subscription", "revenue_cagr_5y") > \
+               p50("retail_store", "revenue_cagr_5y")
+        assert p50("semiconductor", "revenue_cagr_5y") > \
+               p50("consumer_electronics", "revenue_cagr_5y")
+
+    def test_benchmark_importable_from_package(self):
+        from revenue_model import Benchmark
+        b = Benchmark("x", 0.1, 0.2, 0.3)
+        assert (b.p25, b.p50, b.p75) == (0.1, 0.2, 0.3)
+
+
+# ---------------------------------------------------------------------------
 # integration — profiles coexist with the existing engine
 # ---------------------------------------------------------------------------
 

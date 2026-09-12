@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Benchmark dataclass — sourced industry bands (v0.18 step 1)**: checks get
+  their citation backbone. `Benchmark` (exported) carries one metric's
+  quartile band (`p25`/`p50`/`p75`, annualized fractions) plus full citation
+  (`source` / `vintage` / `grade` / `note`); `IndustryProfile.benchmarks`
+  (default empty — soft add, nothing breaks) anchors 9 of 10 profiles with
+  Damodaran histgr clusters (Jan 2026 update, TTM 2025Q3): revenue CAGR last
+  5y and expected revenue growth next 2y, per industry cluster (e.g. SaaS =
+  System & Application + Internet + Computer/Information Services, 417 firms).
+  `regime_shift_tech` stays unanchored by design — an AI inflection has no
+  industry history to appeal to. Bands describe cross-industry spread within
+  the cluster (per-industry values are firm-CAGR averages); data graded B
+  (annual hand update). Heuristic checks unchanged this step — they draw on
+  the bands in step 3.
+
 ## [0.17.0] - 2026-09-12
 
 ### Added
