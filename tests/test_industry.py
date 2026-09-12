@@ -233,7 +233,6 @@ class TestIntegration:
     def test_forecasted_segment_feeds_model(self):
         seg = forecast_segment(_seg(industry="saas_subscription"),
                                [2025, 2026, 2027])
-        model = RevenueModel("DemoCo", [seg], total_revenue={2024: 10.0})
         rev25 = seg.revenue(2025)
         assert rev25 > 0
         assert all(math.isfinite(seg.revenue(y)) for y in (2025, 2026, 2027))

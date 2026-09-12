@@ -52,5 +52,31 @@ Changelog = "https://github.com/ljftwq-dev/revenue-model-builder/releases"
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
+[tool.ruff]
+line-length = 99
+target-version = "py39"
+
+[tool.ruff.lint]
+# G1 code gate: correctness signals only (pyflakes + bugbear), pinned
+# explicitly so ruff's evolving defaults cannot change the ruleset.
+select = ["E4", "E7", "E9", "F", "B"]
+ignore = ["E741"]
+
+[tool.ruff.lint.per-file-ignores]
+"examples/*" = ["B023"]
+"tests/test_viz.py" = ["E402"]   # matplotlib.use("Agg") must precede pyplot imports
+
+[tool.mypy]
+# G1 type gate, scoped to the pure-stdlib kernel (network adapters excluded:
+# third-party libs lack stubs and add noise, not signal)
+files = [
+    "revenue_model/driver.py",
+    "revenue_model/segment.py",
+    "revenue_model/model.py",
+    "revenue_model/monte_carlo.py",
+    "revenue_model/industry.py",
+]
+ignore_missing_imports = true
+
 [tool.setuptools.packages.find]
 include = ["revenue_model*"]

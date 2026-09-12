@@ -283,7 +283,7 @@ def simulate_revenue(segment: Segment, year: int, stochastic: StochasticSpec,
     samples: List[float] = []
     for i in range(n):
         rev = 1.0
-        for name, d in drv.items():
+        for name, _d in drv.items():
             v = stoch_samples[name][i] if name in stoch_names else det[name]
             rev *= v
         samples.append(rev)

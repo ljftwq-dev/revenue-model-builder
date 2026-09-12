@@ -39,7 +39,7 @@ except ImportError as exc:  # pragma: no cover - exercised only without matplotl
         'Install it with:  pip install -e ".[viz]"'
     ) from exc
 
-from typing import Dict, List, Literal, Optional, Sequence
+from typing import Dict, Literal, Optional, Sequence
 
 from .model import RevenueModel
 from .monte_carlo import MCResult, Scenario, SensitivityItem
@@ -197,7 +197,7 @@ def plot_tornado(
     pos = list(range(len(ranked)))
 
     for y, it in zip(pos, ranked):
-        lo, base, hi = it.low_revenue / _YI, it.base_revenue / _YI, it.high_revenue / _YI
+        lo, hi = it.low_revenue / _YI, it.high_revenue / _YI
         ax.barh(y, hi - lo, left=lo, height=0.6,
                 color=_C_BAND, alpha=0.45, edgecolor=_C_BASE, linewidth=0.6)
         ax.plot([lo, hi], [y, y], color=_C_BASE, linewidth=2.4, solid_capstyle="butt")

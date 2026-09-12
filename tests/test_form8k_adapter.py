@@ -1,7 +1,6 @@
 """Tests for form8k_adapter — fully offline via injected fake http_get."""
 from datetime import date, datetime
 
-import pytest
 
 from revenue_model import form8k_adapter
 from revenue_model.form8k_adapter import classify_items, fetch_8k_events

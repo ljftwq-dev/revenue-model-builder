@@ -9,9 +9,7 @@ BUG-B: a YTD cumulative and a discrete quarter sharing an end date
 All offline via injected fake http_get, matching the suite's conventions.
 """
 from datetime import date
-from typing import Callable
 
-from revenue_model import sec_adapter
 from revenue_model.sec_adapter import SEC_API, fetch_fiscal_quarters, fetch_statement
 
 

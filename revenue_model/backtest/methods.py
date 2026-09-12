@@ -151,7 +151,6 @@ class ARIMA(ForecastMethod):
 
     def fit_predict(self, years, values, horizon):
         try:
-            from statsmodels.tsa.arima.model import ARIMAResults
             from statsmodels.tsa.arima.model import ARIMA as _ARIMA
         except ImportError as exc:  # pragma: no cover
             raise ImportError(

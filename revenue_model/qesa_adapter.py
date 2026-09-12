@@ -95,7 +95,7 @@ class QesaStore:
                 cursorclass=pymysql.cursors.DictCursor, **dsn)
             self._backend = "mysql"
         else:
-            if not os.path.exists(self._path):
+            if self._path is None or not os.path.exists(self._path):
                 raise QesaStoreError(f"QESA sqlite db not found: {self._path}")
             self._conn = sqlite3.connect(self._path)  # type: ignore[assignment]
             self._conn.row_factory = sqlite3.Row

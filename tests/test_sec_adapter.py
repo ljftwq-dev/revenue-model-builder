@@ -64,7 +64,6 @@ def test_fetch_revenues_keeps_only_full_year_rows():
 
 def test_fetch_revenues_falls_back_when_first_concept_missing():
     """Revenues endpoint 404s -> adapter falls back to the ASC 606 element."""
-    cik10 = "0000320193"
     asc606 = {"units": {"USD": [
         {"start": "2017-09-25", "end": "2018-09-29", "form": "10-K", "fy": 2018, "val": 260170000000},
     ]}}

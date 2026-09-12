@@ -13,7 +13,6 @@ from openpyxl.utils import get_column_letter
 
 from .driver import LEVEL_A, LEVEL_B, LEVEL_C, PENETRATION, SHARE, BASE, PRICE
 from .model import RevenueModel
-from .segment import Segment
 
 COLOR_A = "000000"
 COLOR_B = "0000FF"

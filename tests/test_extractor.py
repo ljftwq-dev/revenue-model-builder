@@ -53,7 +53,7 @@ def _mock_llm(messages):
 
 def test_driver_types_vocab_complete():
     assert len(DRIVER_TYPES) == 6
-    for k, v in DRIVER_TYPES.items():
+    for _k, v in DRIVER_TYPES.items():
         assert "×" in v  # each maps to a driver tree
 
 

@@ -1,7 +1,7 @@
 """RevenueModel — multi-segment model anchored to total revenue, with residual alignment."""
 
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .segment import Segment
 
@@ -78,8 +78,9 @@ class RevenueModel:
         return [self.validate(y) for y in self.years()]
 
     @classmethod
-    def from_report(cls, text: str, *, api_key: str = None, llm=None,
-                    year: int = None, **extract_kwargs) -> "RevenueModel":
+    def from_report(cls, text: str, *, api_key: Optional[str] = None,
+                    llm=None, year: Optional[int] = None,
+                    **extract_kwargs) -> "RevenueModel":
         """Build a model straight from annual-report text (end-to-end pipeline).
 
         Runs segment extraction (LLM) -> skeleton -> ``Segment`` placeholders

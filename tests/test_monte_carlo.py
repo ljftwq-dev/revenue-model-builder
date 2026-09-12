@@ -4,7 +4,6 @@ import pytest
 
 from revenue_model.driver import Driver, BASE, PENETRATION, SHARE, PRICE
 from revenue_model.segment import Segment
-from revenue_model.model import RevenueModel
 from revenue_model.monte_carlo import (
     simulate_segment, simulate_model, tornado, scenarios,
 )

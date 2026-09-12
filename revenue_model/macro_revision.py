@@ -21,8 +21,8 @@ evidence (shock, elasticity, lag, source) next to the before/after forecast
 so the analyst can veto any revision.
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Sequence
+from dataclasses import dataclass
+from typing import List, Sequence
 
 from .driver import Driver, LEVEL_C
 from .qesa_adapter import QesaStore

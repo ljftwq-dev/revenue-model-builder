@@ -4,7 +4,6 @@ Reported figures are whole-millions, so Σ reported segments vs reported total
 differs by ±1-2 from rounding. The back-solve (Principle 1) and structure-wrong
 warnings must NOT fire for that — only for genuine driver-layer back-solving.
 """
-import pytest
 
 from revenue_model.driver import Driver, BASE, PENETRATION, SHARE, PRICE
 from revenue_model.segment import Segment

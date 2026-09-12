@@ -11,7 +11,7 @@ whose driver ``values`` are placeholders (0.0) tagged with the LLM's hint as
 """
 from typing import List
 
-from .driver import Driver, BASE, PENETRATION, SHARE, PRICE
+from .driver import Driver, DriverKind, BASE, PENETRATION, SHARE, PRICE
 from .segment import Segment
 from .templates import get_template
 
@@ -35,7 +35,8 @@ def parsed_to_segments(parsed: dict, year: int) -> List[Segment]:
         hints = seg.get("driver_hints") or {}
         confidence = seg.get("confidence") or "C"
 
-        def _driver(kind: str) -> Driver:
+        def _driver(kind: DriverKind, tpl=tpl, hints=hints,
+                    confidence=confidence) -> Driver:
             unit, name_hint = tpl[kind]
             return Driver(
                 name=(hints.get(kind) or name_hint),

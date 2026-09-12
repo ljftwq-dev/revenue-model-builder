@@ -3,13 +3,12 @@
 Reference p-values were computed with scipy (documented constants; scipy is
 NOT imported here — the library core stays zero-dependency).
 """
-import math
 from datetime import date, datetime
 
 import pytest
 
 from revenue_model.news_impact import (
-    MWUResult, WelchResult, align_first_after, bonferroni_alpha,
+    align_first_after, bonferroni_alpha,
     event_study, mann_whitney_u, welch_test, _t_sf_two_sided)
 
 

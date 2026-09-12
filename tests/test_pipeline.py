@@ -18,7 +18,7 @@ def test_all_six_templates_present():
 def test_each_template_has_four_factors():
     for dtype, tpl in DRIVER_TEMPLATES.items():
         assert set(tpl) == {BASE, PENETRATION, SHARE, PRICE}, dtype
-        for kind, (unit, hint) in tpl.items():
+        for _kind, (unit, hint) in tpl.items():
             assert isinstance(unit, str) and unit
             assert isinstance(hint, str) and hint
 

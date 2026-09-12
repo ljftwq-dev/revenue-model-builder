@@ -4,7 +4,6 @@ Uses a real NVDA FY27 'Revenue by Market Platform' text fixture (captured via
 PyMuPDF) and verifies both parsing and the internal caliber consistency
 (Hyperscale + ACIE == Data Center; Data Center + Edge == TOTAL).
 """
-import pytest
 
 from revenue_model.q4cdn_adapter import (
     _parse_money, _clean_name, _extract_market_platform,

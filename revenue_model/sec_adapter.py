@@ -455,7 +455,7 @@ def fetch_statement(cik: int, statement: str = "income",
                 if fy_anchor is not None:
                     fy_start_d = datetime.fromisoformat(fy_anchor[0]).date()
 
-                    def at_fy_start(p):
+                    def at_fy_start(p, fy_start_d=fy_start_d):
                         return abs((datetime.fromisoformat(p[0]).date()
                                     - fy_start_d).days) <= 10
 
@@ -466,7 +466,7 @@ def fetch_statement(cik: int, statement: str = "income",
                 else:
                     ytd_chain = []
 
-                def ytd_pred(p):
+                def ytd_pred(p, ytd_chain=ytd_chain):
                     earlier = [q for q in ytd_chain if q[1] < p[1]]
                     return earlier[-1] if earlier else None
 
@@ -564,7 +564,7 @@ def fetch_fiscal_quarters(cik: int, *, http_get: Optional[Callable] = None,
         fy_year = datetime.fromisoformat(fy_end).year
         start_d = datetime.fromisoformat(fy_start).date()
 
-        def starts_at_fy_start(se):
+        def starts_at_fy_start(se, start_d=start_d):
             return abs((datetime.fromisoformat(se[0]).date() - start_d).days) <= 10
 
         in_fy = [(s, e, v) for (s, e), v in merged.items()

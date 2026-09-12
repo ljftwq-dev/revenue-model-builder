@@ -38,7 +38,7 @@ except ImportError as exc:  # pragma: no cover - exercised only without python-d
 from io import BytesIO
 from typing import Dict, List, Literal, Optional, Sequence
 
-from .driver import LEVEL_A, LEVEL_B, LEVEL_C, Driver
+from .driver import LEVEL_A, LEVEL_B, LEVEL_C
 from .model import RevenueModel, YearResult
 from .segment import Segment
 

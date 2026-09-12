@@ -67,7 +67,7 @@ def print_validation(model: RevenueModel) -> None:
             for w in r.warnings:
                 print(f"  [!] {w}")
         else:
-            print(f"  [ok] 对齐通过（Σ分项 + 差额 = 总收入）")
+            print("  [ok] 对齐通过（Σ分项 + 差额 = 总收入）")
         print()
 
 

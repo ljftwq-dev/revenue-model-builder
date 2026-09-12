@@ -457,7 +457,7 @@ def list_profiles() -> List[Tuple[str, str, str]]:
 def _resolve_params(params: Dict, driver: Driver) -> Dict:
     """Resolve relative string params against the driver's history."""
     last_yr = max(driver.values) if driver.values else 0
-    out = {}
+    out: dict = {}
     for k, v in params.items():
         if isinstance(v, str) and v == "last":
             out[k] = last_yr

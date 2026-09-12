@@ -106,12 +106,7 @@ def test_fetch_for_unknown_ticker_raises():
 # ---- cache round-trip (datetime serialization) -----------------------------
 def test_cache_round_trip_preserves_datetime(tmp_path, monkeypatch):
     monkeypatch.setenv("RMB_CACHE_DIR", str(tmp_path))
-    http = _fake_http({_PRESS_URL: _Q4_RESPONSE})
-    first = fetch_press_releases(_IR, http_get=None, use_cache=True,
-                                 refresh=True) if False else None
-    # First call populates cache (http_get=None would hit network; simulate by
-    # calling with a getter once, then a second call with None must hit cache).
-    # Since we can't go online, test the serialization helpers directly:
+    # We can't go online here, so test the serialization helpers directly:
     from revenue_model.ir_adapter import _to_cached, _from_cached
     original = {"date": datetime(2026, 8, 5, 16, 5), "headline": "x",
                 "detail_url": "u", "pdf_url": "p", "id": 1}

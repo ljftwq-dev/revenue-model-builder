@@ -115,7 +115,7 @@ def simulate_model(model: RevenueModel, year: int,
     samples: List[float] = []
     for _ in range(n):
         total = 0.0
-        for seg, factors in zip(model.segments, per_segment):
+        for _seg, factors in zip(model.segments, per_segment):
             prod = 1.0
             for d, uncertain in factors:
                 if uncertain:
