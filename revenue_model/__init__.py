@@ -25,7 +25,7 @@ from .macro_revision import MacroBinding, RevisionSuggestion, suggest_revisions,
 from .industry import (
     ExtrapolationSpec, IndustryProfile, Benchmark, INDUSTRY_PROFILES,
     resolve_industry, list_profiles, forecast_segment,
-    check_segment, profile_warnings, segment_warnings,
+    check_segment, benchmark_warnings, profile_warnings, segment_warnings,
 )
 
 __all__ = [
@@ -41,5 +41,6 @@ __all__ = [
     "MacroBinding", "RevisionSuggestion", "suggest_revisions", "apply_revision",
     "ExtrapolationSpec", "IndustryProfile", "Benchmark", "INDUSTRY_PROFILES",
     "resolve_industry", "list_profiles", "forecast_segment",
-    "check_segment", "profile_warnings", "segment_warnings",
+    "check_segment", "benchmark_warnings", "profile_warnings",
+    "segment_warnings",
 ]

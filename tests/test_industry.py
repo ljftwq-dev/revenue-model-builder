@@ -8,7 +8,8 @@ from revenue_model import (
     Driver, Segment, RevenueModel,
     BASE, PENETRATION, SHARE, PRICE,
     resolve_industry, list_profiles, forecast_segment,
-    check_segment, profile_warnings, segment_warnings, INDUSTRY_PROFILES,
+    check_segment, benchmark_warnings, profile_warnings, segment_warnings,
+    INDUSTRY_PROFILES,
 )
 
 
@@ -317,6 +318,75 @@ class TestBenchmarks:
         from revenue_model import Benchmark
         b = Benchmark("x", 0.1, 0.2, 0.3)
         assert (b.p25, b.p50, b.p75) == (0.1, 0.2, 0.3)
+
+
+# ---------------------------------------------------------------------------
+# benchmark warnings — citation-based band checks (v0.18 step 3)
+# ---------------------------------------------------------------------------
+
+class TestBenchmarkWarnings:
+    def _saas(self, base, pen):
+        return Segment(
+            name="s", industry="saas_subscription",
+            base=Driver("b", BASE, base, level="B", unit="M users"),
+            penetration=Driver("p", PENETRATION, pen, level="C", unit="frac"),
+            share=Driver("sh", SHARE, {y: 1.0 for y in base}, level="C"),
+            price=Driver("pr", PRICE, {y: 1.0 for y in base}, level="C"),
+        )
+
+    def test_above_band_cites_cluster_and_grade(self):
+        # product CAGR ~38.6%/yr vs SaaS band 16.4-27.6%
+        seg = self._saas({2022: 100.0, 2023: 110.0, 2024: 120.0},
+                         {2022: 0.10, 2023: 0.13, 2024: 0.16})
+        out = benchmark_warnings(seg)
+        assert len(out) == 1
+        assert "ABOVE the industry band" in out[0]
+        assert "cluster: Software" in out[0]
+        assert "grade B" in out[0]
+
+    def test_inside_band_silent(self):
+        # product CAGR ~20%/yr — inside the SaaS band
+        seg = self._saas({2022: 100.0, 2023: 110.0, 2024: 120.0},
+                         {2022: 0.10, 2023: 0.11, 2024: 0.12})
+        assert benchmark_warnings(seg) == []
+
+    def test_below_band_flags(self):
+        # flat revenue (0%/yr) vs retail band floor 2.3%
+        seg = Segment(
+            name="r", industry="retail_store",
+            base=Driver("b", BASE, {2022: 100.0, 2023: 100.0, 2024: 100.0}),
+            penetration=Driver("p", PENETRATION,
+                               {2022: 0.10, 2023: 0.10, 2024: 0.10}),
+            share=Driver("sh", SHARE, {2022: 0.2, 2023: 0.2, 2024: 0.2}),
+            price=Driver("pr", PRICE, {2022: 1.0, 2023: 1.0, 2024: 1.0}),
+        )
+        out = benchmark_warnings(seg)
+        assert len(out) == 1
+        assert "BELOW the industry band" in out[0]
+
+    def test_no_benchmark_profile_returns_empty(self):
+        assert benchmark_warnings(_seg(industry="regime_shift_tech")) == []
+
+    def test_forecast_window_compared_when_boundary_given(self):
+        # history in-band (~20%), forecast years 2025-26 at ~40%/yr
+        seg = self._saas(
+            {2022: 100.0, 2023: 110.0, 2024: 120.0, 2025: 168.0, 2026: 235.0},
+            {2022: 0.10, 2023: 0.11, 2024: 0.12, 2025: 0.12, 2026: 0.12})
+        # without boundary: all years = history, one ABOVE line from history
+        out_no_boundary = benchmark_warnings(seg)
+        assert len(out_no_boundary) == 1
+        assert "last-3y" in out_no_boundary[0]
+        # with boundary: history clean, forecast window ABOVE the exp band
+        out = benchmark_warnings(seg, history_end=2024)
+        assert len(out) == 1
+        assert "forecast-window" in out[0]
+        assert "ABOVE" in out[0]
+
+    def test_segment_warnings_includes_benchmark_layer(self):
+        seg = self._saas({2022: 100.0, 2023: 110.0, 2024: 120.0},
+                         {2022: 0.10, 2023: 0.13, 2024: 0.16})
+        allw = segment_warnings(seg)
+        assert any("industry band" in w for w in allw)
 
 
 # ---------------------------------------------------------------------------

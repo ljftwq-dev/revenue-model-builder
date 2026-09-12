@@ -20,6 +20,14 @@ All notable changes to this project are documented here. The format is based on
   the cluster (per-industry values are firm-CAGR averages); data graded B
   (annual hand update). Heuristic checks unchanged this step — they draw on
   the bands in step 3.
+- **Citation-based band checks — `benchmark_warnings()` (v0.18 step 3)**:
+  segment revenue growth (driver-product caliber) vs the sourced bands,
+  soft by design — inside the band → silence; outside → one line per side
+  carrying the numbers, the cluster, the vintage, and the grade. History
+  years compare against the 5y CAGR band, forecast years (explicit
+  ``history_end`` boundary, forwarded from ``segment_warnings``) against the
+  analyst-expected band; heuristic ``check_segment`` stays as the backstop
+  layer, and ``regime_shift_tech`` stays heuristic-only by design.
 
 ## [0.17.0] - 2026-09-12
 

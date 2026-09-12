@@ -709,12 +709,103 @@ def check_segment(seg: Segment,
     return out
 
 
-def segment_warnings(seg: Segment,
-                     *, profile: Optional[IndustryProfile] = None) -> List[str]:
-    """Convenience: fit verdict + industry checks, one list. Put this next to
-    any industry-default forecast you publish."""
+# ---------------------------------------------------------------------------
+# Citation-based band checks (v0.18): segment growth vs sourced benchmarks
+# ---------------------------------------------------------------------------
+
+def _revenue_series(seg: Segment) -> Dict[int, float]:
+    """Revenue for every year ALL four drivers cover (mixed-anchor years with
+    a reported anchor but incomplete drivers are skipped to keep one caliber:
+    the driver product). Reported anchors still win via ``revenue()``."""
+    common = (set(seg.base.values) & set(seg.penetration.values)
+              & set(seg.share.values) & set(seg.price.values))
+    return {y: seg.revenue(y) for y in sorted(common)}
+
+
+def _band_lines(value: float, b: Benchmark, scope: str) -> List[str]:
+    """One warning line per side of the band, citation inside the text."""
+    cite = (f"{b.note}; {b.vintage}, grade {b.grade}")
+    if value > b.p75:
+        return [f"{scope} {value:+.0%}/yr sits ABOVE the industry band "
+                f"{b.p25:.0%}-{b.p75:.0%}/yr (P50 {b.p50:.0%}; {cite}) — "
+                f"beating the industry needs a story (share gains, pricing "
+                f"power, a new segment); carry it into the driver tree "
+                f"explicitly, don't let the trend imply it."]
+    if value < b.p25:
+        return [f"{scope} {value:+.0%}/yr sits BELOW the industry band "
+                f"{b.p25:.0%}-{b.p75:.0%}/yr (P50 {b.p50:.0%}; {cite}) — "
+                f"check for share loss, price erosion, or an over-conservative "
+                f"tree before publishing."]
+    return []
+
+
+def _forecast_growth(seg: Segment, history_end: int) -> Optional[float]:
+    """CAGR from the last history year to the latest year beyond
+    ``history_end`` (the explicit history/forecast boundary), or None."""
+    series = _revenue_series(seg)
+    base_years = [y for y in series if y <= history_end]
+    future = sorted(y for y in series if y > history_end)
+    if not base_years or not future:
+        return None
+    anchor, last = max(base_years), future[-1]
+    v0 = series[anchor]
+    if v0 <= 0:
+        return None
+    return (series[last] / v0) ** (1.0 / (last - anchor)) - 1.0
+
+
+def benchmark_warnings(seg: Segment, *, profile: Optional[IndustryProfile] = None,
+                       history_end: Optional[int] = None) -> List[str]:
+    """Citation-based checks: segment revenue growth vs the profile's sourced
+    bands (v0.18 step 3).
+
+    Soft by design: inside the band → silence; outside → one line per side
+    with the numbers and the citation, never a hard block. Heuristic checks
+    (``check_segment``) stay as the backstop layer; profiles without
+    benchmarks (``regime_shift_tech``) return [] — their heuristic checks
+    remain the only layer.
+
+    ``history_end`` marks the history/forecast boundary (the last history
+    year). Years beyond it are treated as forecast and only compared against
+    the expected-growth band; history years only against the historical band.
+    Default: treat every known year as history (no forecast comparison) —
+    pass the boundary explicitly when you call this after
+    ``forecast_segment``.
+    """
+    if profile is None:
+        if not seg.industry:
+            return []
+        profile = resolve_industry(seg.industry)
+    bands = {b.metric: b for b in profile.benchmarks}
+    if not bands:
+        return []
+    series = _revenue_series(seg)
+    if history_end is None:
+        history_end = max(series) if series else None
+    out: List[str] = []
+    b = bands.get("revenue_cagr_5y")
+    if b is not None and history_end is not None:
+        hist = {y: v for y, v in series.items() if y <= history_end}
+        cagr = _recent_cagr(hist, window=3)
+        if cagr is not None:
+            out.extend(_band_lines(cagr, b, scope="last-3y revenue CAGR"))
+    b = bands.get("revenue_exp_growth_2y")
+    if b is not None and history_end is not None:
+        fc = _forecast_growth(seg, history_end)
+        if fc is not None:
+            out.extend(_band_lines(
+                fc, b, scope="forecast-window revenue growth"))
+    return out
+
+
+def segment_warnings(seg: Segment, *, profile: Optional[IndustryProfile] = None,
+                     history_end: Optional[int] = None) -> List[str]:
+    """Convenience: fit verdict + heuristic checks + citation-based band
+    checks, one list. Put this next to any industry-default forecast you
+    publish. ``history_end`` is forwarded to ``benchmark_warnings``."""
     if profile is None and seg.industry:
         profile = resolve_industry(seg.industry)
     if profile is None:
         return []
-    return profile_warnings(profile) + check_segment(seg, profile=profile)
+    return (profile_warnings(profile) + check_segment(seg, profile=profile)
+            + benchmark_warnings(seg, profile=profile, history_end=history_end))
