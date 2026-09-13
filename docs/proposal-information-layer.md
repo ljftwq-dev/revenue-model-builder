@@ -42,12 +42,21 @@ stage — with the human where automation genuinely breaks.
    line), open a new branch wherever data supports it, *backcast* its
    history from totals, and record it going forward — forecasts built on
    disclosure-granular branches demonstrably track the next filing
-   closer (the ArcSoft benchmark). Macro is the same discipline one
+   closer (the ArcSoft benchmark). The *criterion* for a split is
+   growth-logic heterogeneity: two branches belong apart whenever their
+   demand drivers or news sensitivity differ (US enterprise-AI demand vs
+   European AI-sovereignty demand are different stories even inside one
+   product line). Backcast numbers are imprecise but still used — with
+   conservative parameters, wider intervals, and low-confidence labels
+   (same philosophy as data-grade C). Macro is the same discipline one
    level up: a news item matters only as a *transmission chain to a
    specific branch* (export controls → domestic labs lease overseas
    capacity → that lessor's overseas-segment revenue revises up), and
    when the chain from news to branch is unclear, the pipeline
-   brainstorms with the user instead of guessing.
+   brainstorms with the user instead of guessing. The deliverable is the
+   full ArcSoft arc: deep per-segment models (each with its own traces
+   and chains) → parallel segments → segment-to-total consolidated
+   report with per-branch confidence grading.
 4. **The human is the commanding layer.** Automation exists so the
    analyst doesn't have to memorize the workflow — not to make the
    calls. In financial forecasting every judgment step (branch design,
