@@ -10,6 +10,16 @@ stage — with the human where automation genuinely breaks.
 
 ## Design principles (from the 2026-09-12 PLTR retrospective)
 
+0. **Completeness over ranking.** No information source is "low-priority":
+   the phone-call Q&A can reframe the deck's numbers, the 10-Q detail can
+   undercut the headline TCV, only a full historical-deck series reveals
+   metric-definition drift. The pipeline's job is *fetch everything,
+   digest everything, weigh together at the end* — cross-validation only
+   works on the full set, and any missing piece is a hole in the network.
+   Practical consequence: every run carries a coverage checklist (calls /
+   quarterlies / decks / filings / upstream-downstream / macro), and the
+   report states plainly what is present and what is absent — an analyst
+   reads the absence list before trusting any conclusion.
 1. **Wiring first.** The modules exist (news_impact, macro_revision,
    extractor, fetch_fiscal_quarters) — the v0.20 spine simply never
    called them. Acceptance for every stage below is a *wiring test*: the
@@ -67,8 +77,12 @@ stage — with the human where automation genuinely breaks.
 ## Acceptance
 
 1. Wiring tests: every stage above leaves a log/trace asserted in tests.
-2. PLTR re-run (pre-registered comparison): information-layer pipeline
+2. **Coverage checklist in every run**: the pipeline enumerates what was
+   fetched/digested vs absent (calls, quarterly filings, deck series,
+   MD&A, upstream-downstream, macro) — completeness is measurable, and
+   "absent" is reported as loudly as any warning.
+3. PLTR re-run (pre-registered comparison): information-layer pipeline
    vs today's pure-extrapolation baseline — forecast error and evidence
    coverage both reported. This quantifies what the reading is worth.
-3. Gate H drill: an IR page that playwright cannot download must produce
+4. Gate H drill: an IR page that playwright cannot download must produce
    the checklist + resume flow, tested with fixtures.
