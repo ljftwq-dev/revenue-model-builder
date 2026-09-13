@@ -36,15 +36,24 @@ stage — with the human where automation genuinely breaks.
    (Corollary from the live drill: link *discovery* is the hard part,
    downloading usually isn't — playwright navigation stays the
    pipeline's job; the human supplies whatever still blocks.)
-3. **Filings are the core; news is concentric.** Evidence is organized
-   in rings around the filings (ground truth): self news (guidance,
-   orders, management) → upstream/downstream (supply constraints,
-   customer ramps) → macro (rates, FX, cycle). Extractor prompts and
-   the Evidence appendix are organized by ring, and every EvidenceCard
-   carries the original quote + source.
-4. **Evidence changes the analyst's parameters, not the numbers.**
-   EvidenceCards hang on drivers with citation; the human adjusts the
-   extrapolation and the adjustment is recorded in the report.
+3. **Granularity follows disclosure (the "trace" method).** The analyst's
+   edge is building branches from traces in the filings: when a filing
+   reveals a sub-segment estimate (e.g. a geography split inside one
+   line), open a new branch wherever data supports it, *backcast* its
+   history from totals, and record it going forward — forecasts built on
+   disclosure-granular branches demonstrably track the next filing
+   closer (the ArcSoft benchmark). Macro is the same discipline one
+   level up: a news item matters only as a *transmission chain to a
+   specific branch* (export controls → domestic labs lease overseas
+   capacity → that lessor's overseas-segment revenue revises up), and
+   when the chain from news to branch is unclear, the pipeline
+   brainstorms with the user instead of guessing.
+4. **The human is the commanding layer.** Automation exists so the
+   analyst doesn't have to memorize the workflow — not to make the
+   calls. In financial forecasting every judgment step (branch design,
+   evidence weighing, parameter changes, degradation approval) belongs
+   to the person; the pipeline's job is to fetch, digest, propose, and
+   remember the steps.
 
 ## Stage map (analyst action → pipeline stage)
 
