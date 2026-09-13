@@ -25,18 +25,17 @@ stage — with the human where automation genuinely breaks.
    called them. Acceptance for every stage below is a *wiring test*: the
    pipeline log must show the stage ran, not merely that the module
    exists.
-2. **Gate H — the human-download gate, and the DOCUMENT-LAYER MAIN PATH.**
-   IR sites are where the rich documents live (full quarterly Business
-   Update decks: customer counts, TCV, NRR, segment detail, guidance —
-   far beyond the few pages SEC's 8-K EX-99 carries), and they are
-   exactly where automation breaks (verified live: PLTR's IR news page
-   JS-crashes under playwright; downloads sit behind interactions).
-   So the pipeline's job is *navigation and digestion*, not downloading:
-   playwright opens the exact IR page for the analyst, stops, prints the
-   download checklist; the human clicks download (one minute, trivially
-   defeats what blocks the bot), drops files into the watch directory;
-   `--resume` takes over — OCR → extractor → evidence cards. SEC 8-K
-   EX-99 is the *numeric* fallback, not the document path.
+2. **Gate H — stop-and-ask before degrade.** When any needed source is
+   blocked (paywalled transcripts, IR downloads behind interactions,
+   data the user may have rights to), the pipeline *stops and asks the
+   user for it* — it never silently substitutes, never decides on its
+   own that a substitute is good enough. Only when the user confirms
+   "I can't get it either" does the run proceed on what exists, with
+   that absence recorded as *user-approved*. Automation level is
+   deliberately modest: completeness outranks hands-off operation.
+   (Corollary from the live drill: link *discovery* is the hard part,
+   downloading usually isn't — playwright navigation stays the
+   pipeline's job; the human supplies whatever still blocks.)
 3. **Filings are the core; news is concentric.** Evidence is organized
    in rings around the filings (ground truth): self news (guidance,
    orders, management) → upstream/downstream (supply constraints,
