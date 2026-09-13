@@ -46,6 +46,7 @@ nav:
   - Segment Extraction Proposal: proposal-segment-extraction.md
   - Design Plans:
       - Stochastic Revenue (v0.2 to v0.3): plans/2026-07-28-stochastic-revenue-design.md
+      - Information-Layer Codification (v0.21b): plans/2026-09-13-information-layer-codification-design.md
 
 markdown_extensions:
   - admonition
