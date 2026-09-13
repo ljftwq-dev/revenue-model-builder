@@ -7,6 +7,30 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- **Information-layer codification (v0.21b core)**: the 2026-09-12 manual
+  drill, now pipeline code.
+  - `evidence.py`: `EvidenceCard` (verbatim-quote verification,
+    whitespace-tolerant) + `Chain` (>= 2 verified cards → verdict → one
+    parameter, with `user` vs `user-delegated` authority) + `ChainBook`.
+    Hard constraints structural: unverified cards never chain, chainless
+    revisions never report.
+  - `gate.py`: unified `GateBook` state machine (state.json + resume) for
+    documents/tags/stories gates; the delegation phrase maps to
+    `user-delegated`; the coverage checklist persists immediately
+    (Principle 0) and renders as loudly as warnings.
+  - `llm_digest.py`: page-cached per-page digestion; `make_glm_backend`
+    (Zhipu API, key via `ZHIPU_API_KEY`/param — never hard-coded);
+    hallucinated quotes voided into a reject log; `MissingBackendError`
+    is a Gate H question, never a crash.
+  - `auto_pipeline`: evidence stage (`digest_queue`/`digest_backend`/
+    `workdir`); `PipelineResult` carries `chainbook`/`gates_waiting`/
+    `coverage`.
+  - Pilot live check: Q2'26 deck, all 36 pages — 85 verified cards
+    (manual drill's anchors all hit: p4 highlights, p23 customers, p27
+    guidance, p29 NRR), 70 hallucinated/paraphrased candidates voided by
+    verification (~45% reject rate — the guard earns its keep).
+
+### Added
 - **Quarterly momentum layer (v0.21a)**: the analyst's "read quarterlies
   for momentum" step as a pipeline stage. `momentum.py` (pure stdlib,
   kernel-scoped) rolls single-quarter revenues into a TTM series and reads

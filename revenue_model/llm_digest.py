@@ -19,6 +19,7 @@ Anti-hallucination: candidates whose quote cannot be found verbatim in
 the anchored page are voided into a reject log (kept for inspection).
 """
 import json
+import re
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -58,14 +59,67 @@ def extract_pages(pdf_path: Path) -> List[str]:
 # backends
 # ---------------------------------------------------------------------------
 
-def glm_backend(page_text: str, file_name: str, page_no: int,
-                model: str = "glm-4-flash") -> List[dict]:
-    """One page -> candidate clue dicts via the Zhipu API. Lands with the
-    pilot wiring (the pilot's offline acceptance runs on the injected
-    backend); declared here so the backend contract is a type, not prose."""
-    raise NotImplementedError(
-        "cloud GLM backend lands with the pilot wiring; the pilot's "
-        "offline acceptance runs on the injected backend")
+def make_glm_backend(api_key: Optional[str] = None,
+                     model: str = "glm-4-flash") -> Callable:
+    """Build a cloud-GLM digest backend (Zhipu API, urllib only).
+
+    The key comes from ``api_key`` or ``ZHIPU_API_KEY`` — the package
+    never hard-codes credentials. Raises MissingBackendError (a Gate H
+    question) when no key is available.
+    """
+    import os
+
+    key = api_key or os.environ.get("ZHIPU_API_KEY")
+    if not key:
+        raise MissingBackendError()
+
+    import urllib.request
+
+    def backend(page_text: str, file_name: str, page_no: int) -> List[dict]:
+        prompt = (
+            "你是财报证据抽取器。下面是文件"
+            f"{file_name} 第{page_no}页的原文。\n"
+            "只准引用本页原文。找出有助于预测该公司未来收入的线索"
+            "（数字、指引、口径变化、风险条款、客户/订单信息）。\n"
+            "输出 JSON 数组，每个元素形如：\n"
+            '{"clue": "线索一句话(中文)", "quote": "本页原文逐字引用", '
+            '"ring": "core|self|updown|macro", "segment": "关联分项,可为空"}\n'
+            "ring 含义: core=财报核心数字/指引, self=公司自身动态, "
+            "updown=上下游, macro=宏观。\n"
+            "没有值得记录的线索就输出 []。绝不编造引文——"
+            "引文必须能在原文中逐字找到。\n"
+            f"--- 原文开始 ---\n{page_text}\n--- 原文结束 ---"
+        )
+        body = json.dumps({
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.1,
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+            data=body, headers={"Authorization": f"Bearer {key}",
+                                "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            resp = json.loads(r.read())
+        content = resp["choices"][0]["message"]["content"]
+        return _parse_json_array(content)
+
+    return backend
+
+
+def _parse_json_array(content: str) -> List[dict]:
+    """Tolerantly extract a JSON array from an LLM reply (may be fenced
+    or surrounded by prose). Returns [] when nothing parseable."""
+    content = re.sub(r"```json\s*|```", "", content)
+    start = content.find("[")
+    end = content.rfind("]")
+    if start < 0 or end <= start:
+        return []
+    try:
+        arr = json.loads(content[start:end + 1])
+        return [x for x in arr if isinstance(x, dict)]
+    except json.JSONDecodeError:
+        return []
 
 
 def _sanitize(cand: dict, file_name: str, page_no: int) -> Optional[EvidenceCard]:
