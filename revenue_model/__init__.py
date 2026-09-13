@@ -29,6 +29,9 @@ from .industry import (
 )
 from .suggest import ProfileSuggestion, suggest_profile
 from .momentum import MomentumReading, detect_momentum, ttm_series
+from .evidence import Chain, ChainBook, EvidenceCard, RINGS
+from .gate import GateBook, default_document_options
+from .llm_digest import digest_document, digest_queue, extract_pages
 from .auto_pipeline import PipelineResult, auto_pipeline
 
 __all__ = [
@@ -48,5 +51,8 @@ __all__ = [
     "segment_warnings",
     "ProfileSuggestion", "suggest_profile",
     "MomentumReading", "detect_momentum", "ttm_series",
+    "Chain", "ChainBook", "EvidenceCard", "RINGS",
+    "GateBook", "default_document_options",
+    "digest_document", "digest_queue", "extract_pages",
     "PipelineResult", "auto_pipeline",
 ]

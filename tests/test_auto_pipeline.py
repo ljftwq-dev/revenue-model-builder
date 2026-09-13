@@ -6,6 +6,7 @@ import pytest
 
 from revenue_model import auto_pipeline
 from revenue_model.auto_pipeline import _build_segment
+from revenue_model.gate import GateBook
 
 YEARS = [2026, 2027]
 
@@ -210,3 +211,63 @@ class TestMomentumWiring:
                       tags={"Core": "semiconductor"}, http_get=http,
                       momentum_enabled=False)
         assert called == []                # really off, not silently skipped
+
+
+# ---------------------------------------------------------------------------
+# v0.21b: evidence stage wiring (offline, injected backend)
+# ---------------------------------------------------------------------------
+
+def _evidence_backend(page_text, file_name, page_no):
+    if "Revenue grew" in page_text:
+        return [{"clue": "record quarter",
+                 "quote": "Revenue grew +93% Y/Y",
+                 "ring": "core", "segment": ""}]
+    return []
+
+
+class TestEvidenceStage:
+    def test_cards_and_coverage_flow_through(self, tmp_path):
+        import fitz
+
+        doc = fitz.open()
+        for i in range(3):
+            page = doc.new_page()
+            page.insert_text((72, 72), "Revenue grew +93% Y/Y" if i == 1
+                             else f"filler {i}")
+        doc.save(str(tmp_path / "doc.pdf"))
+        doc.close()
+
+        r = auto_pipeline(
+            "DemoCo", SEGMENTS, TOTAL, YEARS,
+            tags={"Core": "semiconductor", "AI": "regime_shift_tech"},
+            digest_queue=str(tmp_path), digest_backend=_evidence_backend,
+            workdir=str(tmp_path / "run"),
+        )
+        assert r.chainbook is not None
+        assert len(r.chainbook.cards) == 1
+        assert r.chainbook.cards[0].verified
+        assert r.coverage == {"doc.pdf": "present"}
+        assert r.gates_waiting == ()
+
+    def test_missing_backend_raises_gate_question(self, tmp_path):
+        r = auto_pipeline(
+            "DemoCo", SEGMENTS, TOTAL, YEARS,
+            tags={"Core": "semiconductor"},
+            digest_queue=str(tmp_path), digest_backend=None,
+            workdir=str(tmp_path / "run"),
+        )
+        assert r.gates_waiting == ("documents",)     # Gate H, not a crash
+        assert r.chainbook is None
+
+    def test_resume_semantics_via_state_file(self, tmp_path):
+        workdir = tmp_path / "run"
+        auto_pipeline("DemoCo", SEGMENTS, TOTAL, YEARS,
+                      tags={"Core": "semiconductor"},
+                      digest_queue=str(tmp_path), digest_backend=None,
+                      workdir=str(workdir))
+        book = GateBook.load(workdir)
+        book.answer("documents",
+                    "I don't know either — search and judge yourself")
+        assert book.answered_answer("documents") is not None
+        assert [g.authority for g in book.gates
+                if g.gate == "documents"] == ["user-delegated"]

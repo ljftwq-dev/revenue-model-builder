@@ -38,9 +38,12 @@ Soft defaults everywhere: every driver value here is just a starting point
 """
 import os
 from dataclasses import dataclass, field
-from typing import Dict, List, Literal, Optional, Tuple
+from pathlib import Path
+from typing import Callable, Dict, List, Literal, Optional, Tuple
 
 from .driver import Driver, BASE, PENETRATION, SHARE, PRICE
+from .evidence import ChainBook
+from .gate import GateBook, default_document_options
 from .industry import forecast_segment, segment_warnings
 from .model import RevenueModel
 from .momentum import MomentumReading
@@ -94,6 +97,11 @@ class PipelineResult:
     # v0.21a quarterly layer: company-level momentum reading (None when
     # quarterly data was unavailable — soft, never blocks the spine)
     momentum: Optional[MomentumReading] = None
+    # v0.21b evidence layer: verified cards from the document queue, the
+    # gates still waiting on the analyst, and the coverage checklist
+    chainbook: Optional[ChainBook] = None
+    gates_waiting: Tuple[str, ...] = ()
+    coverage: Dict[str, str] = field(default_factory=dict)
 
 
 def _fetch_total_from_sec(
@@ -137,6 +145,9 @@ def auto_pipeline(
     user_agent: str = "",
     timeout: int = 30,
     momentum_enabled: bool = True,
+    digest_queue: Optional[str] = None,
+    digest_backend: Optional[Callable] = None,
+    workdir: Optional[str] = None,
 ) -> PipelineResult:
     """Run the full offline spine: build → suggest → gate 1 → forecast →
     check → gate 2 → assemble → report. See the module docstring for the
@@ -185,6 +196,37 @@ def auto_pipeline(
                                           timeout=timeout)
         except (ValueError, OSError):
             momentum = None   # quarterly disclosure missing — soft skip
+
+    # -- v0.21b: evidence layer (documents -> verified cards) ----------------
+    chainbook: Optional[ChainBook] = None
+    gates_waiting: Tuple[str, ...] = ()
+    coverage: Dict[str, str] = {}
+    if digest_queue:
+        from .gate import GATE_DOCUMENTS
+        from .llm_digest import (
+            MissingBackendError,
+            digest_queue as run_digest,
+        )
+        state = Path(workdir) / "state.json" if workdir else None
+        book = (GateBook.load(state.parent) if state and state.exists()
+                else GateBook(company=company,
+                              workdir=Path(workdir) if workdir
+                              else Path(".")))
+        if digest_backend is None:
+            # the model is a data source: missing backend is a Gate H
+            # question, answered out of band, then --resume
+            book.ask(GATE_DOCUMENTS, str(MissingBackendError()),
+                     default_document_options())
+        else:
+            r = run_digest(Path(digest_queue), digest_backend,
+                           cache_dir=book.workdir / "digest_cache")
+            chainbook = ChainBook()
+            for c in r["cards"]:
+                chainbook.add_card(c)
+            for name in r["documents"]:
+                book.cover(name, "present")
+        gates_waiting = tuple(g.gate for g in book.waiting())
+        coverage = dict(book.coverage)
 
     built = {name: _build_segment(name, spec) for name, spec in segments.items()}
 
@@ -261,4 +303,7 @@ def auto_pipeline(
         report_path=report_path,
         total_source=total_source,
         momentum=momentum,
+        chainbook=chainbook,
+        gates_waiting=gates_waiting,
+        coverage=coverage,
     )

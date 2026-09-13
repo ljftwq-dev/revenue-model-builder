@@ -95,5 +95,11 @@ module = ["revenue_model.backtest.methods", "revenue_model.qesa_adapter"]
 ignore_missing_imports = true
 disable_error_code = ["import-untyped"]
 
+[[tool.mypy.overrides]]
+# PyMuPDF (fitz) ships without stubs; page extraction is IO plumbing,
+# not kernel math
+module = "revenue_model.llm_digest"
+disable_error_code = ["import-untyped"]
+
 [tool.setuptools.packages.find]
 include = ["revenue_model*"]
