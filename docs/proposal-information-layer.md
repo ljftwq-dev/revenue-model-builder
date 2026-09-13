@@ -27,12 +27,15 @@ stage — with the human where automation genuinely breaks.
    exists.
 2. **Gate H — stop-and-ask before degrade.** When any needed source is
    blocked (paywalled transcripts, IR downloads behind interactions,
-   data the user may have rights to), the pipeline *stops and asks the
-   user for it* — it never silently substitutes, never decides on its
-   own that a substitute is good enough. Only when the user confirms
-   "I can't get it either" does the run proceed on what exists, with
-   that absence recorded as *user-approved*. Automation level is
-   deliberately modest: completeness outranks hands-off operation.
+   data the user may have rights to) or a *judgment point* arises
+   (conflicting evidence, a branch's interpretation), the pipeline stops
+   and asks the user. The user either supplies the data/verdict, or
+   explicitly delegates ("I don't know either — search and judge
+   yourself"), which authorizes the pipeline to research and decide on
+   its own, recorded as *user-approved self-judgment*. What is never
+   allowed: routing around a blockage on the pipeline's own initiative —
+   a successful workaround is still a skipped question. Automation level
+   is deliberately modest: completeness outranks hands-off operation.
    (Corollary from the live drill: link *discovery* is the hard part,
    downloading usually isn't — playwright navigation stays the
    pipeline's job; the human supplies whatever still blocks.)
