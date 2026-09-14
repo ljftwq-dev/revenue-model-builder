@@ -97,8 +97,12 @@ disable_error_code = ["import-untyped"]
 
 [[tool.mypy.overrides]]
 # PyMuPDF (fitz) ships without stubs; page extraction is IO plumbing,
-# not kernel math
+# not kernel math. The pdf extra is optional (CI installs it only so the
+# digest tests can build an in-memory PDF), so the gate must tolerate
+# fitz being absent too — import-not-found (not installed) is a distinct
+# error code from import-untyped (installed, stub-less).
 module = "revenue_model.llm_digest"
+ignore_missing_imports = true
 disable_error_code = ["import-untyped"]
 
 [tool.setuptools.packages.find]
