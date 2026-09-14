@@ -22,7 +22,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install
-        run: pip install -e ".[dev,viz,backtest,pdf]" ruff mypy
+        run: pip install -e ".[dev,viz,backtest,pdf,docx]" ruff mypy
 
       - name: Lint (G1 code gate)
         run: ruff check revenue_model tests
