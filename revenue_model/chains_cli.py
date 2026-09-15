@@ -36,9 +36,9 @@ from .evidence import Chain, ChainBook, EvidenceCard
 
 def load_queue_cards(queue_dir: Path,
                      cache_name: str = "digest_cache") -> List[EvidenceCard]:
-    """All verified cards across every digested PDF in the queue
-    (needs the [pdf] extra). Undigested documents are skipped silently —
-    run the digest first."""
+    """All verified cards across every digested PDF in the queue, plus
+    the news layer's cards when ``news_cache`` exists next to it (needs
+    the [pdf] extra for filings; news cards load cache-only)."""
     from .llm_digest import load_cached_cards
 
     queue_dir = Path(queue_dir)
@@ -47,6 +47,10 @@ def load_queue_cards(queue_dir: Path,
     for pdf in sorted(queue_dir.glob("*.pdf")):
         if (cache / f"{pdf.stem}_p1.json").exists():
             cards.extend(load_cached_cards(pdf, cache)["cards"])
+    news_cache = queue_dir.parent / "news_cache"
+    if news_cache.exists():
+        from .news_layer import load_news_cards
+        cards.extend(load_news_cards(news_cache))
     return cards
 
 
@@ -114,22 +118,27 @@ def build_chainbook(cards: List[EvidenceCard], specs: List[dict]) -> ChainBook:
 
 
 def render_cards_md(cards: List[EvidenceCard], title: str) -> str:
-    """Card browsing list — anchor + clue + quote head."""
+    """Card browsing list — anchor + clue + quote head (news cards also
+    show their source line)."""
     lines = [f"# {title}", "", f"{len(cards)} 张已验证证据卡", ""]
     last_ring = None
     for c in cards:
         if c.ring != last_ring:
             lines += [f"## 环层: {c.ring}", ""]
             last_ring = c.ring
-        lines.append(f"- **{c.anchor()}** {c.clue}")
+        lines.append(f"- **{c.anchor()}** {c.clue} `{c.confidence}`"
+                     if c.url else f"- **{c.anchor()}** {c.clue}")
         lines.append(f'  > "{c.quote[:120]}"')
+        if c.url:
+            lines.append(f"  来源: {c.url} ({c.published or '日期未知'})")
     lines.append("")
     return "\n".join(lines)
 
 
 def render_chains_md(book: ChainBook, title: str) -> str:
     """The run's evidence section: chains in the 线索→链条→参数 style,
-    plus the coverage summary."""
+    plus the coverage summary. Chains leaning on single-source news
+    cards carry a visible marker (a label, never a block)."""
     lines = [f"# {title}", "",
              "标注规则: 每条线索带【文件·页码】锚点，引文逐字可回验", ""]
     for i, ch in enumerate(book.chains, start=1):
@@ -139,8 +148,12 @@ def render_chains_md(book: ChainBook, title: str) -> str:
         for c in ch.cards:
             lines.append(f"线索【{c.anchor()}】{c.clue}")
             lines.append(f'  > "{c.quote[:160]}"')
+            if c.url:
+                lines.append(f"  来源: {c.url} ({c.published or '日期未知'})")
         lines.append(f"参数 → {ch.parameter}")
         lines.append(f"权限 → {ch.authority}")
+        if any(c.confidence == "single" for c in ch.cards):
+            lines.append("⚠ [含单源] 本链条依赖单源新闻卡——请把一眼关再定参数")
         lines.append("")
     cov = book.coverage_summary()
     lines += ["## 覆盖", "",

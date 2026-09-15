@@ -162,6 +162,34 @@ def cmd_chain(args):
           f"files: {len(cov['files'])}")
 
 
+def cmd_news(args):
+    from .news_layer import (fetch_news, make_glm_news_backend,
+                             mcp_web_search, pltr_news_spec, render_suggestions,
+                             spec_from_json)
+
+    key = os.environ.get("ZHIPU_API_KEY")
+    if not key:
+        raise SystemExit("news needs ZHIPU_API_KEY in the environment "
+                         "(load via your secrets manager; never hardcode)")
+    spec = spec_from_json(args.spec) if args.spec else pltr_news_spec()
+    search_fn = lambda q, n: mcp_web_search(q, api_key=key, count=n)  # noqa: E731
+    from .news_layer import fetch_article
+    r = fetch_news(spec, search_fn=search_fn, fetch_fn=fetch_article,
+                   digest_fn=make_glm_news_backend(key),
+                   cache_dir=Path(args.cache_dir),
+                   queries_limit=args.queries_limit)
+    cards = r["cards"]
+    print(f"cards: {len(cards)} "
+          f"(dual {sum(1 for c in cards if c.confidence == 'dual')}, "
+          f"single {sum(1 for c in cards if c.confidence == 'single')})")
+    print(f"rejects: {len(r['rejects'])} | uncovered: {len(r['uncovered'])} "
+          f"| failed groups: {len(r['failed_groups'])}")
+    if args.output:
+        md = render_suggestions(cards)
+        Path(args.output).write_text(md, encoding="utf-8")
+        print(f"suggestions -> {args.output}")
+
+
 def _render_excel(model, output):
     try:
         from .excel_builder import build_excel
@@ -260,6 +288,19 @@ def build_parser():
     p_chain.add_argument("--title", default="证据串联卡 —— 线索→链条→参数",
                           help="markdown title")
     p_chain.set_defaults(func=cmd_chain)
+
+    p_news = sub.add_parser(
+        "news", help="targeted news -> verified cards (v0.22 news layer; "
+                     "needs ZHIPU_API_KEY)")
+    p_news.add_argument("--spec", default=None,
+                        help="news spec JSON (default: the PLTR preset)")
+    p_news.add_argument("--cache-dir", default="news_cache",
+                        help="per-URL cache dir (default: ./news_cache)")
+    p_news.add_argument("--queries-limit", type=int, default=0,
+                        help="run at most N queries (0 = all; dev smoke)")
+    p_news.add_argument("-o", "--output", default=None,
+                        help="optional suggestions markdown output")
+    p_news.set_defaults(func=cmd_news)
 
     return parser
 

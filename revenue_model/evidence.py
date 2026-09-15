@@ -18,6 +18,7 @@ from typing import Tuple
 
 RINGS = ("core", "self", "updown", "macro")
 AUTHORITIES = ("user", "user-delegated")
+CONFIDENCES = ("primary", "dual", "single")
 
 
 def _norm_ws(s: str) -> str:
@@ -28,7 +29,13 @@ def _norm_ws(s: str) -> str:
 
 @dataclass(frozen=True)
 class EvidenceCard:
-    """One clue with its precise, verifiable anchor."""
+    """One clue with its precise, verifiable anchor.
+
+    Filings anchor on file + page; news cards anchor on a domain slug
+    with page 1 and carry ``url`` / ``published`` / ``confidence``
+    (v0.22 news layer: primary = underlying document, dual = >= 2
+    independent origins, single = everything else — a label, never a
+    deletion)."""
     clue: str
     anchor_file: str
     anchor_page: int
@@ -36,6 +43,9 @@ class EvidenceCard:
     ring: str                 # RINGS
     segment: str              # branch the clue hangs on ("" = company-level)
     verified: bool = False
+    url: str = ""
+    published: str = ""
+    confidence: str = "single"    # CONFIDENCES
 
     def __post_init__(self) -> None:
         if not self.clue or not self.quote:
@@ -44,6 +54,8 @@ class EvidenceCard:
             raise ValueError("anchor_page is 1-based")
         if self.ring not in RINGS:
             raise ValueError(f"ring must be one of {RINGS}")
+        if self.confidence not in CONFIDENCES:
+            raise ValueError(f"confidence must be one of {CONFIDENCES}")
 
     def verify(self, page_text: str) -> "EvidenceCard":
         """Return a copy with verified set by verbatim quote search."""
