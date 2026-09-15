@@ -4,7 +4,31 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.21.0] - 2026-09-14
+
+### Added
+- **Four-segment quarterly matrix (v0.21b acceptance #2)**:
+  `segment_matrix.py` — the trace method as pipeline code. Pure-text
+  `build_from_texts` core (unit-testable, no PDF), lazy-fitZ wrapper,
+  `MatrixLoopError`-guarded double closed loops (A: US branches ==
+  geographic US; B: four segments == total revenue), Q4 backcast from
+  the FY 10-K minus filed quarters, `pltr_spec()` preset, `yoy_summary`.
+  CLI: `python -m revenue_model matrix <queue>`. Live check: six PLTR
+  quarters rebuild with H1'26 = 3,568.0M — exactly the hand-built
+  evidence-chains card.
+- **Chains workflow CLI (v0.21b acceptance #3: 看卡、拉链、定参数)**:
+  `chains_cli.py` — card browsing (ring / segment / free-text filters),
+  spec-JSON chain building with `quote_contains` disambiguation (a bare
+  `file·pN` anchor is only accepted when unique — same-page multiplicity
+  surfaced in the live drill), `ChainBook` validation through the
+  existing `Chain` hard constraints, markdown rendering in the
+  线索→链条→参数 style. `llm_digest.load_cached_cards` loads verified
+  cards from cache with no backend. CLI: `cards` / `chain`.
+- **8-worker page parallelism**: `digest_document(workers=N)` fans page
+  backend calls out over a thread pool (extraction stays on the main
+  thread — PyMuPDF is not thread-safe; cache writes are atomic
+  tmp+replace). Validated on the full 12-document PLTR drill rebuilt
+  after a workspace loss: 2,638 verified cards.
 
 ### Added
 - **Information-layer codification (v0.21b core)**: the 2026-09-12 manual
