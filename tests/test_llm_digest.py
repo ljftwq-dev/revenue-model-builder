@@ -86,6 +86,13 @@ class TestDigestQueue:
         assert set(r["documents"]) == {"demo.pdf", "demo2.pdf"}
         assert len(r["cards"]) == 2
 
+    def test_parallel_workers_same_result(self, pdf, tmp_path):
+        r1 = digest_document(pdf, fake_backend, cache_dir=tmp_path / "c1")
+        r2 = digest_document(pdf, fake_backend, cache_dir=tmp_path / "c2",
+                            workers=3)
+        assert len(r1["cards"]) == len(r2["cards"]) == 1
+        assert r1["voided"] and r2["voided"]
+
 
 class TestMissingBackend:
     def test_message_is_a_gate_question(self):

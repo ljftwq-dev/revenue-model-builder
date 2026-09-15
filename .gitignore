@@ -12,3 +12,6 @@ venv/
 *.xlsx
 
 site/
+
+# PLTR live-drill workspace (PDF queue + digest cache, rebuilt 2026-09-14)
+examples/pltr_demo/workspace/

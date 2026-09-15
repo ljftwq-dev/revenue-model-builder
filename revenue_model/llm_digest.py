@@ -145,8 +145,14 @@ def _sanitize(cand: dict, file_name: str, page_no: int) -> Optional[EvidenceCard
 
 
 def digest_document(pdf_path: Path, backend: Callable[[str, str, int], List[dict]],
-                    *, cache_dir: Optional[Path] = None) -> dict:
+                    *, cache_dir: Optional[Path] = None,
+                    workers: int = 1) -> dict:
     """Digest one PDF: per-page backend call (cached) + verification.
+
+    ``workers > 1`` parallelizes the backend calls across pages (page
+    extraction happens up-front on the main thread — PyMuPDF is not
+    thread-safe; cache writes are atomic tmp+replace so parallel pages
+    never corrupt each other).
 
     Returns {"cards": [verified EvidenceCard], "voided": [rejected raw
     candidates], "pages": n, "cached_pages": n}.
@@ -157,32 +163,47 @@ def digest_document(pdf_path: Path, backend: Callable[[str, str, int], List[dict
     if cache_dir is not None:
         cache = Path(cache_dir)
         cache.mkdir(parents=True, exist_ok=True)
+
+    def _page(i_text):
+        i, text = i_text
+        page_key = f"{pdf_path.stem}_p{i}.json"
+        if cache is not None and (cache / page_key).exists():
+            try:
+                cached = json.loads((cache / page_key).read_text(
+                    encoding="utf-8"))
+                return i, text, cached.get("raw", []), True
+            except (json.JSONDecodeError, OSError):
+                pass
+        try:
+            raw = backend(text, pdf_path.name, i)
+        except Exception as exc:  # backend failure voids the page, not the run
+            return i, text, [{"__error__": f"{type(exc).__name__}: {exc}"}], False
+        payload = {"raw": raw}
+        if cache is not None:
+            tmp = cache / f".{page_key}.tmp"
+            tmp.write_text(json.dumps(payload, ensure_ascii=False),
+                           encoding="utf-8")
+            tmp.replace(cache / page_key)
+        return i, text, raw, False
+
+    indexed = list(enumerate(pages, start=1))
+    if workers > 1:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            results = list(pool.map(_page, indexed))
+    else:
+        results = [_page(x) for x in indexed]
+
     cards: List[EvidenceCard] = []
     voided: List[dict] = []
     cached_pages = 0
-    for i, text in enumerate(pages, start=1):
-        page_key = f"{pdf_path.stem}_p{i}.json"
-        cached_result = None
-        if cache is not None and (cache / page_key).exists():
-            try:
-                cached_result = json.loads((cache / page_key).read_text(
-                    encoding="utf-8"))
-                cached_pages += 1
-            except (json.JSONDecodeError, OSError):
-                cached_result = None
-        if cached_result is None:
-            try:
-                raw = backend(text, pdf_path.name, i)
-            except Exception as exc:  # backend failure voids the page, not the run
-                voided.append({"page": i, "error": f"{type(exc).__name__}: {exc}"})
+    for i, text, raw, was_cached in results:
+        if was_cached:
+            cached_pages += 1
+        for cand in raw:
+            if isinstance(cand, dict) and "__error__" in cand:
+                voided.append({"page": i, "error": cand["__error__"]})
                 continue
-            cached_result = {"raw": raw}
-            if cache is not None:
-                tmp = cache / f".{page_key}.tmp"
-                tmp.write_text(json.dumps(cached_result, ensure_ascii=False),
-                               encoding="utf-8")
-                tmp.replace(cache / page_key)
-        for cand in cached_result.get("raw", []):
             card = _sanitize(cand, pdf_path.name, i)
             if card is None:
                 voided.append({"page": i, "candidate": cand})
@@ -197,12 +218,13 @@ def digest_document(pdf_path: Path, backend: Callable[[str, str, int], List[dict
 
 
 def digest_queue(queue_dir: Path, backend: Callable,
-                 *, cache_dir: Optional[Path] = None) -> Dict[str, Any]:
+                 *, cache_dir: Optional[Path] = None,
+                 workers: int = 1) -> Dict[str, Any]:
     """Digest every PDF in the queue directory."""
     queue_dir = Path(queue_dir)
     out: Dict[str, Any] = {"cards": [], "voided": [], "documents": {}}
     for pdf in sorted(queue_dir.glob("*.pdf")):
-        r = digest_document(pdf, backend, cache_dir=cache_dir)
+        r = digest_document(pdf, backend, cache_dir=cache_dir, workers=workers)
         out["cards"].extend(r["cards"])
         out["voided"].extend(r["voided"])
         out["documents"][pdf.name] = {
