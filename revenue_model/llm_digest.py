@@ -231,3 +231,41 @@ def digest_queue(queue_dir: Path, backend: Callable,
             "pages": r["pages"], "cached": r["cached_pages"],
             "cards": len(r["cards"]), "voided": len(r["voided"])}
     return out
+
+
+def load_cached_cards(pdf_path: Path, cache_dir: Path) -> Dict[str, Any]:
+    """Verified cards for ONE document, purely from the digest cache —
+    no backend, no network. For browsing/chain-building over an
+    already-digested queue (the v0.21b chains workflow).
+
+    Pages without a cache entry are skipped and counted in 'undigested'
+    (run digest_batch first). Needs the [pdf] extra (page text source).
+    """
+    pdf_path = Path(pdf_path)
+    cache_dir = Path(cache_dir)
+    pages = extract_pages(pdf_path)
+    cards: List[EvidenceCard] = []
+    voided: List[dict] = []
+    undigested = 0
+    for i, text in enumerate(pages, start=1):
+        f = cache_dir / f"{pdf_path.stem}_p{i}.json"
+        if not f.exists():
+            undigested += 1
+            continue
+        try:
+            raw = json.loads(f.read_text(encoding="utf-8")).get("raw", [])
+        except (json.JSONDecodeError, OSError):
+            undigested += 1
+            continue
+        for cand in raw:
+            card = _sanitize(cand, pdf_path.name, i)
+            if card is None:
+                voided.append({"page": i, "candidate": cand})
+                continue
+            verified = card.verify(text)
+            if verified.verified:
+                cards.append(verified)
+            else:
+                voided.append({"page": i, "quote_not_found": cand})
+    return {"cards": cards, "voided": voided, "pages": len(pages),
+            "undigested": undigested}

@@ -10,6 +10,7 @@ The pure-stdlib core stays importable without any optional extra: ``excel`` /
 import argparse
 import json
 import os
+from pathlib import Path
 
 from .demo import build_novatech, print_validation, print_simulation
 from .extractor import extract_segments
@@ -105,6 +106,62 @@ def cmd_akshare(args):
         _render_excel(model, args.output)
 
 
+def cmd_matrix(args):
+    try:
+        from .segment_matrix import build_matrix, pltr_spec, yoy_summary
+    except ImportError as exc:
+        raise SystemExit(
+            "The 'matrix' command needs PyMuPDF. Install the [pdf] extra:\n"
+            "    pip install revenue-model-builder[pdf]"
+        ) from exc
+    spec = pltr_spec() if args.preset == "pltr" else None
+    if spec is None:
+        raise SystemExit(f"unknown preset: {args.preset}")
+    rows = build_matrix(args.queue_dir, spec)
+    body = "\n".join(
+        f"{t}: US_Comm {v['usc']:6.0f}  Int_Comm {v['icomm']:6.1f}  "
+        f"US_Gov {v['usg']:6.0f}  Int_Gov {v['igov']:6.1f}  "
+        f"sum={v['total']:7.1f}" for t, v in rows.items())
+    print(body)
+    print("\nY/Y by segment:")
+    print(yoy_summary(rows))
+    print("closed loops: A (US branches == geographic US) and "
+          "B (sum4 == total) verified per quarter")
+    if args.output:
+        out = Path(args.output)
+        out.write_text(body + "\n\nY/Y by segment:\n" + yoy_summary(rows)
+                       + "\n", encoding="utf-8")
+        print(f"saved {out}")
+
+
+def cmd_cards(args):
+    from .chains_cli import filter_cards, load_queue_cards, render_cards_md
+
+    cards = load_queue_cards(args.queue_dir)
+    cards = filter_cards(cards, ring=args.ring, segment=args.segment,
+                         grep=args.grep)
+    if args.limit:
+        cards = cards[:args.limit]
+    print(render_cards_md(cards, f"证据卡浏览 · {args.queue_dir}"))
+    print(f"({len(cards)} cards shown)")
+
+
+def cmd_chain(args):
+    from .chains_cli import build_chainbook, load_queue_cards, \
+        load_spec, render_chains_md
+
+    specs = load_spec(args.spec)
+    cards = load_queue_cards(args.queue_dir)
+    book = build_chainbook(cards, specs)
+    md = render_chains_md(book, args.title)
+    out = Path(args.output)
+    out.write_text(md, encoding="utf-8")
+    cov = book.coverage_summary()
+    print(f"OK -> {out}")
+    print(f"chains: {cov['chains']} | cards cited: {cov['verified']} | "
+          f"files: {len(cov['files'])}")
+
+
 def _render_excel(model, output):
     try:
         from .excel_builder import build_excel
@@ -167,6 +224,42 @@ def build_parser():
     p_akshare.add_argument("--years", type=int, nargs="*", default=None, help="optional year filter")
     p_akshare.add_argument("-o", "--output", default=None, help="optional: also render to .xlsx")
     p_akshare.set_defaults(func=cmd_akshare)
+
+    # ---- v0.21b information layer: matrix + cards + chains ---------------
+    p_matrix = sub.add_parser(
+        "matrix", help="four-segment quarterly matrix, double closed-loop "
+                       "checked (needs [pdf] extra)")
+    p_matrix.add_argument("queue_dir", help="directory holding the queue PDFs")
+    p_matrix.add_argument("--preset", default="pltr", choices=["pltr"],
+                          help="company configuration (default: pltr)")
+    p_matrix.add_argument("-o", "--output", default=None,
+                          help="optional output .txt path")
+    p_matrix.set_defaults(func=cmd_matrix)
+
+    p_cards = sub.add_parser(
+        "cards", help="browse verified evidence cards from a digest cache")
+    p_cards.add_argument("queue_dir", help="queue directory (with digest_cache/)")
+    p_cards.add_argument("--ring", default=None,
+                         choices=["core", "self", "updown", "macro"],
+                         help="filter by ring")
+    p_cards.add_argument("--segment", default=None,
+                         help="substring filter on segment")
+    p_cards.add_argument("--grep", default=None,
+                         help="substring filter on clue/quote")
+    p_cards.add_argument("--limit", type=int, default=None,
+                         help="show at most N cards")
+    p_cards.set_defaults(func=cmd_cards)
+
+    p_chain = sub.add_parser(
+        "chain", help="build evidence chains from a spec JSON (拉链、定参数)")
+    p_chain.add_argument("queue_dir", help="queue directory (with digest_cache/)")
+    p_chain.add_argument("--spec", required=True,
+                         help="chains spec JSON: [{cards, verdict, parameter, authority}, ...]")
+    p_chain.add_argument("-o", "--output", default="evidence-chains.md",
+                         help="output markdown (default: ./evidence-chains.md)")
+    p_chain.add_argument("--title", default="证据串联卡 —— 线索→链条→参数",
+                          help="markdown title")
+    p_chain.set_defaults(func=cmd_chain)
 
     return parser
 
