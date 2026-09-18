@@ -176,24 +176,31 @@ def fetch_article(url: str) -> Dict:
     return {"url": url, "title": title, "text": text}
 
 
-def make_glm_news_backend(api_key: str, model: str = "glm-4-flash") -> Callable:
-    """Cloud GLM digest backend for ONE news article (same JSON shape as
-    the filing digest backend)."""
-    prompt_tpl = (
-        "你是新闻证据抽取器。下面是一篇可能与 Palantir 收入相关的新闻。"
+def _news_prompt(text: str, seg: str, company: str) -> str:
+    """The article-digest prompt. ``company`` is injected so the layer stays
+    company-agnostic — the mechanism never hard-codes the drill subject."""
+    return (
+        f"你是新闻证据抽取器。下面是一篇可能与 {company} 收入相关的新闻。"
         "只准引用本文原文。找出有助于预测该公司未来收入的线索"
         "（客户/订单/合同、竞争、监管审查、供应链与合作伙伴、预算与政策）。"
         "输出 JSON 数组，每个元素形如：\n"
-        '{{"clue": "线索一句话(中文)", "quote": "本文原文逐字引用", '
-        '"ring": "core|self|updown|macro", "segment": "{seg}"}}\n'
+        '{"clue": "线索一句话(中文)", "quote": "本文原文逐字引用", '
+        '"ring": "core|self|updown|macro", "segment": "' + (seg or "") + '"}\n'
         "ring 含义: core=收入数字/指引, self=公司自身动态, "
         "updown=上下游/客户/供应商/竞争, macro=宏观与政策。\n"
         "没有值得记录的线索就输出 []。绝不编造引文——引文必须能在本文中逐字找到。\n"
-        "--- 正文开始 ---\n{text}\n--- 正文结束 ---"
+        "--- 正文开始 ---\n" + text + "\n--- 正文结束 ---"
     )
 
+
+def make_glm_news_backend(api_key: str, model: str = "glm-4-flash",
+                          company: str = "Palantir") -> Callable:
+    """Cloud GLM digest backend for ONE news article (same JSON shape as
+    the filing digest backend). ``company`` names the drill subject in the
+    prompt (defaults to the historical PLTR drill; pass your own ticker)."""
+
     def backend(text: str, url: str, seg: str) -> List[dict]:
-        prompt = prompt_tpl.format(text=text, seg=seg or "")
+        prompt = _news_prompt(text, seg, company)
         body = json.dumps({"model": model,
                            "messages": [{"role": "user", "content": prompt}],
                            "temperature": 0.1}).encode("utf-8")

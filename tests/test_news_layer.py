@@ -7,6 +7,7 @@ from revenue_model.news_layer import (
     KeywordGroup,
     NewsSpec,
     _clusters,
+    _news_prompt,
     _same_fact,
     _wire_copy,
     fetch_news,
@@ -14,6 +15,18 @@ from revenue_model.news_layer import (
     render_suggestions,
     spec_from_json,
 )
+
+
+def test_news_prompt_company_injection():
+    """The digest prompt names the drill subject via parameter — the layer
+    must stay company-agnostic (no hard-coded Palantir in the mechanism)."""
+    p_pltr = _news_prompt("BODY TEXT", "US_Gov", "Palantir")
+    p_other = _news_prompt("BODY TEXT", "", "Contemporary Amperex")
+    assert "Palantir" in p_pltr
+    assert "Contemporary Amperex" in p_other
+    assert "BODY TEXT" in p_other and "US_Gov" in p_pltr
+    # the JSON contract survives the templating
+    assert '"clue"' in p_other and '"ring"' in p_other
 
 
 # ---------------------------------------------------------------------------
