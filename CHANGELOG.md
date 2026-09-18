@@ -4,6 +4,49 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.22.0] - 2026-09-18
+
+### Added
+- **News layer (v0.22): the updown ring finally gets fed** — the layer the
+  manual drill identified as the differentiator (2026-09-12 L0/L1/L2
+  experiment: news-guided estimate = true value, extrapolation = -60%) is
+  now pipeline code (`news_layer.py`).
+  - `NewsSpec` — company-agnostic config (PLTR = first preset):
+    per-segment keyword groups (customers / suppliers / rivals / deals /
+    policy); the 1.0.0 multi-company replay is a config change, not a
+    rewrite. `spec_from_json` / `pltr_news_spec`.
+  - Six-stage pipeline, all backends injectable:
+    search (`mcp_web_search`, web-search-prime compatible) → fetch
+    (`fetch_article`, article markdown) → digest (glm-4-flash, the same
+    prompt family as `llm_digest`) → **verbatim-quote verification — the
+    ONLY hard gate** (fabricated quotes die; paraphrases land in a reject
+    log, never a crash) → program-only origin-level grading
+    (`grade_sources`: same-domain = one source; wire copy merged via <6h
+    proximity + shared long phrases; `primary | dual | single`) → per-URL
+    NewsCard cache (`news_cache/{url-hash}.json`; resume = zero API cost).
+  - **Soft tiering semantics** (the brainstorm's Q3 lock): single-source
+    cards chain normally; the chain renders with a `[含单源]` marker and a
+    review prompt — never blocks. Unfetchable articles (paywall / JS /
+    403) produce NO card and land on an explicit uncovered list — never
+    pretend. A failed keyword group is skipped and listed.
+  - `EvidenceCard` gains optional `url` / `published` / `confidence`
+    fields — defaults keep every existing call site and the `Chain` hard
+    constraints untouched; news anchors render as `【domain·p1】+ URL` in
+    the chains markdown.
+  - CLI: `python -m revenue_model news` (+ the resumable batch entry
+    `news_batch.py` used by the live drill); `render_suggestions` compares
+    news cards with current chain parameters as text only — parameter
+    changes stay hand-written (opinions stay human, project Principle).
+  - Live acceptance (PLTR full run, 2026-09-14): **117 verified news
+    cards** (single 84 / dual 33), updown ring share 6% → **38%**
+    (acceptance bar ≥15%), one news-anchored chain end-to-end through the
+    chains CLI (US_Gov: Maven +$795M expansion × 4x usage); EU-sovereignty
+    clues from the manual drill re-found as cards; 27 articles honestly
+    uncovered. Known gaps, recorded not papered over: the manual drill's
+    France24 / UK-petition clues (2025 news) fell outside the current
+    search window; the design's SEC 8-K EX-99 route (auto-`primary`) is
+    deferred — `form8k_adapter` exists, the wiring is future work.
+
 ## [0.21.0] - 2026-09-14
 
 ### Added
