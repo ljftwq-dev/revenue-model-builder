@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.22.1] - 2026-09-18
+
+### Added
+- **Tiered digest (experiment → code)**: `make_glm_backend` gains a
+  `base_url` parameter plus exported endpoint constants
+  `GLM_PAAS_URL` (per-token, glm-4-flash bulk pages — default, behavior
+  unchanged) and `GLM_CODING_URL` (coding-plan subscription, glm-5.3
+  deep reads on key documents: earnings-call Q&A, 10-K risk factors).
+  Experiment 2026-09-18: gate-equal card counts, raw reject 2.6% vs
+  11.9%, ~42% slower per call.
+- **8-K EX-99 route (`form8k_exhibit`)**: the press releases /
+  shareholder letters attached to 8-Ks are primary documents, not
+  reporting. `fetch_8k_exhibits` lists EX-99 exhibits per ticker
+  (EDGAR filing index, cached; injectable getters for offline tests)
+  and `digest_8k_exhibits` runs each through the same per-page digest +
+  verbatim-verify channel as queue PDFs, emitting cards with
+  `confidence="primary"` — `news_layer.grade_sources` then grades
+  matching news cards `dual` with zero extra wiring.
+- `digest_pages`: the endpoint-agnostic core behind
+  `digest_document` — any page-text source (HTML exhibits, transcripts)
+  now rides the same cache/verify machinery.
+
 ## [0.22.0] - 2026-09-18
 
 ### Added
