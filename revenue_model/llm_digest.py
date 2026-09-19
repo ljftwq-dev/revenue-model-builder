@@ -59,13 +59,29 @@ def extract_pages(pdf_path: Path) -> List[str]:
 # backends
 # ---------------------------------------------------------------------------
 
+#: Pay-as-you-go completions endpoint (glm-4-flash et al., token billing).
+GLM_PAAS_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+#: Coding-plan endpoint (subscription pool: glm-5.3 deep reads on key
+#: documents at no per-token cost). Tiered-digest experiment 2026-09-18:
+#: same reject profile after the verify gate (2.6% vs 11.9% raw, gate-equal
+#: card counts), ~42% slower per call — use it for the few pages that
+#: matter (earnings-call Q&A, 10-K risk factors), keep flash for bulk.
+GLM_CODING_URL = "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions"
+
+
 def make_glm_backend(api_key: Optional[str] = None,
-                     model: str = "glm-4-flash") -> Callable:
+                     model: str = "glm-4-flash",
+                     base_url: Optional[str] = None) -> Callable:
     """Build a cloud-GLM digest backend (Zhipu API, urllib only).
 
     The key comes from ``api_key`` or ``ZHIPU_API_KEY`` — the package
     never hard-codes credentials. Raises MissingBackendError (a Gate H
     question) when no key is available.
+
+    ``base_url`` selects the endpoint (v0.22.1 tiered digest): the default
+    :data:`GLM_PAAS_URL` bills per token (bulk pages, glm-4-flash);
+    :data:`GLM_CODING_URL` rides the coding-plan subscription for deep
+    reads on key documents (glm-5.3).
     """
     import os
 
@@ -74,6 +90,8 @@ def make_glm_backend(api_key: Optional[str] = None,
         raise MissingBackendError()
 
     import urllib.request
+
+    url = base_url or GLM_PAAS_URL
 
     def backend(page_text: str, file_name: str, page_no: int) -> List[dict]:
         prompt = (
@@ -96,7 +114,7 @@ def make_glm_backend(api_key: Optional[str] = None,
             "temperature": 0.1,
         }).encode("utf-8")
         req = urllib.request.Request(
-            "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+            url,
             data=body, headers={"Authorization": f"Bearer {key}",
                                 "Content-Type": "application/json"})
         with urllib.request.urlopen(req, timeout=60) as r:
@@ -144,29 +162,31 @@ def _sanitize(cand: dict, file_name: str, page_no: int) -> Optional[EvidenceCard
         return None
 
 
-def digest_document(pdf_path: Path, backend: Callable[[str, str, int], List[dict]],
-                    *, cache_dir: Optional[Path] = None,
-                    workers: int = 1) -> dict:
-    """Digest one PDF: per-page backend call (cached) + verification.
+def digest_pages(pages: List[str], file_name: str,
+                 backend: Callable[[str, str, int], List[dict]],
+                 *, cache_dir: Optional[Path] = None,
+                 cache_stem: Optional[str] = None,
+                 workers: int = 1) -> dict:
+    """Digest already-extracted page texts through the standard channel:
+    per-page backend call (cached) + verification.
 
-    ``workers > 1`` parallelizes the backend calls across pages (page
-    extraction happens up-front on the main thread — PyMuPDF is not
-    thread-safe; cache writes are atomic tmp+replace so parallel pages
-    never corrupt each other).
+    This is the endpoint-agnostic core behind :func:`digest_document`;
+    non-PDF sources (e.g. 8-K EX-99 exhibits rendered from HTML) ride the
+    same digest/verify machinery by supplying their own page texts.
+    ``cache_stem`` namespaces the page cache (defaults to the file stem).
 
     Returns {"cards": [verified EvidenceCard], "voided": [rejected raw
     candidates], "pages": n, "cached_pages": n}.
     """
-    pdf_path = Path(pdf_path)
-    pages = extract_pages(pdf_path)
     cache: Optional[Path] = None
     if cache_dir is not None:
         cache = Path(cache_dir)
         cache.mkdir(parents=True, exist_ok=True)
+    stem = cache_stem or Path(file_name).stem
 
     def _page(i_text):
         i, text = i_text
-        page_key = f"{pdf_path.stem}_p{i}.json"
+        page_key = f"{stem}_p{i}.json"
         if cache is not None and (cache / page_key).exists():
             try:
                 cached = json.loads((cache / page_key).read_text(
@@ -175,7 +195,7 @@ def digest_document(pdf_path: Path, backend: Callable[[str, str, int], List[dict
             except (json.JSONDecodeError, OSError):
                 pass
         try:
-            raw = backend(text, pdf_path.name, i)
+            raw = backend(text, file_name, i)
         except Exception as exc:  # backend failure voids the page, not the run
             return i, text, [{"__error__": f"{type(exc).__name__}: {exc}"}], False
         payload = {"raw": raw}
@@ -204,7 +224,7 @@ def digest_document(pdf_path: Path, backend: Callable[[str, str, int], List[dict
             if isinstance(cand, dict) and "__error__" in cand:
                 voided.append({"page": i, "error": cand["__error__"]})
                 continue
-            card = _sanitize(cand, pdf_path.name, i)
+            card = _sanitize(cand, file_name, i)
             if card is None:
                 voided.append({"page": i, "candidate": cand})
                 continue
@@ -215,6 +235,26 @@ def digest_document(pdf_path: Path, backend: Callable[[str, str, int], List[dict
                 voided.append({"page": i, "quote_not_found": cand})
     return {"cards": cards, "voided": voided, "pages": len(pages),
             "cached_pages": cached_pages}
+
+
+def digest_document(pdf_path: Path, backend: Callable[[str, str, int], List[dict]],
+                    *, cache_dir: Optional[Path] = None,
+                    workers: int = 1) -> dict:
+    """Digest one PDF: per-page backend call (cached) + verification.
+
+    ``workers > 1`` parallelizes the backend calls across pages (page
+    extraction happens up-front on the main thread — PyMuPDF is not
+    thread-safe; cache writes are atomic tmp+replace so parallel pages
+    never corrupt each other).
+
+    Returns {"cards": [verified EvidenceCard], "voided": [rejected raw
+    candidates], "pages": n, "cached_pages": n}.
+    """
+    pdf_path = Path(pdf_path)
+    pages = extract_pages(pdf_path)
+    return digest_pages(pages, pdf_path.name, backend,
+                        cache_dir=cache_dir, cache_stem=pdf_path.stem,
+                        workers=workers)
 
 
 def digest_queue(queue_dir: Path, backend: Callable,

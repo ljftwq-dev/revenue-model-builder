@@ -31,7 +31,9 @@ from .suggest import ProfileSuggestion, suggest_profile
 from .momentum import MomentumReading, detect_momentum, ttm_series
 from .evidence import Chain, ChainBook, EvidenceCard, RINGS
 from .gate import GateBook, default_document_options
-from .llm_digest import digest_document, digest_queue, extract_pages
+from .llm_digest import (digest_document, digest_pages, digest_queue,
+                         extract_pages, GLM_CODING_URL, GLM_PAAS_URL)
+from .form8k_exhibit import digest_8k_exhibits, fetch_8k_exhibits
 from .auto_pipeline import PipelineResult, auto_pipeline
 
 __all__ = [
@@ -53,6 +55,8 @@ __all__ = [
     "MomentumReading", "detect_momentum", "ttm_series",
     "Chain", "ChainBook", "EvidenceCard", "RINGS",
     "GateBook", "default_document_options",
-    "digest_document", "digest_queue", "extract_pages",
+    "digest_document", "digest_pages", "digest_queue", "extract_pages",
+    "GLM_CODING_URL", "GLM_PAAS_URL",
+    "digest_8k_exhibits", "fetch_8k_exhibits",
     "PipelineResult", "auto_pipeline",
 ]
