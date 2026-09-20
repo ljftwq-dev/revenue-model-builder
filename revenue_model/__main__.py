@@ -163,8 +163,9 @@ def cmd_chain(args):
 
 
 def cmd_news(args):
-    from .news_layer import (fetch_news, make_glm_news_backend,
-                             mcp_web_search, pltr_news_spec, render_suggestions,
+    from .news_layer import (av_news_search, fetch_article, fetch_news,
+                             make_glm_news_backend, mcp_web_search,
+                             merge_results, pltr_news_spec, render_suggestions,
                              spec_from_json)
 
     key = os.environ.get("ZHIPU_API_KEY")
@@ -172,12 +173,21 @@ def cmd_news(args):
         raise SystemExit("news needs ZHIPU_API_KEY in the environment "
                          "(load via your secrets manager; never hardcode)")
     spec = spec_from_json(args.spec) if args.spec else pltr_news_spec()
-    search_fn = lambda q, n: mcp_web_search(q, api_key=key, count=n)  # noqa: E731
-    from .news_layer import fetch_article
+    av_key = args.av_key or os.environ.get("ALPHAVANTAGE_API_KEY")
+
+    def search_fn(q, n, recency=None):
+        hits = mcp_web_search(q, api_key=key, count=n, recency=recency)
+        if av_key and args.av_tickers:
+            extra = av_news_search(q, n, api_key=av_key,
+                                   tickers=args.av_tickers)
+            return merge_results(hits, extra)
+        return hits
+
     r = fetch_news(spec, search_fn=search_fn, fetch_fn=fetch_article,
                    digest_fn=make_glm_news_backend(key),
                    cache_dir=Path(args.cache_dir),
-                   queries_limit=args.queries_limit)
+                   queries_limit=args.queries_limit,
+                   recency_override=args.recency)
     cards = r["cards"]
     print(f"cards: {len(cards)} "
           f"(dual {sum(1 for c in cards if c.confidence == 'dual')}, "
@@ -188,6 +198,16 @@ def cmd_news(args):
         md = render_suggestions(cards)
         Path(args.output).write_text(md, encoding="utf-8")
         print(f"suggestions -> {args.output}")
+
+
+def cmd_portal(args):
+    try:
+        from .portal import serve
+    except ImportError as exc:
+        raise SystemExit("portal needs the [portal] extra: "
+                         "pip install revenue-model-builder[portal]") from exc
+    serve(Path(args.workspace), host=args.host, port=args.port,
+          queue_name=args.queue_name)
 
 
 def _render_excel(model, output):
@@ -298,9 +318,40 @@ def build_parser():
                         help="per-URL cache dir (default: ./news_cache)")
     p_news.add_argument("--queries-limit", type=int, default=0,
                         help="run at most N queries (0 = all; dev smoke)")
+    p_news.add_argument("--recency", default=None,
+                        choices=["oneDay", "oneWeek", "oneMonth", "oneYear",
+                                 "noLimit"],
+                        help="force the search time window, overriding each "
+                             "group's days_back (noLimit widens to all "
+                             "history to recover old-quarter news)")
+    p_news.add_argument("--av-key", default=None,
+                        help="optional AlphaVantage key (or env "
+                             "ALPHAVANTAGE_API_KEY) for the NEWS_SENTIMENT "
+                             "add-on source")
+    p_news.add_argument("--av-tickers", default=None,
+                        help="comma-separated tickers scoping the AV "
+                             "NEWS_SENTIMENT feed (e.g. PLTR); required to "
+                             "enable the AV add-on")
     p_news.add_argument("-o", "--output", default=None,
                         help="optional suggestions markdown output")
     p_news.set_defaults(func=cmd_news)
+
+    p_portal = sub.add_parser(
+        "portal", help="Gate H local portal — queue/card browse + "
+                       "submissions landing in the workspace (needs "
+                       "[portal] extra)")
+    p_portal.add_argument("--workspace", default=".",
+                          help="workspace dir holding the queue + caches "
+                               "(default: cwd)")
+    p_portal.add_argument("--queue-name", default="下载队列",
+                          help="queue directory name inside the workspace "
+                               "(default: 下载队列)")
+    p_portal.add_argument("--host", default="127.0.0.1",
+                          help="bind address (default: 127.0.0.1, "
+                               "local-only)")
+    p_portal.add_argument("--port", type=int, default=8790,
+                          help="port (default: 8790)")
+    p_portal.set_defaults(func=cmd_portal)
 
     return parser
 

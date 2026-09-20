@@ -1,6 +1,10 @@
 """Tests for revenue_model.news_layer (transports injected — no network)
 plus the news-related EvidenceCard/chain rendering extensions."""
 
+import json
+
+import pytest
+
 from revenue_model.chains_cli import build_chainbook, render_cards_md, render_chains_md
 from revenue_model.evidence import EvidenceCard
 from revenue_model.news_layer import (
@@ -60,8 +64,11 @@ ARTICLES = {
     "https://paywalled-daily.com/story": None,          # fetch fails
 }
 
+SEEN_WINDOWS = []          # (query, recency) the fake search received
 
-def fake_search(query, count):
+
+def fake_search(query, count, recency=None):
+    SEEN_WINDOWS.append((query, recency))
     if "Maven" in query or "DoD" in query:
         return [{"link": "https://defensescoop.com/maven",
                  "title": "DoD expands Maven", "publish_date": "2026-05-14"},
@@ -154,10 +161,10 @@ def test_fetch_news_cache_resume_zero_calls(tmp_path):
 
 
 def test_failed_search_group_recorded_not_fatal(tmp_path):
-    def boom(query, count):
+    def boom(query, count, recency=None):
         if "Maven" in query:
             raise RuntimeError("search down")
-        return fake_search(query, count)
+        return fake_search(query, count, recency)
 
     r = fetch_news(SPEC, search_fn=boom, fetch_fn=fake_fetch,
                    digest_fn=fake_digest, cache_dir=tmp_path / "c")
@@ -285,6 +292,11 @@ def test_load_news_cards_from_cache_only(tmp_path):
     conf = {c.url: c.confidence for c in loaded}
     assert conf["https://defensescoop.com/maven"] == "dual"
     assert conf["https://eu-sovereignty.eu/palantir-paradox"] == "single"
+    # search-metadata dates survive the cache round-trip (the regex
+    # fallback on article text alone would lose them: "May 2026" != ISO)
+    dates = {c.url: c.published for c in loaded}
+    assert dates["https://defensescoop.com/maven"] == "2026-05-14"
+    assert dates["https://spacenews.com/maven-budget"] == "2026-05-15"
 
 
 def test_spec_roundtrip(tmp_path):
@@ -296,3 +308,161 @@ def test_spec_roundtrip(tmp_path):
     assert spec.groups[0].segment == "US_Comm"
     assert spec.groups[0].days_back == 30
     assert spec.exclude_domains == ("prnewswire.com",)
+
+
+# ---------------------------------------------------------------------------
+# search time window: days_back wired through to the engine (v0.22.2)
+# ---------------------------------------------------------------------------
+
+from revenue_model.news_layer import (  # noqa: E402
+    _av_date,
+    _recency_for,
+    av_news_search,
+    merge_results,
+)
+
+
+def test_recency_for_boundaries():
+    assert _recency_for(0) is None                    # explicit unlimited
+    assert _recency_for(-5) is None
+    assert _recency_for(1) == "oneDay"
+    assert _recency_for(7) == "oneWeek"
+    assert _recency_for(8) == "oneMonth"
+    assert _recency_for(31) == "oneMonth"
+    assert _recency_for(120) == "oneYear"
+    assert _recency_for(366) == "oneYear"
+    assert _recency_for(400) is None                  # > a year: all history
+
+
+def test_fetch_news_passes_days_back_window(tmp_path):
+    SEEN_WINDOWS.clear()
+    spec = NewsSpec(groups=(KeywordGroup("US_Gov", ("Palantir DoD Maven budget",),
+                                         days_back=30),))
+    fetch_news(spec, search_fn=fake_search, fetch_fn=fake_fetch,
+               digest_fn=fake_digest, cache_dir=None)
+    assert SEEN_WINDOWS[0] == ("Palantir DoD Maven budget", "oneMonth")
+
+
+def test_fetch_news_recency_override_beats_days_back(tmp_path):
+    SEEN_WINDOWS.clear()
+    spec = NewsSpec(groups=(KeywordGroup("US_Gov", ("Palantir DoD Maven budget",),
+                                         days_back=30),))
+    fetch_news(spec, search_fn=fake_search, fetch_fn=fake_fetch,
+               digest_fn=fake_digest, cache_dir=None,
+               recency_override="noLimit")
+    assert SEEN_WINDOWS[0][1] is None                 # widened to all history
+
+
+# ---------------------------------------------------------------------------
+# AV NEWS_SENTIMENT add-on source (v0.22.2)
+# ---------------------------------------------------------------------------
+
+AV_FEED = {
+    "feed": [
+        {"title": "Palantir wins Army contract extension",
+         "url": "https://www.defensenews.com/ground/2026/09/17/pltr-army/",
+         "time_published": "20260917T201512",
+         "source": "Defensenews",
+         "summary": "The Army extended its Maven-related contract.",
+         "overall_sentiment_label": "Bullish"},
+        {"title": "Dup of the same story",
+         "url": "https://defensescoop.com/maven",
+         "time_published": "20260917T210000",
+         "source": "Defensescoop",
+         "summary": "Wire copy.",
+         "overall_sentiment_label": "Neutral"},
+        {"title": "No URL item gets dropped",
+         "url": "",
+         "time_published": "20260918T010000",
+         "source": "X", "summary": "", "overall_sentiment_label": "Neutral"},
+    ]
+}
+
+
+class _FakeAVResponse:
+    def __init__(self, payload):
+        self._payload = payload
+
+    def read(self):
+        return json.dumps(self._payload).encode("utf-8")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def test_av_news_search_maps_feed(monkeypatch):
+    import urllib.request
+
+    captured = {}
+
+    def fake_urlopen(req, timeout=None):
+        captured["url"] = req.full_url
+        return _FakeAVResponse(AV_FEED)
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    import revenue_model.news_layer as nl
+    monkeypatch.setattr(nl, "_av_last_call", [])      # fresh throttle memory
+    hits = av_news_search("whatever query", 8, api_key="K",
+                          tickers="PLTR", _now=lambda: 1000.0,
+                          _sleep=lambda s: None)
+    assert "function=NEWS_SENTIMENT" in captured["url"]
+    assert "tickers=PLTR" in captured["url"]
+    assert "apikey=K" in captured["url"]
+    assert len(hits) == 2                             # empty-URL item dropped
+    first = hits[0]
+    assert first["link"] == AV_FEED["feed"][0]["url"]
+    assert first["publish_date"] == "2026-09-17"      # T-stamp -> date
+    assert first["sentiment"] == "Bullish"
+
+
+def test_av_news_search_quota_error_raises(monkeypatch):
+    import urllib.request
+
+    def fake_urlopen(req, timeout=None):
+        return _FakeAVResponse({"Information": "25 requests per day limit"})
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    import revenue_model.news_layer as nl
+    monkeypatch.setattr(nl, "_av_last_call", [])
+
+    with pytest.raises(RuntimeError, match="25 requests"):
+        av_news_search("q", 5, api_key="K", tickers="PLTR",
+                       _now=lambda: 2000.0, _sleep=lambda s: None)
+
+
+def test_av_date_tolerance():
+    assert _av_date("20260918T130000") == "2026-09-18"
+    assert _av_date("20260918T1300") == "2026-09-18"
+    assert _av_date("") == ""
+    assert _av_date("garbage") == "garbage"[:10]
+
+
+def test_merge_results_dedups_by_link():
+    a = [{"link": "https://x.com/1", "title": "one"},
+         {"link": "https://x.com/2", "title": "two"}]
+    b = [{"link": "https://x.com/2", "title": "two-dup"},
+         {"link": "https://y.com/3", "title": "three"},
+         {"link": "", "title": "linkless dropped"}]
+    merged = merge_results(a, b)
+    assert [i["link"] for i in merged] == ["https://x.com/1",
+                                           "https://x.com/2",
+                                           "https://y.com/3"]
+    assert merged[1]["title"] == "two"                # first occurrence wins
+
+
+def test_av_items_ride_the_same_pipeline(tmp_path):
+    """An AV-discovered article flows through fetch -> digest -> verbatim
+    verify exactly like a search hit — the add-on adds discovery, never
+    a shortcut around the hard gate."""
+    av_hit = [{"link": "https://spacenews.com/maven-budget",
+               "title": "Pentagon budget Maven",
+               "publish_date": "2026-05-15",
+               "source": "AV", "sentiment": "Bullish"}]
+    r = fetch_news(SPEC, search_fn=lambda q, n, recency=None: av_hit,
+                   fetch_fn=fake_fetch, digest_fn=fake_digest,
+                   cache_dir=tmp_path / "c")
+    assert any(c.url == "https://spacenews.com/maven-budget" for c in r["cards"])
+    assert all(c.verified for c in r["cards"])

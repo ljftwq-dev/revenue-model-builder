@@ -22,6 +22,8 @@ import hashlib
 import html as html_lib
 import json
 import re
+import time
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -70,6 +72,23 @@ def spec_from_json(path: Path) -> NewsSpec:
         for g in data["groups"])
     return NewsSpec(groups=groups,
                     exclude_domains=tuple(data.get("exclude_domains", [])))
+
+
+def _recency_for(days_back: int) -> Optional[str]:
+    """Map the day-granular spec field onto the engine's coarse windows
+    (oneDay/oneWeek/oneMonth/oneYear): the smallest covering window.
+    ``days_back <= 0`` or ``> 366`` clears the filter entirely so OLD
+    news (early quarters) becomes reachable again — widening, never
+    narrowing past what the spec asks for."""
+    if days_back <= 0 or days_back > 366:
+        return None
+    if days_back <= 1:
+        return "oneDay"
+    if days_back <= 7:
+        return "oneWeek"
+    if days_back <= 31:
+        return "oneMonth"
+    return "oneYear"
 
 
 def pltr_news_spec() -> NewsSpec:
@@ -154,6 +173,88 @@ def mcp_web_search(query: str, *, api_key: str, count: int = 8,
     return []
 
 
+_AV_MIN_INTERVAL = 1.05          # free tier: 1 request/second burst cap
+_av_last_call: List[float] = []  # module-level throttle memory (one stamp)
+
+
+def av_news_search(query: str, count: int, *, api_key: str,
+                   tickers: str = "", topics: str = "",
+                   time_from: Optional[str] = None, sort: str = "LATEST",
+                   base: str = "https://www.alphavantage.co/query",
+                   _now: Optional[Callable[[], float]] = None,
+                   _sleep: Optional[Callable[[float], None]] = None) -> List[dict]:
+    """AlphaVantage NEWS_SENTIMENT as an additional discovery source.
+
+    Returns the same shape the pipeline already consumes
+    ([{link, title, publish_date, ...}]) so items ride the SAME
+    fetch -> digest -> verbatim-verify path — no shortcut around the
+    hard gate. AV has no free-text search: scope comes from
+    ``tickers`` / ``topics`` / ``time_from`` (``YYYYMMDDTHHMM``); the
+    ``query`` argument is accepted for search_fn signature compatibility
+    only. Free tier: 25 requests/day, 1 request/second — throttled here
+    and meant as an add-on, never the primary source.
+
+    Extra fields (source, summary, sentiment) are carried through for
+    the record; grading still counts origins by domain.
+    """
+    monotonic = _now or time.monotonic
+    sleep = _sleep or time.sleep
+    if _av_last_call and monotonic() - _av_last_call[0] < _AV_MIN_INTERVAL:
+        sleep(_AV_MIN_INTERVAL - (monotonic() - _av_last_call[0]))
+    params = {"function": "NEWS_SENTIMENT", "apikey": api_key,
+              "limit": str(max(count, 1)), "sort": sort}
+    if tickers:
+        params["tickers"] = tickers
+    if topics:
+        params["topics"] = topics
+    if time_from:
+        params["time_from"] = time_from
+    req = urllib.request.Request(f"{base}?{urllib.parse.urlencode(params)}",
+                                 headers=dict(UA))
+    with urllib.request.urlopen(req, timeout=40) as resp:
+        data = json.loads(resp.read().decode("utf-8", errors="replace"))
+    _av_last_call.clear()
+    _av_last_call.append(monotonic())
+    feed = data.get("feed")
+    if not isinstance(feed, list):      # quota / rate-limit / error payloads
+        note = data.get("Information") or data.get("Note") or data.get(
+            "Error Message") or "no feed in response"
+        raise RuntimeError(f"AV NEWS_SENTIMENT: {str(note)[:120]}")
+    hits: List[dict] = []
+    for item in feed[:count]:
+        url = item.get("url") or ""
+        if not url:
+            continue
+        hits.append({"link": url, "title": item.get("title", ""),
+                     "publish_date": _av_date(item.get("time_published", "")),
+                     "source": item.get("source", ""),
+                     "summary": item.get("summary", ""),
+                     "sentiment": item.get("overall_sentiment_label", "")})
+    return hits
+
+
+def _av_date(stamp: str) -> str:
+    """``20260918T130000`` -> ``2026-09-18`` (date granularity, like the
+    other sources); unparseable stamps pass through untouched."""
+    m = re.match(r"(\d{4})(\d{2})(\d{2})T\d{4,6}", stamp or "")
+    return f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else (stamp or "")[:10]
+
+
+def merge_results(*lists: List[dict]) -> List[dict]:
+    """Concatenate search-result lists, dropping duplicate links (first
+    occurrence wins; primary source listed first keeps its rank)."""
+    out: List[dict] = []
+    seen = set()
+    for lst in lists:
+        for item in lst:
+            link = item.get("link") or item.get("url") or ""
+            if not link or link in seen:
+                continue
+            seen.add(link)
+            out.append(item)
+    return out
+
+
 def fetch_article(url: str) -> Dict:
     """Plain HTTP fetch + html->text. Returns {"url", "title", "text"} or
     raises for the caller to record on the uncovered list."""
@@ -234,11 +335,15 @@ def _url_key(url: str) -> str:
 
 def fetch_news(spec: NewsSpec, *, search_fn: Callable, fetch_fn: Callable,
                digest_fn: Callable, cache_dir: Optional[Path] = None,
-               queries_limit: int = 0) -> Dict:
-    """Run the whole layer. search_fn(query, count) -> [{link, title,
-    publish?}]; fetch_fn(url) -> {"title", "text"}; digest_fn(text, url,
-    segment) -> [candidate dicts]. Cache keyed by URL hash; re-runs only
-    pay for unseen URLs. Local failures never kill the batch."""
+               queries_limit: int = 0,
+               recency_override: Optional[str] = None) -> Dict:
+    """Run the whole layer. search_fn(query, count, recency) -> [{link,
+    title, publish?}]; fetch_fn(url) -> {"title", "text"}; digest_fn(text,
+    url, segment) -> [candidate dicts]. The engine window comes from each
+    group's ``days_back`` unless ``recency_override`` is set (the CLI's
+    widen-the-window escape hatch; "noLimit"/"" clears the filter).
+    Cache keyed by URL hash; re-runs only pay for unseen URLs. Local
+    failures never kill the batch."""
     cache = Path(cache_dir) if cache_dir else None
     if cache:
         cache.mkdir(parents=True, exist_ok=True)
@@ -252,8 +357,14 @@ def fetch_news(spec: NewsSpec, *, search_fn: Callable, fetch_fn: Callable,
             if queries_limit and ran >= queries_limit:
                 return _finish(cards, rejects, uncovered, failed_groups)
             ran += 1
+            if recency_override == "noLimit":
+                window = None                # forced: all history reachable
+            elif recency_override:
+                window = recency_override
+            else:
+                window = _recency_for(group.days_back)
             try:
-                results = search_fn(query, group.max_results)
+                results = search_fn(query, group.max_results, window)
             except Exception as exc:                       # noqa: BLE001
                 failed_groups.append({"query": query,
                                       "error": f"{type(exc).__name__}: {exc}"})
@@ -298,7 +409,8 @@ def fetch_news(spec: NewsSpec, *, search_fn: Callable, fetch_fn: Callable,
                                         f"{type(exc).__name__}: {exc}"})
                         continue
                     payload = {"url": url, "title": art.get("title", ""),
-                               "text": art["text"], "raw": raw}
+                               "text": art["text"], "raw": raw,
+                               "published": published}
                     if key is not None:
                         tmp = cache / f".{_url_key(url)}.tmp"
                         tmp.write_text(json.dumps(payload, ensure_ascii=False),
@@ -334,6 +446,28 @@ def _date_in(text: str) -> str:
     return m.group(1) if m else ""
 
 
+def _cards_from_payload(payload: Dict,
+                        default_segment: str = "") -> List[EvidenceCard]:
+    """Verified cards from one cached article payload (shared by the
+    cache-only loader and the single-URL submission path)."""
+    domain = _domain(payload.get("url", ""))
+    out: List[EvidenceCard] = []
+    for cand in payload.get("raw", []):
+        card = _sanitize(cand, _slug(domain), 1)
+        if card is None:
+            continue
+        verified = card.verify(payload.get("text", ""))
+        if verified.verified:
+            out.append(EvidenceCard(
+                clue=card.clue, anchor_file=_slug(domain), anchor_page=1,
+                quote=card.quote, ring=card.ring,
+                segment=card.segment or default_segment,
+                verified=True, url=payload.get("url", ""),
+                published=str(payload.get("published", "")
+                              or _date_in(payload.get("text", "")))))
+    return out
+
+
 def load_news_cards(cache_dir: Path) -> List[EvidenceCard]:
     """Verified news cards purely from a news cache (no network, no
     backend) — the browsing/chain-building path, mirroring
@@ -349,19 +483,58 @@ def load_news_cards(cache_dir: Path) -> List[EvidenceCard]:
             continue
         if payload.get("uncovered_reason"):
             continue
-        domain = _domain(payload.get("url", ""))
-        for cand in payload.get("raw", []):
-            card = _sanitize(cand, _slug(domain), 1)
-            if card is None:
-                continue
-            verified = card.verify(payload.get("text", ""))
-            if verified.verified:
-                cards.append(EvidenceCard(
-                    clue=card.clue, anchor_file=_slug(domain), anchor_page=1,
-                    quote=card.quote, ring=card.ring, segment=card.segment,
-                    verified=True, url=payload.get("url", ""),
-                    published=_date_in(payload.get("text", ""))))
+        cards.extend(_cards_from_payload(payload))
     return grade_sources(cards)
+
+
+def digest_one_url(url: str, *, fetch_fn: Callable, digest_fn: Callable,
+                   cache_dir: Path, segment: str = "",
+                   published: str = "") -> Dict:
+    """Gate H single-article hand-off: ONE known URL through the exact
+    fetch -> digest -> verbatim-verify -> cache path ``fetch_news``
+    walks (no shortcut around the hard gate). Idempotent — a cached URL
+    is a no-op reporting its existing cards. Local failures land on the
+    negative cache instead of raising. Returns {status, cards, reason,
+    url} with status one of ok / duplicate / uncovered / error."""
+    cache = Path(cache_dir)
+    cache.mkdir(parents=True, exist_ok=True)
+    key = cache / f"{_url_key(url)}.json"
+    if key.exists():
+        try:
+            payload = json.loads(key.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            payload = None
+        if payload is not None:
+            if payload.get("uncovered_reason"):
+                return {"status": "uncovered", "cards": 0,
+                        "reason": payload["uncovered_reason"], "url": url}
+            return {"status": "duplicate",
+                    "cards": len(_cards_from_payload(payload, segment)),
+                    "reason": "already in cache", "url": url}
+    try:
+        art = fetch_fn(url)
+    except Exception as exc:                             # noqa: BLE001
+        reason = f"{type(exc).__name__}: {str(exc)[:80]}"
+        tmp = cache / f".{_url_key(url)}.tmp"
+        tmp.write_text(json.dumps({"url": url, "uncovered_reason": reason},
+                                  ensure_ascii=False), encoding="utf-8")
+        tmp.replace(key)
+        return {"status": "uncovered", "cards": 0, "reason": reason,
+                "url": url}
+    try:
+        raw = digest_fn(art["text"], url, segment)
+    except Exception as exc:                             # noqa: BLE001
+        return {"status": "error", "cards": 0,
+                "reason": f"digest {type(exc).__name__}: {str(exc)[:80]}",
+                "url": url}
+    payload = {"url": url, "title": art.get("title", ""), "text": art["text"],
+               "raw": raw, "published": published}
+    tmp = cache / f".{_url_key(url)}.tmp"
+    tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(key)
+    return {"status": "ok", "cards": len(_cards_from_payload(payload,
+                                                             segment)),
+            "reason": "", "url": url}
 
 
 # ---------------------------------------------------------------------------
