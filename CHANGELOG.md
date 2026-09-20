@@ -4,6 +4,44 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.22.2] - 2026-09-19
+
+### Added
+- **Search time window is real**: `KeywordGroup.days_back` (spec JSON,
+  default 120) now maps onto the engine's coarse windows via
+  `_recency_for` (<=0 or >366 = no filter, so OLD-quarter news is
+  reachable); `fetch_news` passes the window to every search call and a
+  `--recency` CLI override forces oneDay/oneWeek/oneMonth/oneYear/
+  noLimit per run. Live check 2026-09-19: `--recency noLimit` surfaced
+  14 unseen URLs -> +10 verified cards on the PLTR workspace.
+- **AlphaVantage NEWS_SENTIMENT add-on**: `av_news_search` returns the
+  same result shape the pipeline consumes, so AV-discovered articles
+  ride the SAME fetch -> digest -> verbatim-verify path (no shortcut
+  around the hard gate). AV has no free-text search — scope via
+  `tickers`/`topics`/`time_from`; free-tier burst (1 req/s) throttled
+  in-code. CLI: `--av-key` / env `ALPHAVANTAGE_API_KEY` + `--av-tickers`
+  merges AV behind the Zhipu results with `merge_results` dedup.
+- **Gate H portal v1 (`portal.py`, [portal] extra)**: the local
+  control desk for the human gate — FastAPI + a SQLite ledger + one
+  inline single page, 127.0.0.1 only, clone-and-run (an open-source
+  project carries no server). Browse the queue (PDFs + digest status)
+  and every verified card (filings + news, one filter box); hand
+  documents over: file uploads land in `user_submitted/` with sha1
+  dedup against the whole workspace, URLs go through
+  `news_layer.digest_one_url` (fetch -> digest -> verify -> news cache,
+  idempotent, negative-cached); append-only ledger keeps every
+  hand-off accountable. `python -m revenue_model portal`.
+- `news_layer.digest_one_url`: the single-article hand-off primitive
+  shared by the portal and any manual Gate H flow — one known URL,
+  exactly the `fetch_news` path, cache-idempotent.
+
+### Fixed
+- News `published` dates now survive the cache round-trip: the search
+  metadata is stored in the per-URL payload and `load_news_cards`
+  prefers it over the regex fallback on article text (the fallback
+  alone lost ~99% of dates, silently weakening same-day wire-copy
+  clustering).
+
 ## [0.22.1] - 2026-09-18
 
 ### Added
