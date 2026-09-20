@@ -318,8 +318,36 @@ from revenue_model.news_layer import (  # noqa: E402
     _av_date,
     _recency_for,
     av_news_search,
+    ceg_news_spec,
     merge_results,
+    news_spec_for,
 )
+
+
+# ---------------------------------------------------------------------------
+# presets: the mechanism stays company-agnostic (PLTR was just first)
+# ---------------------------------------------------------------------------
+
+def test_ceg_preset_branches_follow_revenue_geography():
+    """The CEG preset (second-company run, 2026-09) must carry the
+    company-agnostic contract: non-empty queries, real branch names
+    aligned to CEG's reportable segments, and no Palantir strings."""
+    spec = ceg_news_spec()
+    assert spec.groups and all(g.queries for g in spec.groups)
+    segs = {g.segment for g in spec.groups}
+    assert {"Mid_Atlantic", "Midwest"} <= segs
+    for g in spec.groups:
+        for q in g.queries:
+            assert "Palantir" not in q
+
+
+def test_news_spec_for_registry():
+    assert news_spec_for("pltr").groups[0].segment == "US_Comm"
+    assert news_spec_for("ceg").groups[0].segment == ""
+    import pytest
+
+    with pytest.raises(ValueError, match="unknown news preset"):
+        news_spec_for("nvda")
 
 
 def test_recency_for_boundaries():

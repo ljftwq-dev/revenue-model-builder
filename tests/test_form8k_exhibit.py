@@ -78,6 +78,18 @@ class TestIsExhibit:
         assert _is_exhibit("a2022q3exhibit992ceoletter.htm")
         assert _is_exhibit("ex-992.htm")
 
+    def test_matches_ceg_tail_convention(self):
+        """CEG names EX-99 as ``ceg-<date>99<seq>.htm`` with no ``ex``
+        infix — first seen on the second-company generalization run
+        (2026-09). The ``...99<seq>.htm`` tail must match while the
+        primary ``ceg-<date>.htm`` document and slide-image renders
+        (``...992001.jpg``) stay out."""
+        assert _is_exhibit("ceg-20260806991.htm")     # EX-99.1 release
+        assert _is_exhibit("ceg-20260806992.htm")     # EX-99.2 slides
+        assert _is_exhibit("ceg-20260511991.htm")
+        assert not _is_exhibit("ceg-20260806.htm")    # primary 8-K doc
+        assert not _is_exhibit("ceg-20260806992001.jpg")
+
     def test_skips_procedural_files(self):
         assert not _is_exhibit("index.html")
         assert not _is_exhibit("0001321655-23-000086-index-headers.html")

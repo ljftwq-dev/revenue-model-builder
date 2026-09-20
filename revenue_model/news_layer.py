@@ -105,6 +105,40 @@ def pltr_news_spec() -> NewsSpec:
     ))
 
 
+#: digest-prompt subject per preset (the layer stays company-agnostic;
+#: these name the drill subject so prompts never hard-code it).
+PRESET_COMPANIES = {"pltr": "Palantir", "ceg": "Constellation Energy"}
+
+
+def ceg_news_spec() -> NewsSpec:
+    """Constellation Energy preset (2026-09, the second-company
+    generalization run). Branches follow CEG's revenue geography —
+    retail supply around BGE/PECO (Mid-Atlantic) and ComEd (Midwest) —
+    plus the company-level generation story where AI-datacenter demand
+    lands (nuclear PPAs, Crane restart, PJM capacity, Calpine, PTC)."""
+    return NewsSpec(groups=(
+        KeywordGroup("", ("Constellation Energy data center nuclear PPA",
+                          "Constellation Microsoft Meta nuclear deal",
+                          "Constellation Calpine")),
+        KeywordGroup("Mid_Atlantic", ("Constellation BGE PECO electric retail",
+                                      "PJM capacity auction price")),
+        KeywordGroup("Midwest", ("Constellation ComEd Illinois",
+                                 "Constellation Clinton Dresden nuclear")),
+        KeywordGroup("", ("Constellation nuclear production tax credit",)),
+    ), exclude_domains=("linkedin.com", "facebook.com", "instagram.com",
+                        "x.com", "twitter.com"))
+
+
+def news_spec_for(preset: str) -> NewsSpec:
+    """Preset registry (PLTR and CEG ship in-box; your own company is a
+    spec JSON away)."""
+    if preset == "pltr":
+        return pltr_news_spec()
+    if preset == "ceg":
+        return ceg_news_spec()
+    raise ValueError(f"unknown news preset: {preset!r}")
+
+
 # ---------------------------------------------------------------------------
 # transports (injectable)
 # ---------------------------------------------------------------------------

@@ -165,14 +165,15 @@ def cmd_chain(args):
 def cmd_news(args):
     from .news_layer import (av_news_search, fetch_article, fetch_news,
                              make_glm_news_backend, mcp_web_search,
-                             merge_results, pltr_news_spec, render_suggestions,
-                             spec_from_json)
+                             merge_results, news_spec_for, render_suggestions,
+                             spec_from_json, PRESET_COMPANIES)
 
     key = os.environ.get("ZHIPU_API_KEY")
     if not key:
         raise SystemExit("news needs ZHIPU_API_KEY in the environment "
                          "(load via your secrets manager; never hardcode)")
-    spec = spec_from_json(args.spec) if args.spec else pltr_news_spec()
+    spec = spec_from_json(args.spec) if args.spec else news_spec_for(args.preset)
+    company = args.company or PRESET_COMPANIES.get(args.preset, "Palantir")
     av_key = args.av_key or os.environ.get("ALPHAVANTAGE_API_KEY")
 
     def search_fn(q, n, recency=None):
@@ -184,7 +185,7 @@ def cmd_news(args):
         return hits
 
     r = fetch_news(spec, search_fn=search_fn, fetch_fn=fetch_article,
-                   digest_fn=make_glm_news_backend(key),
+                   digest_fn=make_glm_news_backend(key, company=company),
                    cache_dir=Path(args.cache_dir),
                    queries_limit=args.queries_limit,
                    recency_override=args.recency)
@@ -313,7 +314,10 @@ def build_parser():
         "news", help="targeted news -> verified cards (v0.22 news layer; "
                      "needs ZHIPU_API_KEY)")
     p_news.add_argument("--spec", default=None,
-                        help="news spec JSON (default: the PLTR preset)")
+                        help="news spec JSON (default: the preset below)")
+    p_news.add_argument("--preset", default="pltr", choices=["pltr", "ceg"],
+                        help="in-box company preset (default: pltr; ceg = "
+                             "Constellation Energy, the second-company run)")
     p_news.add_argument("--cache-dir", default="news_cache",
                         help="per-URL cache dir (default: ./news_cache)")
     p_news.add_argument("--queries-limit", type=int, default=0,
@@ -332,6 +336,9 @@ def build_parser():
                         help="comma-separated tickers scoping the AV "
                              "NEWS_SENTIMENT feed (e.g. PLTR); required to "
                              "enable the AV add-on")
+    p_news.add_argument("--company", default=None,
+                        help="digest-prompt subject override (defaults to "
+                             "the preset's company name)")
     p_news.add_argument("-o", "--output", default=None,
                         help="optional suggestions markdown output")
     p_news.set_defaults(func=cmd_news)

@@ -21,6 +21,7 @@ Design (mirrors ``form8k_adapter``):
   every quote is still verified verbatim inside its chunk.
 """
 import json
+import re
 import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
@@ -35,10 +36,20 @@ _ARCHIVES_INDEX = ("https://www.sec.gov/Archives/edgar/data/{cik}/{nod}/"
 
 #: lowercase filename fragments identifying an EX-99 exhibit (observed
 #: patterns: ``a2023q2ex991pressrelease.htm``, ``d259921dex991.htm``,
-#: ``a2022q3exhibit992ceoletter.htm``). Procedural files (index pages,
-#: R*.htm financial renders) never match.
+#: ``a2022q3exhibit992ceoletter.htm``, and the CEG convention
+#: ``ceg-20260806991.htm`` where the accession date is followed directly
+#: by ``99<seq>`` — caught by :data:`_EXHIBIT_TAIL_RE` below). Procedural
+#: files (index pages, R*.htm financial renders, XBRL/XML, images) never
+#: match.
 _EXHIBIT_HINTS = ("ex99", "ex-99", "ex_99",
                   "exhibit99", "exhibit-99", "exhibit_99")
+
+#: filer convention ``<anything>99<seq>.htm`` (EX-99.1 -> ``...991.htm``,
+#: EX-99.2 -> ``...992.htm``) with no ``ex`` infix — first seen on
+#: Constellation Energy (2026-09, the second-company generalization run).
+#: The pattern is anchored at the extension so image renders such as
+#: ``...992001.jpg`` cannot match (extension gate runs first anyway).
+_EXHIBIT_TAIL_RE = re.compile(r"99[1-9]\.html?$", re.I)
 
 _SKIP_NAMES = ("index", "header")
 
@@ -52,7 +63,8 @@ def _is_exhibit(name: str) -> bool:
         return False
     if any(s in low for s in _SKIP_NAMES):
         return False
-    return any(h in low for h in _EXHIBIT_HINTS)
+    return (any(h in low for h in _EXHIBIT_HINTS)
+            or _EXHIBIT_TAIL_RE.search(low) is not None)
 
 
 def _resolve_cik(ticker_or_cik: Union[str, int], *, http_get: Optional[Callable],
