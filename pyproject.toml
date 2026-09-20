@@ -38,6 +38,8 @@ scrape = ["playwright>=1.40"]
 pdf = ["PyMuPDF>=1.23"]
 qesa = ["pymysql>=1.0"]
 portal = ["fastapi>=0.110", "uvicorn>=0.29"]
+webcast = ["playwright>=1.40", "yt-dlp>=2024.3"]
+asr = ["faster-whisper>=1.0"]
 
 [project.scripts]
 revenue-model = "revenue_model.__main__:main"

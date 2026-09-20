@@ -211,6 +211,31 @@ def cmd_portal(args):
           queue_name=args.queue_name)
 
 
+def cmd_webcast(args):
+    from .webcast import WebcastProfile, run
+
+    profile = None
+    if args.register_name or args.register_email:
+        if not (args.register_name and args.register_email
+                and args.register_company):
+            raise SystemExit("--register-* need name (First Last), email "
+                             "AND company together")
+        first, _, last = args.register_name.partition(" ")
+        profile = WebcastProfile(first=first, last=last,
+                                 email=args.register_email,
+                                 company=args.register_company)
+    profile = profile or WebcastProfile.from_env()
+    r = run(args.url, args.ticker.upper(), args.quarter,
+            Path(args.workspace), profile=profile,
+            speakers=args.speakers, terms=args.terms,
+            queue_name=args.queue_name, skip_acquired=args.skip_acquired)
+    cards = r["cards"]
+    print(f"webcast -> {len(cards)} cards "
+          f"(rings: " + ", ".join(f"{rg}: {sum(1 for c in cards if c.ring == rg)}"
+                                  for rg in ("core", "self", "updown", "macro"))
+          + ")")
+
+
 def _render_excel(model, output):
     try:
         from .excel_builder import build_excel
@@ -359,6 +384,35 @@ def build_parser():
     p_portal.add_argument("--port", type=int, default=8790,
                           help="port (default: 8790)")
     p_portal.set_defaults(func=cmd_portal)
+
+    p_webcast = sub.add_parser(
+        "webcast", help="earnings-call webcast -> transcript PDF -> "
+                        "verified cards (YouTube or Notified; needs "
+                        "[webcast]+[asr]+[pdf] extras)")
+    p_webcast.add_argument("url", help="YouTube link or Notified player "
+                                       "URL (https://edge.media-server.com/...)")
+    p_webcast.add_argument("--ticker", required=True, help="e.g. CEG")
+    p_webcast.add_argument("--quarter", required=True, help="e.g. Q2_2026")
+    p_webcast.add_argument("--workspace", default=".",
+                           help="workspace dir (queue + caches)")
+    p_webcast.add_argument("--queue-name", default="下载队列",
+                           help="queue directory name (default: 下载队列)")
+    p_webcast.add_argument("--speakers", default="",
+                           help="ASR prompt glossary, e.g. "
+                                "'Joe Dominguez (CEO), Dan Eggers (CFO)'")
+    p_webcast.add_argument("--terms", default="",
+                           help="ASR prompt terms, e.g. 'Calpine, PJM, PTC'")
+    p_webcast.add_argument("--register-name", default=None,
+                           help="registration identity: 'First Last' "
+                                "(or env WEBCAST_FIRST_NAME/LAST_NAME)")
+    p_webcast.add_argument("--register-email", default=None,
+                           help="registration email (or env WEBCAST_EMAIL)")
+    p_webcast.add_argument("--register-company", default=None,
+                           help="registration company (or env WEBCAST_COMPANY)")
+    p_webcast.add_argument("--skip-acquired", action="store_true",
+                           help="reuse the audio already on disk "
+                                "(workspace/webcast/)")
+    p_webcast.set_defaults(func=cmd_webcast)
 
     return parser
 
