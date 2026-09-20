@@ -182,3 +182,58 @@ def test_load_cached_cards_skips_undigested(tmp_path, monkeypatch):
         llm_digest, "extract_pages", lambda p: [PAGE_1, PAGE_2, PAGE_3])
     r = llm_digest.load_cached_cards(pdf, cache)   # cache empty
     assert r["cards"] == [] and r["undigested"] == 3
+
+
+# ---------------------------------------------------------------------------
+# cache-only documents (8-K EX-99 style) through load_queue_cards
+# ---------------------------------------------------------------------------
+
+def test_load_queue_cards_cache_only_document(tmp_path):
+    """A document digested via digest_pages with NO queue PDF still
+    browses: the self-contained cache (text + confidence) re-verifies
+    offline, primary stamp survives the round-trip."""
+    from revenue_model.chains_cli import load_queue_cards
+    from revenue_model.llm_digest import digest_pages
+
+    queue = tmp_path / "queue"
+    queue.mkdir()
+    calls = []
+
+    def backend(text, name, page):
+        calls.append(page)
+        return [{"clue": "Q2 调整后每股营业收益 2.55 美元",
+                 "quote": "Adjusted Operating Earnings of 2.55",
+                 "ring": "core", "segment": ""},
+                {"clue": "编造", "quote": "NOT IN THE PAGE AT ALL",
+                 "ring": "core", "segment": ""}]
+
+    r = digest_pages(["GAAP Net Income of 1.42 and Adjusted Operating "
+                      "Earnings of 2.55 per share." + " filler " * 80],
+                     "8K_000186827526000097_ceg-20260806991.htm", backend,
+                     cache_dir=queue / "digest_cache",
+                     cache_stem="8K_000186827526000097_ceg-20260806991",
+                     confidence="primary")
+    assert len(r["cards"]) == 1 and r["cards"][0].confidence == "primary"
+    assert calls == [1]
+
+    cards = load_queue_cards(queue)
+    assert len(cards) == 1                       # fabricated quote voided
+    c = cards[0]
+    assert c.verified and c.confidence == "primary"
+    assert c.anchor_file == "8K_000186827526000097_ceg-20260806991.htm"
+    assert c.anchor().endswith("p1")
+
+
+def test_load_queue_cards_skips_legacy_cache_without_text(tmp_path):
+    """Legacy page caches (raw only, no text) must not crash or lie:
+    the cache-only branch skips them silently."""
+    from revenue_model.chains_cli import load_queue_cards
+
+    queue = tmp_path / "queue"
+    cache = queue / "digest_cache"
+    cache.mkdir(parents=True)
+    (cache / "legacydoc_p1.json").write_text(
+        json.dumps({"raw": [{"clue": "x", "quote": "y",
+                             "ring": "core", "segment": ""}]}),
+        encoding="utf-8")
+    assert load_queue_cards(queue) == []

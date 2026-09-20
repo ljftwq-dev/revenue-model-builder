@@ -37,20 +37,64 @@ from .evidence import Chain, ChainBook, EvidenceCard
 def load_queue_cards(queue_dir: Path,
                      cache_name: str = "digest_cache") -> List[EvidenceCard]:
     """All verified cards across every digested PDF in the queue, plus
-    the news layer's cards when ``news_cache`` exists next to it (needs
-    the [pdf] extra for filings; news cards load cache-only)."""
+    cache-only documents (8-K EX-99 exhibits and any other source that
+    digested through ``digest_pages`` with no queue PDF — their page
+    caches are self-contained: text + confidence travel with the raw),
+    plus the news layer's cards when ``news_cache`` exists next to it.
+    Needs the [pdf] extra only for the PDF branch."""
     from .llm_digest import load_cached_cards
 
     queue_dir = Path(queue_dir)
     cache = queue_dir / cache_name
     cards: List[EvidenceCard] = []
+    pdf_stems = set()
     for pdf in sorted(queue_dir.glob("*.pdf")):
+        pdf_stems.add(pdf.stem)
         if (cache / f"{pdf.stem}_p1.json").exists():
             cards.extend(load_cached_cards(pdf, cache)["cards"])
+    cards.extend(_load_cache_only_documents(cache, pdf_stems))
     news_cache = queue_dir.parent / "news_cache"
     if news_cache.exists():
         from .news_layer import load_news_cards
         cards.extend(load_news_cards(news_cache))
+    return cards
+
+
+def _load_cache_only_documents(cache: Path,
+                               pdf_stems: set) -> List[EvidenceCard]:
+    """Documents living purely in the page cache (no queue PDF). Each
+    page cache carries its own ``text`` so the verbatim gate re-verifies
+    offline; legacy caches without ``text`` are skipped (the owning
+    source path can still read them)."""
+    if not cache.exists():
+        return []
+    from .llm_digest import _sanitize
+
+    cards: List[EvidenceCard] = []
+    for p1 in sorted(cache.glob("*_p1.json")):
+        stem = p1.name[:-len("_p1.json")]
+        if stem in pdf_stems or stem.startswith("."):
+            continue
+        i = 1
+        while (cache / f"{stem}_p{i}.json").exists():
+            try:
+                d = json.loads((cache / f"{stem}_p{i}.json").read_text(
+                    encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                break
+            text = d.get("text")
+            if text is None:
+                break                    # legacy cache: no offline verify
+            conf = d.get("confidence", "single")
+            for cand in d.get("raw", []):
+                card = _sanitize(cand, f"{stem}.htm", i)
+                if card is None:
+                    continue
+                if card.verify(text).verified:
+                    from dataclasses import replace
+                    cards.append(replace(card, verified=True,
+                                         confidence=conf))
+            i += 1
     return cards
 
 

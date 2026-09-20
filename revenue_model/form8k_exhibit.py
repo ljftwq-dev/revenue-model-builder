@@ -228,11 +228,10 @@ def digest_8k_exhibits(ticker_or_cik: Union[str, int],
     """Digest every 8-K EX-99 exhibit through the standard channel.
 
     Returns the :func:`digest_pages` aggregate — ``cards`` (all
-    ``confidence="primary"``), ``voided``, ``documents`` per exhibit
-    (pages / cached / cards / voided), plus ``exhibits`` count.
+    ``confidence="primary"``, stamped in the cards AND the page cache),
+    ``voided``, ``documents`` per exhibit (pages / cached / cards /
+    voided), plus ``exhibits`` count.
     """
-    from dataclasses import replace
-
     exhibits = fetch_8k_exhibits(
         ticker_or_cik, since=since, categories=categories,
         http_get=http_get, http_get_text=http_get_text,
@@ -253,9 +252,9 @@ def digest_8k_exhibits(ticker_or_cik: Union[str, int],
                                   "error": f"{type(exc).__name__}: {exc}"})
             continue
         r = digest_pages(pages, file_name, backend, cache_dir=cache_dir,
-                         cache_stem=stem, workers=workers)
-        out["cards"].extend(replace(c, confidence="primary")
-                            for c in r["cards"])
+                         cache_stem=stem, confidence="primary",
+                         workers=workers)
+        out["cards"].extend(r["cards"])
         out["voided"].extend(r["voided"])
         out["documents"][file_name] = {
             "pages": r["pages"], "cached": r["cached_pages"],

@@ -166,6 +166,7 @@ def digest_pages(pages: List[str], file_name: str,
                  backend: Callable[[str, str, int], List[dict]],
                  *, cache_dir: Optional[Path] = None,
                  cache_stem: Optional[str] = None,
+                 confidence: Optional[str] = None,
                  workers: int = 1) -> dict:
     """Digest already-extracted page texts through the standard channel:
     per-page backend call (cached) + verification.
@@ -174,6 +175,14 @@ def digest_pages(pages: List[str], file_name: str,
     non-PDF sources (e.g. 8-K EX-99 exhibits rendered from HTML) ride the
     same digest/verify machinery by supplying their own page texts.
     ``cache_stem`` namespaces the page cache (defaults to the file stem).
+    ``confidence`` stamps the cards (e.g. ``"primary"`` for issuer
+    documents) and is stored in the cache so cache-only browsing
+    (:func:`revenue_model.chains_cli.load_queue_cards`) reproduces it.
+
+    Page caches are self-contained: ``{"raw": ..., "text": <page text>,
+    "confidence": ...}`` — the verbatim gate can re-verify offline,
+    without the source document. (Legacy caches without ``text`` are
+    still usable by paths that own the source, e.g. PDF browsing.)
 
     Returns {"cards": [verified EvidenceCard], "voided": [rejected raw
     candidates], "pages": n, "cached_pages": n}.
@@ -198,7 +207,9 @@ def digest_pages(pages: List[str], file_name: str,
             raw = backend(text, file_name, i)
         except Exception as exc:  # backend failure voids the page, not the run
             return i, text, [{"__error__": f"{type(exc).__name__}: {exc}"}], False
-        payload = {"raw": raw}
+        payload = {"raw": raw, "text": text}
+        if confidence:
+            payload["confidence"] = confidence
         if cache is not None:
             tmp = cache / f".{page_key}.tmp"
             tmp.write_text(json.dumps(payload, ensure_ascii=False),
@@ -230,6 +241,9 @@ def digest_pages(pages: List[str], file_name: str,
                 continue
             verified = card.verify(text)
             if verified.verified:
+                if confidence:
+                    from dataclasses import replace
+                    verified = replace(verified, confidence=confidence)
                 cards.append(verified)
             else:
                 voided.append({"page": i, "quote_not_found": cand})

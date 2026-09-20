@@ -1,0 +1,2545 @@
+{
+  "segments": [
+    {
+      "start": 0.46,
+      "end": 5.66,
+      "text": "Good morning, ladies and gentlemen, and welcome to the Constellation Energy Corporation first"
+    },
+    {
+      "start": 5.66,
+      "end": 12.46,
+      "text": "quarter 2026 earnings conference call. At this time, all participants are in a listen-only mode."
+    },
+    {
+      "start": 13.66,
+      "end": 18.86,
+      "text": "Later, we will conduct a question and answer session and instructions will follow at that time."
+    },
+    {
+      "start": 19.9,
+      "end": 26.22,
+      "text": "As a reminder, this call may be recorded. I would now like to introduce your host for today's call,"
+    },
+    {
+      "start": 26.86,
+      "end": 31.74,
+      "text": "Tim Flodemish, Vice President Invest Relation. You may begin."
+    },
+    {
+      "start": 34.06,
+      "end": 38.46,
+      "text": "Thank you, Daniel. Good morning, everyone, and thank you for joining Constellation Energy"
+    },
+    {
+      "start": 38.46,
+      "end": 43.42,
+      "text": "Corporation's first quarter earnings call. Leading the call today are Joe Dominguez,"
+    },
+    {
+      "start": 43.42,
+      "end": 48.06,
+      "text": "Constellation's President and Chief Executive Officer, and Shane Smith, Constellation's Chief"
+    },
+    {
+      "start": 48.06,
+      "end": 53.26,
+      "text": "Financial Officer. They are joined by other members of Constellation's senior management team who will"
+    },
+    {
+      "start": 53.26,
+      "end": 58.86,
+      "text": "be available to answer your questions following our prepared remarks. We issued our earnings"
+    },
+    {
+      "start": 58.86,
+      "end": 63.74,
+      "text": "release this morning along with the presentation, all of which can be found in the Invest Relation"
+    },
+    {
+      "start": 63.74,
+      "end": 69.02,
+      "text": "section of Constellation's website. The earnings release and other matters which are discussed"
+    },
+    {
+      "start": 69.02,
+      "end": 73.74,
+      "text": "during today's call contain forward-looking statements and estimates regarding Constellation"
+    },
+    {
+      "start": 73.74,
+      "end": 79.1,
+      "text": "and its subsidiaries that are subject to various risks and uncertainties. Actual results could"
+    },
+    {
+      "start": 79.1,
+      "end": 83.18,
+      "text": "differ from our forward-looking statements based on factors and assumptions discussed"
+    },
+    {
+      "start": 83.18,
+      "end": 88.86,
+      "text": "in today's materials and comments made during this call. Please refer to today's 8K and"
+    },
+    {
+      "start": 88.86,
+      "end": 94.7,
+      "text": "Constellation's other SEC filings for discussions of risk factors and other circumstances and"
+    },
+    {
+      "start": 94.7,
+      "end": 98.86,
+      "text": "considerations that may cause results to differ from management's projections,"
+    },
+    {
+      "start": 98.86,
+      "end": 104.46,
+      "text": "forecasts, and expectations. Today's presentation also includes references to adjusted operating"
+    },
+    {
+      "start": 104.46,
+      "end": 109.66,
+      "text": "earnings and other non-GAAP measures. Please refer to the information contained in the"
+    },
+    {
+      "start": 109.66,
+      "end": 114.86,
+      "text": "appendix of our presentation and our estimates by our earnings release for reconciliations"
+    },
+    {
+      "start": 114.86,
+      "end": 119.26,
+      "text": "between non-GAAP measures and the nearest equivalent GAAP measures. I'll now turn the"
+    },
+    {
+      "start": 119.26,
+      "end": 123.66,
+      "text": "call over to Joe. Thanks, Tim. Good morning, everyone. I hope you enjoyed a wonderful"
+    },
+    {
+      "start": 124.3,
+      "end": 130.3,
+      "text": "Mother's Day celebrating the great moms in our lives. Thanks for joining us today and for your"
+    },
+    {
+      "start": 130.3,
+      "end": 136.46,
+      "text": "continued interest in Constellation. Our prepared remarks this morning will be relatively brief."
+    },
+    {
+      "start": 136.46,
+      "end": 141.26,
+      "text": "We spent a good amount of time with you just over a month ago when we shared our business"
+    },
+    {
+      "start": 141.26,
+      "end": 146.78,
+      "text": "and earnings outlook so we could be more efficient with your time today. I'll begin by summarizing"
+    },
+    {
+      "start": 146.78,
+      "end": 151.82,
+      "text": "the key messages from the business update and then talk about the quarter, some of our"
+    },
+    {
+      "start": 152.62,
+      "end": 158.7,
+      "text": "generation development activities, and the PJM regulatory landscape. First and foremost,"
+    },
+    {
+      "start": 158.7,
+      "end": 163.98,
+      "text": "I want to remind you that our long-term outlook is compelling with a base earnings growth rate"
+    },
+    {
+      "start": 163.98,
+      "end": 170.62,
+      "text": "that exceeds 20% through 2029, anchored by highly visible drivers that include the nuclear"
+    },
+    {
+      "start": 170.62,
+      "end": 176.54,
+      "text": "production tax credit, which grows with inflation, long-term contracts with high quality"
+    },
+    {
+      "start": 176.54,
+      "end": 182.86,
+      "text": "counterparties, and durable customer margins supported by the nation's largest commercial"
+    },
+    {
+      "start": 182.86,
+      "end": 188.54,
+      "text": "and industrial retail platform. We also have conviction that we could grow the business"
+    },
+    {
+      "start": 188.54,
+      "end": 196.22,
+      "text": "at a long-term rolling 10% plus base EPS growth rate, which we see as a common characteristic"
+    },
+    {
+      "start": 196.22,
+      "end": 202.7,
+      "text": "of high quality and well-valued companies. Further, our outlook is arguably conservative"
+    },
+    {
+      "start": 202.7,
+      "end": 210.22,
+      "text": "through 2029 with considerable levers to drive upside that are quantified on page 13 of this"
+    },
+    {
+      "start": 210.22,
+      "end": 217.1,
+      "text": "deck. You will see that this is an updated version of page 23 of the business update that we reviewed"
+    },
+    {
+      "start": 217.1,
+      "end": 222.94,
+      "text": "last month, which so many of our owners told us that they liked. As Shane will cover in more"
+    },
+    {
+      "start": 222.94,
+      "end": 229.58,
+      "text": "detail, some of the opportunities include additional long-term off-takes for data center customers"
+    },
+    {
+      "start": 229.58,
+      "end": 236.06,
+      "text": "at our nuclear and gas plants, as well as with customers wanting clean firm and reliable power"
+    },
+    {
+      "start": 236.06,
+      "end": 243.34,
+      "text": "with price visibility, higher utilization of our gas fleet due to rising around-the-clock demand,"
+    },
+    {
+      "start": 243.58,
+      "end": 251.34,
+      "text": "positive gearing to higher than 2% inflation through the nuclear PTC construct, and finally,"
+    },
+    {
+      "start": 251.34,
+      "end": 257.74,
+      "text": "the benefit of higher returns on our strong and growing free cash flow. The second big"
+    },
+    {
+      "start": 257.74,
+      "end": 265.38,
+      "text": "storyline here is the mix of our base and enhanced earnings. The Calpine business brings"
+    },
+    {
+      "start": 265.38,
+      "end": 271.14,
+      "text": "high quality, visible earnings to Constellation, supporting our growth outlook and reinforces"
+    },
+    {
+      "start": 271.94,
+      "end": 277.7,
+      "text": "the value of bringing these two companies together. Lastly, I would call out here"
+    },
+    {
+      "start": 278.58,
+      "end": 285.38,
+      "text": "the free cash flow outlook, which upon reflection, we could have probably done a better job of when"
+    },
+    {
+      "start": 285.38,
+      "end": 290.5,
+      "text": "we provided the business outlook, but we've provided the updated numbers now on page 13."
+    },
+    {
+      "start": 291.22,
+      "end": 298.5,
+      "text": "Much like the strong EPS growth, we see similar growth in our free cash flow outlook with the 26,"
+    },
+    {
+      "start": 298.58,
+      "end": 308.26,
+      "text": "27 period producing a forecast at $8.4 billion and the 28, 29 period rising to $11.5 to $13 billion"
+    },
+    {
+      "start": 308.26,
+      "end": 314.5,
+      "text": "before the levers I just mentioned. We will have significant opportunity to productively deploy"
+    },
+    {
+      "start": 314.5,
+      "end": 320.66,
+      "text": "capital over the balance of the decade to drive value. Turning to slide six and the quarterly"
+    },
+    {
+      "start": 320.66,
+      "end": 326.98,
+      "text": "results, I want to, as I always do, first start out by thanking the women and men here at Constellation"
+    },
+    {
+      "start": 326.98,
+      "end": 332.82,
+      "text": "for their dedication and for delivering another strong operational and financial performance"
+    },
+    {
+      "start": 332.82,
+      "end": 340.82,
+      "text": "quarter. We posted first quarter gap earnings of $4.49 per share and adjusted operating earnings"
+    },
+    {
+      "start": 340.82,
+      "end": 348.5,
+      "text": "of $2.74 per share. Based on our performance year to date and our outlook for the remainder of the"
+    },
+    {
+      "start": 348.5,
+      "end": 355.38,
+      "text": "year, we are affirming our full year adjusted operating earnings guidance range of $11 to $12"
+    },
+    {
+      "start": 355.38,
+      "end": 362.02,
+      "text": "per share. Shane will cover the details in his section. Since we last spoke, we move quickly to"
+    },
+    {
+      "start": 362.02,
+      "end": 368.5,
+      "text": "get back into the market, buying our stock in a pretty narrow window. Over the past few weeks,"
+    },
+    {
+      "start": 368.5,
+      "end": 375.38,
+      "text": "we have successfully repurchased approximately 1.2 million shares at an average price of roughly"
+    },
+    {
+      "start": 375.38,
+      "end": 384.26,
+      "text": "$285 per share for a total of $335 million of purchases. These purchases underscore our"
+    },
+    {
+      "start": 384.26,
+      "end": 390.98,
+      "text": "commitment to discipline capital allocation and our confidence in the long-term value of the business."
+    },
+    {
+      "start": 392.58,
+      "end": 397.7,
+      "text": "The buyback was an intentional statement from management and our board that we are excited"
+    },
+    {
+      "start": 397.7,
+      "end": 403.94,
+      "text": "about the growth opportunities ahead, but that at these prices we see our stock as a compelling"
+    },
+    {
+      "start": 403.94,
+      "end": 411.94,
+      "text": "use of our cash. We were excited to be named Barron's 2026 most sustainable U.S. company in"
+    },
+    {
+      "start": 411.94,
+      "end": 419.14,
+      "text": "the quarter, ranking number one among the thousand largest publicly traded companies in the United"
+    },
+    {
+      "start": 419.14,
+      "end": 427.14,
+      "text": "States. This recognition is based on an evaluation of more than 230 performance indicators measuring"
+    },
+    {
+      "start": 427.14,
+      "end": 434.66,
+      "text": "how companies treat a broad range of stakeholders, including their employees, their owners, customers,"
+    },
+    {
+      "start": 434.66,
+      "end": 441.22,
+      "text": "communities, and of course the environment. Being recognized by Barron's as the most sustainable"
+    },
+    {
+      "start": 441.22,
+      "end": 447.7,
+      "text": "U.S. company is a very, very big deal to us and it validates our approach to doing business."
+    },
+    {
+      "start": 448.82,
+      "end": 455.54,
+      "text": "At Constellation, we have a culture of doing hard things and doing them well. Despite an"
+    },
+    {
+      "start": 455.54,
+      "end": 461.14,
+      "text": "increasingly challenging market environment for new development, this quarter we successfully"
+    },
+    {
+      "start": 461.14,
+      "end": 467.94,
+      "text": "delivered two new generation projects to the grid, demonstrating our ability to execute and deliver"
+    },
+    {
+      "start": 467.94,
+      "end": 475.3,
+      "text": "when it matters. First, we placed the 105 megawatt Pastoria solar project into service."
+    },
+    {
+      "start": 476.02,
+      "end": 483.62,
+      "text": "This solar project is next to a combined cycle machine of over 750 megawatts at the same location"
+    },
+    {
+      "start": 483.62,
+      "end": 489.54,
+      "text": "and it's the first part of a combined solar and battery storage project that supports the"
+    },
+    {
+      "start": 489.54,
+      "end": 496.74,
+      "text": "California Department of Water Resources goal of achieving carbon neutrality by 2035. And it"
+    },
+    {
+      "start": 496.74,
+      "end": 503.22,
+      "text": "further strengthens Constellation's leading position as the largest producer of carbon-free"
+    },
+    {
+      "start": 503.22,
+      "end": 510.98,
+      "text": "energy in the country. Second, we commence commercial operations at our 460 megawatt"
+    },
+    {
+      "start": 510.98,
+      "end": 518.98,
+      "text": "Peno Creek natural gas peaking facility in Texas. Designed for rapid startup, Peno Creek will provide"
+    },
+    {
+      "start": 518.98,
+      "end": 525.62,
+      "text": "critical peak demand support and enhance grid reliability during periods of elevated electricity"
+    },
+    {
+      "start": 525.62,
+      "end": 531.7,
+      "text": "demand. Together, these projects demonstrate Constellation's ability post the Calpine"
+    },
+    {
+      "start": 531.7,
+      "end": 538.74,
+      "text": "acquisition to execute on complex development efforts and deliver new generation that meets"
+    },
+    {
+      "start": 538.74,
+      "end": 545.22,
+      "text": "the evolving needs of both our customers and the grid. On the transaction front, last week we"
+    },
+    {
+      "start": 546.02,
+      "end": 552.34,
+      "text": "received PUCT approval of the net metering agreement associated with our powered land deal"
+    },
+    {
+      "start": 552.34,
+      "end": 560.45,
+      "text": "with Cyrus One at the Freestone Energy Center. This approval is an important signal to the market"
+    },
+    {
+      "start": 560.45,
+      "end": 567.49,
+      "text": "regarding expectations for co-located projects going forward. Construction is currently underway"
+    },
+    {
+      "start": 567.49,
+      "end": 573.57,
+      "text": "on the substation that will enable power delivery to the data center, which we expect to be energized"
+    },
+    {
+      "start": 573.57,
+      "end": 581.09,
+      "text": "in the fourth quarter of this year. Turning to slide seven, we are making good progress"
+    },
+    {
+      "start": 581.09,
+      "end": 588.37,
+      "text": "on regulatory clarity in PJM. PJM has put forward a market-based solution to address the incremental"
+    },
+    {
+      "start": 588.37,
+      "end": 595.73,
+      "text": "capacity needs driven by large load customer growth, creating a pathway with options for"
+    },
+    {
+      "start": 595.73,
+      "end": 602.93,
+      "text": "customers to manage their capacity requirements and cost exposure. There have been constructive"
+    },
+    {
+      "start": 602.93,
+      "end": 609.01,
+      "text": "conversations with stakeholders since the release of the initial proposal. While we expect to see"
+    },
+    {
+      "start": 609.01,
+      "end": 614.85,
+      "text": "further refinements over the coming weeks, PJM has established a proposed timeline for providing"
+    },
+    {
+      "start": 614.85,
+      "end": 620.77,
+      "text": "clarity on when it expects to vote on the final framework with the goal of submitting the proposal"
+    },
+    {
+      "start": 620.77,
+      "end": 628.05,
+      "text": "to FERC in June. Frankly, this is faster than we had hoped and having this defined timeline"
+    },
+    {
+      "start": 629.01,
+      "end": 634.13,
+      "text": "and a pathway to final rules will provide greater certainty for market participants"
+    },
+    {
+      "start": 634.13,
+      "end": 641.57,
+      "text": "as they plan and invest. Clarity is critical to unlocking economic expansion across the"
+    },
+    {
+      "start": 641.57,
+      "end": 647.89,
+      "text": "mid-Atlantic and Midwest regions by providing a clear path for new large loads to connect to the"
+    },
+    {
+      "start": 647.89,
+      "end": 655.25,
+      "text": "grid. We think this is a great opportunity for robust economic development in our states,"
+    },
+    {
+      "start": 655.25,
+      "end": 661.97,
+      "text": "providing the benefits of meaningful construction jobs, ongoing employment, property tax, and local"
+    },
+    {
+      "start": 661.97,
+      "end": 669.25,
+      "text": "community support while helping to advance the most important economic and national security"
+    },
+    {
+      "start": 669.25,
+      "end": 676.13,
+      "text": "we have as a country. We are also excited for the customers in our states, both residential and"
+    },
+    {
+      "start": 676.13,
+      "end": 683.81,
+      "text": "commercial, who are paying the high cost of fixed grid infrastructure. By bringing on these large"
+    },
+    {
+      "start": 683.81,
+      "end": 691.17,
+      "text": "loads and by being more dynamic and managing peak usage, we have a real opportunity to improve system"
+    },
+    {
+      "start": 691.17,
+      "end": 700.29,
+      "text": "utilization and lower the average hourly usage cost for all customers. On the contracting front,"
+    },
+    {
+      "start": 700.29,
+      "end": 708.13,
+      "text": "customer engagement has varied as PJM works through these policy issues. As I mentioned during our"
+    },
+    {
+      "start": 708.13,
+      "end": 715.33,
+      "text": "last update, some customers have been willing to continue advancing project discussions and"
+    },
+    {
+      "start": 715.33,
+      "end": 721.49,
+      "text": "agreement negotiations while others have chosen to pause and wait for regulatory clarity."
+    },
+    {
+      "start": 722.13,
+      "end": 729.01,
+      "text": "That's why I'm pleased to see PJM moving forward so quickly to address this need for clarity."
+    },
+    {
+      "start": 729.01,
+      "end": 737.25,
+      "text": "The backstop proposal needs to happen on the timeline PJM has laid out and PJM has to replicate"
+    },
+    {
+      "start": 737.25,
+      "end": 744.93,
+      "text": "that timeline on the co-location document. Last year, there was a prevailing concern that Senate"
+    },
+    {
+      "start": 744.93,
+      "end": 752.13,
+      "text": "Bill 6 in Texas would significantly constrain data center development NERCOT. Instead, once the"
+    },
+    {
+      "start": 752.13,
+      "end": 758.53,
+      "text": "requirements were established for co-locating new load with Generation, we began to see transactions"
+    },
+    {
+      "start": 758.53,
+      "end": 767.01,
+      "text": "come forward. We expect to see the same thing in PJM. The bottom line is that customers want to"
+    },
+    {
+      "start": 767.01,
+      "end": 773.89,
+      "text": "get their data centers online as quickly as they can. They need regulatory clarity for that to"
+    },
+    {
+      "start": 773.89,
+      "end": 779.65,
+      "text": "happen and once the options are understood, they will make the decisions that work for their"
+    },
+    {
+      "start": 779.65,
+      "end": 786.93,
+      "text": "specific needs. We will continue to work with PJM to help shape the rules to support economic growth,"
+    },
+    {
+      "start": 786.93,
+      "end": 794.05,
+      "text": "protect residential customers, and to stabilize and perhaps actually lower costs for all Americans."
+    },
+    {
+      "start": 795.49,
+      "end": 800.85,
+      "text": "Turning to slide 8, one point that has remained clear is that demand for additional"
+    },
+    {
+      "start": 800.85,
+      "end": 807.49,
+      "text": "compute and by extension additional power has not slowed from hyperscaler customers."
+    },
+    {
+      "start": 808.13,
+      "end": 815.73,
+      "text": "In fact, projected spending levels for 2026 are nearly 75 percent higher than last year"
+    },
+    {
+      "start": 815.73,
+      "end": 822.85,
+      "text": "and continue to be revised upward. There is also a growing recognition that reliability"
+    },
+    {
+      "start": 822.85,
+      "end": 829.57,
+      "text": "must be supported and done in a way that does not burden existing customers. Constellation"
+    },
+    {
+      "start": 829.57,
+      "end": 835.33,
+      "text": "is well positioned to provide solutions for our customers. We have submitted approximately"
+    },
+    {
+      "start": 835.33,
+      "end": 843.73,
+      "text": "5,000 megawatts of new capacity resources into PJM's interconnection queue, including unique"
+    },
+    {
+      "start": 843.73,
+      "end": 851.65,
+      "text": "nuclear upgrades, new natural gas generation, and new battery storage projects. As customers look"
+    },
+    {
+      "start": 851.65,
+      "end": 859.49,
+      "text": "to contract new capacity to offset incremental demand at peak, we have a diverse set of projects"
+    },
+    {
+      "start": 859.57,
+      "end": 866.21,
+      "text": "that align well with PJM's proposed framework and can meet those needs. If a customer prefers"
+    },
+    {
+      "start": 866.21,
+      "end": 871.49,
+      "text": "to participate in demand response or enable participation through third parties, we can"
+    },
+    {
+      "start": 871.49,
+      "end": 878.61,
+      "text": "provide those solutions as well through our retail business. We are highly motivated to identify"
+    },
+    {
+      "start": 878.61,
+      "end": 884.21,
+      "text": "and provide workable capacity solutions for both customers and for the broader market."
+    },
+    {
+      "start": 885.09,
+      "end": 890.13,
+      "text": "Ultimately, our objective is to unlock the full value of our clean firm energy"
+    },
+    {
+      "start": 890.69,
+      "end": 898.69,
+      "text": "and associated attributes in a way that benefits all stakeholders. Turning to slide nine,"
+    },
+    {
+      "start": 899.33,
+      "end": 905.97,
+      "text": "while we continue to engage with customers and regulators in PJM, it is important to recognize"
+    },
+    {
+      "start": 905.97,
+      "end": 912.53,
+      "text": "that our opportunity to drive meaningful upside to our outlook extends beyond any single region."
+    },
+    {
+      "start": 913.33,
+      "end": 919.41,
+      "text": "We have a demonstrated track record of delivering powered land solutions to customers in ERCOT,"
+    },
+    {
+      "start": 919.41,
+      "end": 925.17,
+      "text": "and we see additional opportunities across our broader fleet to build on that success."
+    },
+    {
+      "start": 926.13,
+      "end": 931.01,
+      "text": "Importantly, we have sites with available land and a path to grid interconnection,"
+    },
+    {
+      "start": 931.57,
+      "end": 937.57,
+      "text": "along with a proven ability to successfully navigate the regulatory framework, positioning"
+    },
+    {
+      "start": 937.65,
+      "end": 944.69,
+      "text": "us well to continue advancing customer solutions. At our three data center projects in Texas,"
+    },
+    {
+      "start": 944.69,
+      "end": 950.13,
+      "text": "we have customers addressing their reliability commitments both by bringing firm backup"
+    },
+    {
+      "start": 950.13,
+      "end": 956.93,
+      "text": "generation to cover peak constraints, and in another instance, accepting full curtailability"
+    },
+    {
+      "start": 956.93,
+      "end": 964.21,
+      "text": "during times of grid stress. These gas-adjacent powered land deals command a meaningful privilege"
+    },
+    {
+      "start": 964.21,
+      "end": 970.77,
+      "text": "in their own right, and importantly, they allow full access to the grid. So customers could pair"
+    },
+    {
+      "start": 970.77,
+      "end": 976.93,
+      "text": "them with purchases of firm carbon-free energy from grid-connected nuclear plants, and we are"
+    },
+    {
+      "start": 976.93,
+      "end": 982.29,
+      "text": "working with customers on those offerings. Now, before I turn to Shane, I want to share an"
+    },
+    {
+      "start": 982.29,
+      "end": 989.33,
+      "text": "observation about this slide and the Pastoria and Peno Creek development projects that I covered"
+    },
+    {
+      "start": 989.33,
+      "end": 996.69,
+      "text": "back on slide six. Obviously, all of this good work was underway at Calpine when we bought the"
+    },
+    {
+      "start": 996.69,
+      "end": 1001.65,
+      "text": "company, and when we announced the Calpine transaction little more than a year ago,"
+    },
+    {
+      "start": 1001.65,
+      "end": 1007.01,
+      "text": "we talked about the compatibility and complementary nature of the commercial and retail"
+    },
+    {
+      "start": 1007.01,
+      "end": 1013.81,
+      "text": "businesses. We talked about Calpine's industry-leading natural gas and geothermal assets,"
+    },
+    {
+      "start": 1013.81,
+      "end": 1019.49,
+      "text": "and of course, we talked about its terrific people. But we also shared with you that in the"
+    },
+    {
+      "start": 1019.49,
+      "end": 1026.77,
+      "text": "future we saw coming, Calpine would help to supplement Constellation's existing skills in"
+    },
+    {
+      "start": 1026.77,
+      "end": 1034.45,
+      "text": "new natural gas, solar, and battery storage development, as well as Constellation's abilities"
+    },
+    {
+      "start": 1034.45,
+      "end": 1041.33,
+      "text": "in connection with natural gas data center transactions. And as you reflect on the regulatory"
+    },
+    {
+      "start": 1041.33,
+      "end": 1047.81,
+      "text": "requirements in PJM and ERCA, and in other places, I trust that you can now see how"
+    },
+    {
+      "start": 1047.81,
+      "end": 1053.41,
+      "text": "supplemental development and commercial capabilities will help us to unlock the value of"
+    },
+    {
+      "start": 1053.41,
+      "end": 1060.29,
+      "text": "Constellation's amazing and unique fleet of nuclear natural gas assets in a way that help"
+    },
+    {
+      "start": 1060.29,
+      "end": 1067.33,
+      "text": "our customers and America grow while stabilizing and potentially reducing costs for everyday"
+    },
+    {
+      "start": 1067.33,
+      "end": 1072.61,
+      "text": "American families. With that, let me turn the call over to Shane to talk a little bit more"
+    },
+    {
+      "start": 1072.61,
+      "end": 1075.73,
+      "text": "about our financial performance in the first quarter. Shane?"
+    },
+    {
+      "start": 1076.93,
+      "end": 1082.05,
+      "text": "Thanks, Joe, and good morning, everyone. Beginning on slide 10. For the first quarter,"
+    },
+    {
+      "start": 1082.05,
+      "end": 1090.05,
+      "text": "we earned $4.49 per share of gap earnings and $2.74 per share of adjusted operating earnings."
+    },
+    {
+      "start": 1090.61,
+      "end": 1095.81,
+      "text": "This is $0.60 per share better than the first quarter of last year and consistent with our"
+    },
+    {
+      "start": 1095.81,
+      "end": 1101.33,
+      "text": "expectations. Higher earnings for the quarter can mostly be attributed to the EPS accretion"
+    },
+    {
+      "start": 1101.33,
+      "end": 1107.33,
+      "text": "from Calpine. As a reminder, our guidance included approximately $2 per share of accretion"
+    },
+    {
+      "start": 1107.33,
+      "end": 1113.33,
+      "text": "for Calpine on a full-year basis. In addition to incremental earnings from Calpine, results"
+    },
+    {
+      "start": 1113.33,
+      "end": 1118.77,
+      "text": "benefited from higher capacity prices in PJM and lower stock-based compensation expense."
+    },
+    {
+      "start": 1119.33,
+      "end": 1125.57,
+      "text": "These positives were partially offset by more planned nuclear refueling outage days,"
+    },
+    {
+      "start": 1125.57,
+      "end": 1130.37,
+      "text": "compared to the first quarter of last year, lower ZEC pricing across state programs,"
+    },
+    {
+      "start": 1130.37,
+      "end": 1135.89,
+      "text": "and higher cost-to-serve load associated with winter storm Fern. While the business performed"
+    },
+    {
+      "start": 1135.89,
+      "end": 1141.41,
+      "text": "well operationally through the storm, the extended nature of the event caused the grid operator to"
+    },
+    {
+      "start": 1141.41,
+      "end": 1147.89,
+      "text": "call on operating reserves to support system reliability. Those incremental ancillary charges"
+    },
+    {
+      "start": 1147.89,
+      "end": 1154.21,
+      "text": "resulted in higher costs to serve customer load. Looking to the full year 2026, we are affirming"
+    },
+    {
+      "start": 1154.21,
+      "end": 1161.01,
+      "text": "our adjusted operating earnings range of $11 to $12 per share that we provided on March 31st."
+    },
+    {
+      "start": 1162.77,
+      "end": 1169.41,
+      "text": "Moving to slide 11. Our nuclear performance was once again strong this quarter. We generated"
+    },
+    {
+      "start": 1169.41,
+      "end": 1174.85,
+      "text": "40 million megawatt hours of firm and emissions-free energy from our operated nuclear plants"
+    },
+    {
+      "start": 1174.85,
+      "end": 1181.65,
+      "text": "with a capacity factor of 92.3%. Our capacity factor included the aforementioned impact of"
+    },
+    {
+      "start": 1181.65,
+      "end": 1187.57,
+      "text": "more planned outage days than typical in the first quarter. Our combined cycle and cogeneration"
+    },
+    {
+      "start": 1187.57,
+      "end": 1194.77,
+      "text": "fleet generated 23 million megawatt hours with a 47.1% capacity factor. It's important to note"
+    },
+    {
+      "start": 1194.77,
+      "end": 1200.05,
+      "text": "that operational metrics differ across these asset types. The thermal fleet is subject to"
+    },
+    {
+      "start": 1200.05,
+      "end": 1206.93,
+      "text": "dispatch signals that vary by weather and system conditions. Operationally, the CCGT and cogeneration"
+    },
+    {
+      "start": 1206.93,
+      "end": 1214.37,
+      "text": "fleet had a forced outage factor of 5.1%, meaning our units delivered when called upon nearly 95%"
+    },
+    {
+      "start": 1214.37,
+      "end": 1220.29,
+      "text": "of the time. As large load customers, including data centers, come online, we believe our strong"
+    },
+    {
+      "start": 1220.29,
+      "end": 1225.33,
+      "text": "operations will be a differentiator in meeting that increased demand and higher utilization of"
+    },
+    {
+      "start": 1225.33,
+      "end": 1233.81,
+      "text": "existing assets will benefit customers over time. Turning to slide 12. Our commercial team continues"
+    },
+    {
+      "start": 1233.81,
+      "end": 1238.93,
+      "text": "to support our customers by delivering tailored energy solutions that address their evolving needs."
+    },
+    {
+      "start": 1239.89,
+      "end": 1244.85,
+      "text": "In our business and earnings outlook, we showed customer margins in our base earnings assumptions,"
+    },
+    {
+      "start": 1244.85,
+      "end": 1248.61,
+      "text": "those that we view as highly visible and predictable, that were higher than our previous"
+    },
+    {
+      "start": 1248.61,
+      "end": 1253.89,
+      "text": "disclosures for both the power and gas portfolios. This margin expansion has been driven by three"
+    },
+    {
+      "start": 1253.89,
+      "end": 1261.09,
+      "text": "factors. First, traditional C and I power margins have expanded. Second, the growing customer demand"
+    },
+    {
+      "start": 1261.09,
+      "end": 1266.93,
+      "text": "for carbon-free solutions we spoke to in our outlook adds incremental margin. And third,"
+    },
+    {
+      "start": 1266.93,
+      "end": 1272.61,
+      "text": "incorporating the Calpine retail portfolio further enhances our outlook, reflecting a higher mix of"
+    },
+    {
+      "start": 1272.61,
+      "end": 1278.93,
+      "text": "tailored products in attractive, high-value markets. The scale of our customer solutions"
+    },
+    {
+      "start": 1278.93,
+      "end": 1285.01,
+      "text": "platform has delivered durable value and growing earnings for over a decade. With the addition of"
+    },
+    {
+      "start": 1285.01,
+      "end": 1291.73,
+      "text": "Calpine's retail business, we now serve approximately 275 million megawatt hours of electricity"
+    },
+    {
+      "start": 1291.73,
+      "end": 1299.17,
+      "text": "and 800 BCF of natural gas annually to customers across 40 states. Importantly, most of that volume"
+    },
+    {
+      "start": 1299.17,
+      "end": 1305.41,
+      "text": "is through commercial and industrial customers, including over 80% of the Fortune 100. These are"
+    },
+    {
+      "start": 1305.41,
+      "end": 1310.69,
+      "text": "the customers most likely to recognize the value we bring as a strategic partner with the ability"
+    },
+    {
+      "start": 1310.69,
+      "end": 1315.81,
+      "text": "to tailor solutions to meet their needs, as they are the customers most likely to place a premium"
+    },
+    {
+      "start": 1315.81,
+      "end": 1323.73,
+      "text": "value on the firm clean megawatts produced by Constellation. On slide 13, in our business"
+    },
+    {
+      "start": 1323.73,
+      "end": 1331.01,
+      "text": "and earnings outlook, we outlined expected free cash flow before growth of $8.4 billion across 2026"
+    },
+    {
+      "start": 1331.01,
+      "end": 1336.53,
+      "text": "and 2027, and how we plan to deploy our cash flow within our established capital allocation"
+    },
+    {
+      "start": 1336.53,
+      "end": 1342.37,
+      "text": "framework over that two-year period. Today, I am focusing on our forecast for free cash flow"
+    },
+    {
+      "start": 1342.37,
+      "end": 1348.45,
+      "text": "before growth in 2028 and 2029 and providing transparency about how the optionality that"
+    },
+    {
+      "start": 1348.45,
+      "end": 1355.25,
+      "text": "we highlighted for our earnings also applies to free cash flow. I think given our track record"
+    },
+    {
+      "start": 1355.25,
+      "end": 1361.89,
+      "text": "of success in allocating capital, it's important we highlight projected free cash flow before growth"
+    },
+    {
+      "start": 1361.97,
+      "end": 1368.53,
+      "text": "that we expect will be available for a creative deployment. Over 2028 and 2029, we expect to"
+    },
+    {
+      "start": 1368.53,
+      "end": 1374.93,
+      "text": "generate between $11.5 and $13 billion of free cash flow before growth. Using the midpoint of"
+    },
+    {
+      "start": 1374.93,
+      "end": 1382.53,
+      "text": "that range, that represents approximately a 45% increase relative to the $8.4 billion we expect"
+    },
+    {
+      "start": 1382.53,
+      "end": 1389.41,
+      "text": "in 2026 and 2027. On the right side of the slide, we reflect the same opportunities we shared last"
+    },
+    {
+      "start": 1389.41,
+      "end": 1394.29,
+      "text": "month, now including what each lever could provide in growing free cash flow before growth"
+    },
+    {
+      "start": 1394.29,
+      "end": 1399.97,
+      "text": "on an annual basis started in 2029. These figures are illustrative and not intended to necessarily"
+    },
+    {
+      "start": 1399.97,
+      "end": 1404.77,
+      "text": "be additive, but they provide useful context for how the optionality we have highlighted"
+    },
+    {
+      "start": 1404.77,
+      "end": 1411.09,
+      "text": "will also drive incremental free cash flow. All of this upside, for both earnings and cash,"
+    },
+    {
+      "start": 1411.09,
+      "end": 1416.05,
+      "text": "sits on top of a highly visible and durable base with meaningful growth that exists today,"
+    },
+    {
+      "start": 1416.61,
+      "end": 1421.49,
+      "text": "reinforcing the strength of the core business and the optionality we have to create additional"
+    },
+    {
+      "start": 1421.49,
+      "end": 1428.45,
+      "text": "long-term value. Turning to slide 14, as Joe mentioned, we got to work right away deploying"
+    },
+    {
+      "start": 1428.45,
+      "end": 1435.41,
+      "text": "capital towards share buybacks under our increased authorization, utilizing $335 million to repurchase"
+    },
+    {
+      "start": 1435.41,
+      "end": 1442.29,
+      "text": "about 1.2 million shares, and we will continue to execute opportunistically. Our capital allocation"
+    },
+    {
+      "start": 1442.29,
+      "end": 1446.69,
+      "text": "framework remains consistent and disciplined. We are committed to maintaining our strong"
+    },
+    {
+      "start": 1446.69,
+      "end": 1451.17,
+      "text": "investment grade credit metrics, investing in growth opportunities across the portfolio"
+    },
+    {
+      "start": 1451.17,
+      "end": 1455.81,
+      "text": "that meet our double-digit unlevered return targets, maintaining and growing the dividend"
+    },
+    {
+      "start": 1455.81,
+      "end": 1462.69,
+      "text": "at 10% per year, and returning excess capital to our owners. Supported by strong and growing free"
+    },
+    {
+      "start": 1462.69,
+      "end": 1467.17,
+      "text": "cash flow, we will continue to apply this framework thoughtfully and intentionally."
+    },
+    {
+      "start": 1467.81,
+      "end": 1472.53,
+      "text": "With that, I'll turn it back to Joe. Thanks, Shane. Good job. So to close,"
+    },
+    {
+      "start": 1472.53,
+      "end": 1478.05,
+      "text": "we continue to work hard to deliver value for our owners and the communities in which we operate."
+    },
+    {
+      "start": 1478.85,
+      "end": 1484.37,
+      "text": "For nearly two years, we've navigated regulatory uncertainty alongside of our customers and other"
+    },
+    {
+      "start": 1484.37,
+      "end": 1490.85,
+      "text": "stakeholders as they seek to connect large load projects to the grid. And meaningful progress"
+    },
+    {
+      "start": 1490.85,
+      "end": 1496.85,
+      "text": "has been made. ERCOT's moved the ball forward, and now it's time for PJM to move the ball forward."
+    },
+    {
+      "start": 1497.09,
+      "end": 1504.53,
+      "text": "We see that once regulatory clarity exists, projects move forward. The light now is clearly"
+    },
+    {
+      "start": 1504.53,
+      "end": 1509.49,
+      "text": "visible at the end of the tunnel in PJM, and we'll continue to work constructively with"
+    },
+    {
+      "start": 1509.49,
+      "end": 1515.17,
+      "text": "policymakers and market regulators to ensure we arrive at a framework that makes sense for all"
+    },
+    {
+      "start": 1515.17,
+      "end": 1521.49,
+      "text": "stakeholders, while also helping to facilitate potential cost relief for American families."
+    },
+    {
+      "start": 1522.13,
+      "end": 1527.41,
+      "text": "Our customers are keen to get moving in PJM, and we're working with them to make that happen."
+    },
+    {
+      "start": 1528.05,
+      "end": 1534.85,
+      "text": "While we await final clarity, our focus remains firmly on execution. We'll continue to operate"
+    },
+    {
+      "start": 1534.85,
+      "end": 1541.49,
+      "text": "our assets at world-class levels and deepen our engagement with customers across our platform,"
+    },
+    {
+      "start": 1541.49,
+      "end": 1547.89,
+      "text": "including those in the data economy to secure durable, premium priced agreements for our clean,"
+    },
+    {
+      "start": 1547.89,
+      "end": 1552.61,
+      "text": "firm, and reliable generation. I want to thank you again for your time this morning,"
+    },
+    {
+      "start": 1552.61,
+      "end": 1560.66,
+      "text": "and we'll open it up to questions now. To ask a question, please press star one one on your"
+    },
+    {
+      "start": 1560.66,
+      "end": 1566.34,
+      "text": "telephone and wait for your name to be announced. To withdraw your question, please press star one"
+    },
+    {
+      "start": 1566.34,
+      "end": 1572.5,
+      "text": "one again. In the interest of time, we just let you please number yourself to one question"
+    },
+    {
+      "start": 1572.5,
+      "end": 1580.3,
+      "text": "and one follow-up. Please stand by while we compile the Q&A roster. Our first question"
+    },
+    {
+      "start": 1580.3,
+      "end": 1588.22,
+      "text": "comes from David Arcaro with Morgan Stanley. Your line is open. Good morning, David. Hey,"
+    },
+    {
+      "start": 1588.22,
+      "end": 1594.54,
+      "text": "thanks so much. Good morning. I was wondering if I could get your latest views on the on the power"
+    },
+    {
+      "start": 1594.54,
+      "end": 1601.9,
+      "text": "markets. Maybe Urquhart in particular, you know, just curious your interpretation and viewpoint"
+    },
+    {
+      "start": 1601.9,
+      "end": 1607.9,
+      "text": "here as to the weakness in the forwards, even despite some of the very strong, you know, data"
+    },
+    {
+      "start": 1607.9,
+      "end": 1612.06,
+      "text": "center activity in the pipeline that we're seeing there. What do you make of that and"
+    },
+    {
+      "start": 1612.94,
+      "end": 1618.22,
+      "text": "thoughts on the evolution of that market? David, I think the short answer, I'm going to turn this"
+    },
+    {
+      "start": 1618.22,
+      "end": 1623.98,
+      "text": "over to Andrew Novotny here for a moment, but in a moment, but I think the short answer on Urquhart"
+    },
+    {
+      "start": 1623.98,
+      "end": 1631.18,
+      "text": "is it's about timing. We've seen that market be all over the place in the last, call it 90, 120"
+    },
+    {
+      "start": 1631.18,
+      "end": 1637.18,
+      "text": "days in terms of pricing. And the real questions are, you know, how much load and when. While"
+    },
+    {
+      "start": 1637.18,
+      "end": 1642.22,
+      "text": "there's been a lot of talk about data center and other development activities in Urquhart,"
+    },
+    {
+      "start": 1642.22,
+      "end": 1647.02,
+      "text": "it's kind of important to remember that that load isn't yet on the system. It's getting built."
+    },
+    {
+      "start": 1647.66,
+      "end": 1653.98,
+      "text": "And so the timing of that is going to be one driver. And then there is, you know, I think,"
+    },
+    {
+      "start": 1653.98,
+      "end": 1661.58,
+      "text": "as you know, an incredibly wide range of forecasted additional potential growth in the Urquhart market"
+    },
+    {
+      "start": 1661.58,
+      "end": 1666.62,
+      "text": "when that comes in and how it's interconnected remain the questions. We think the we think"
+    },
+    {
+      "start": 1666.62,
+      "end": 1674.7,
+      "text": "Urquhart's undervalued and we don't think that the, you know, that the prices in the outer years"
+    },
+    {
+      "start": 1674.7,
+      "end": 1680.22,
+      "text": "in particular make a great deal of sense. But Andrew chime in, you know. Yeah, Joe, I agree"
+    },
+    {
+      "start": 1680.22,
+      "end": 1686.3,
+      "text": "with all that. Maybe just add some just to get specific. You know, when Joe says the market's"
+    },
+    {
+      "start": 1686.3,
+      "end": 1691.18,
+      "text": "undervalued, we're really focused on the 28, 29 and beyond period of time. That's really where"
+    },
+    {
+      "start": 1691.18,
+      "end": 1698.46,
+      "text": "the load growth can come. So, you know, there's been over 400,000 megs of large loads in the queue."
+    },
+    {
+      "start": 1699.18,
+      "end": 1705.1,
+      "text": "Obviously, we don't expect anything near that. But the Ford market beyond 29, you know, to us"
+    },
+    {
+      "start": 1705.1,
+      "end": 1709.66,
+      "text": "appears like something that's only expecting 10 to 15,000 megs. So if we see numbers like"
+    },
+    {
+      "start": 1709.66,
+      "end": 1714.46,
+      "text": "30,000 megs, we believe that the market will see upward pressure. In the meantime, in the short"
+    },
+    {
+      "start": 1714.46,
+      "end": 1722.19,
+      "text": "term, we're not surprised by the weakness. And we've been well hedged and protected against it."
+    },
+    {
+      "start": 1722.19,
+      "end": 1728.43,
+      "text": "Got it. Understood. That's helpful. And then maybe separately wondering if you might be able to"
+    },
+    {
+      "start": 1728.43,
+      "end": 1736.99,
+      "text": "just comment on the current level of state support in Pennsylvania, just a direction around"
+    },
+    {
+      "start": 1738.27,
+      "end": 1743.87,
+      "text": "favorability toward data center activity. You know, we saw the governor recently sending a letter"
+    },
+    {
+      "start": 1743.87,
+      "end": 1749.15,
+      "text": "to the regulated utilities in this in the state, wondering kind of what the posturing is. Maybe"
+    },
+    {
+      "start": 1749.15,
+      "end": 1754.91,
+      "text": "does that shift perspectives on how they see the wholesale market and general impression of,"
+    },
+    {
+      "start": 1754.91,
+      "end": 1761.31,
+      "text": "you know, support for data centers in Pennsylvania? Yeah, look, I, you know, even that letter, which"
+    },
+    {
+      "start": 1761.31,
+      "end": 1766.43,
+      "text": "which obviously pertained to regulated utilities and not entities like Constellation,"
+    },
+    {
+      "start": 1767.79,
+      "end": 1772.35,
+      "text": "referenced the importance of the competitive market. So I think, look, Pennsylvania is very"
+    },
+    {
+      "start": 1772.35,
+      "end": 1778.11,
+      "text": "supportive, has been very supportive of competitive market solutions. The governor was clearly"
+    },
+    {
+      "start": 1778.75,
+      "end": 1791.47,
+      "text": "one of the leaders in terms of the cost cap in an RPM and was likewise one of the leading voices"
+    },
+    {
+      "start": 1791.47,
+      "end": 1797.47,
+      "text": "in the large load, you know, bring your own generation kinds of discussions that we see now"
+    },
+    {
+      "start": 1798.11,
+      "end": 1805.39,
+      "text": "as part of this regulatory proceeding in PJM. But with the exception of those things, you know,"
+    },
+    {
+      "start": 1805.39,
+      "end": 1810.91,
+      "text": "continues to be very supportive under the right circumstances in data economy development and"
+    },
+    {
+      "start": 1810.91,
+      "end": 1817.55,
+      "text": "re-industrialization in Pennsylvania. The governor has spoken about the importance of the jobs and"
+    },
+    {
+      "start": 1817.55,
+      "end": 1823.71,
+      "text": "the economic development for Pennsylvania to be a leader in AI and other technologies under, you"
+    },
+    {
+      "start": 1823.71,
+      "end": 1829.71,
+      "text": "know, the right conditions. So, you know, we see it as continuing to be very constructive, David."
+    },
+    {
+      "start": 1832.13,
+      "end": 1840.14,
+      "text": "Great. Appreciate the color. Thank you. Thank you. Our next question comes from"
+    },
+    {
+      "start": 1840.7,
+      "end": 1852.02,
+      "text": "Steve Fleishman with Wolf Research. Your line is open. Hi, Steve. Hi. Good morning. So I guess"
+    },
+    {
+      "start": 1852.02,
+      "end": 1860.1,
+      "text": "first on, on crane, any updates on the timeline there and and just what you would be watching"
+    },
+    {
+      "start": 1860.1,
+      "end": 1865.86,
+      "text": "for to suggest that, you know, maybe it comes on sooner than the 2031 connection?"
+    },
+    {
+      "start": 1867.14,
+      "end": 1874.02,
+      "text": "Hey, Steve, it'll come on sooner. I mean, what we're talking about is getting full capacity credit"
+    },
+    {
+      "start": 1874.02,
+      "end": 1880.02,
+      "text": "for the assets. So I don't want anybody to be under the misconception that the plan won't"
+    },
+    {
+      "start": 1880.02,
+      "end": 1886.34,
+      "text": "start sooner. In terms of getting the full capacity credit right now, the ball is actually in"
+    },
+    {
+      "start": 1886.34,
+      "end": 1894.1,
+      "text": "FERC's court. We have filed, as you know, to transfer the CIRs from Eddystone to crane,"
+    },
+    {
+      "start": 1894.1,
+      "end": 1901.38,
+      "text": "which we think will facilitate a 27 capacity credit. We're also continuing to work every day"
+    },
+    {
+      "start": 1901.38,
+      "end": 1906.5,
+      "text": "with the utilities on speeding up the transmission interconnection process, you know, kind of"
+    },
+    {
+      "start": 1907.22,
+      "end": 1912.42,
+      "text": "normally is the case that they start off with a pretty long timeline and shorten that up."
+    },
+    {
+      "start": 1912.98,
+      "end": 1916.98,
+      "text": "And we're working with the utilities involved here to shorten up these projects"
+    },
+    {
+      "start": 1917.78,
+      "end": 1923.06,
+      "text": "so that we can get on sooner. So that is really the update. We'll know more when we hear back from"
+    },
+    {
+      "start": 1923.06,
+      "end": 1927.62,
+      "text": "FERC. David, do you have anything? I'll ask David Dardis if he's got anything more on that."
+    },
+    {
+      "start": 1927.62,
+      "end": 1932.82,
+      "text": "No, I just see we're hoping to get a response back from FERC in the June-July time frame."
+    },
+    {
+      "start": 1933.38,
+      "end": 1940.56,
+      "text": "You also saw that PJM acknowledged the importance of the position otherwise. So,"
+    },
+    {
+      "start": 1942.16,
+      "end": 1946.16,
+      "text": "you know, everything Joe said, you know, I just want to double down on it. Really,"
+    },
+    {
+      "start": 1946.72,
+      "end": 1966.32,
+      "text": "this is about and does not need the DOE order, but we think there was a clear path for FERC to"
+    },
+    {
+      "start": 1966.32,
+      "end": 1975.79,
+      "text": "approve the CIR transfer. Great. And then other question just, it was good to see the buybacks."
+    },
+    {
+      "start": 1976.91,
+      "end": 1984.59,
+      "text": "We do have this first lockup coming up for the Calpine holders at the end of June. Any kind of"
+    },
+    {
+      "start": 1984.59,
+      "end": 1991.55,
+      "text": "sense on where their heads are at and should we read in anything into the fact you were willing"
+    },
+    {
+      "start": 1991.55,
+      "end": 1998.03,
+      "text": "to buy stock kind of before that kind of came up? Look, I don't think you should read anything into"
+    },
+    {
+      "start": 1998.03,
+      "end": 2003.63,
+      "text": "the fact that we bought early. I think I covered that in the prepared remarks. We thought"
+    },
+    {
+      "start": 2004.35,
+      "end": 2009.71,
+      "text": "that was a very compelling price to be buying back our shares. We're going to be pretty careful"
+    },
+    {
+      "start": 2009.71,
+      "end": 2016.75,
+      "text": "about kind of signaling, you know, how different investors may be acting in this space, but"
+    },
+    {
+      "start": 2016.75,
+      "end": 2022.43,
+      "text": "shame once you provide whatever color you can. Yeah, just to remind folks of the context here"
+    },
+    {
+      "start": 2022.43,
+      "end": 2029.07,
+      "text": "in the consideration for Calpine, we issued 50 million consolation shares to the owners,"
+    },
+    {
+      "start": 2029.63,
+      "end": 2038.11,
+      "text": "25 million are the lockup expires on June 30th of 2026 and the remaining 25 million are June 30th"
+    },
+    {
+      "start": 2038.11,
+      "end": 2044.51,
+      "text": "of 2027. And so, you know, when we contemplated the $5 billion authorization, we certainly wanted"
+    },
+    {
+      "start": 2044.51,
+      "end": 2050.99,
+      "text": "to have flexibility to the extent there could be a transaction of note around the lockup,"
+    },
+    {
+      "start": 2050.99,
+      "end": 2056.35,
+      "text": "but to Joe's point, it's really conditional upon what the current owners of the shares want to do."
+    },
+    {
+      "start": 2056.35,
+      "end": 2062.11,
+      "text": "And so, just in the nature of being prudent, won't speak on their behalf around their intent,"
+    },
+    {
+      "start": 2062.11,
+      "end": 2066.03,
+      "text": "but we will have the flexibility if there's something that makes sense for both sides."
+    },
+    {
+      "start": 2068.42,
+      "end": 2078.08,
+      "text": "Makes sense. Thank you very much. Thank you, our next question comes from"
+    },
+    {
+      "start": 2078.16,
+      "end": 2081.76,
+      "text": "Sharpe Parissa with Wells Fargo. Your line is open."
+    },
+    {
+      "start": 2082.8,
+      "end": 2089.68,
+      "text": "Morning, Sharpe. Morning, Joe. Morning, guys. Joe, maybe just starting on PJM, you noted that some"
+    },
+    {
+      "start": 2089.68,
+      "end": 2095.36,
+      "text": "hyperscaler conversations stopped, some continued. Peers have been a little bit more open to working"
+    },
+    {
+      "start": 2095.36,
+      "end": 2103.36,
+      "text": "on deals in parallel with the FERC and PJM process. Is anything preventing having a bilateral deal in"
+    },
+    {
+      "start": 2103.36,
+      "end": 2110.72,
+      "text": "hand before the RBP? I mean, do you need to match new capacity plus existing capacity"
+    },
+    {
+      "start": 2110.72,
+      "end": 2119.09,
+      "text": "to get a contract? No. First of all, there's two questions there, Sharpe. Nothing is stopping"
+    },
+    {
+      "start": 2120.21,
+      "end": 2126.53,
+      "text": "us from moving forward on a deal now. And I think as I indicated during the last update,"
+    },
+    {
+      "start": 2126.53,
+      "end": 2132.21,
+      "text": "we see clients that are interested in doing that. And they figure they'll manage whatever comes out"
+    },
+    {
+      "start": 2132.21,
+      "end": 2139.25,
+      "text": "of the regulatory process with the tools that they have or other purchases. For other clients,"
+    },
+    {
+      "start": 2139.25,
+      "end": 2144.61,
+      "text": "they kind of want to see what this looks like, what the cost implications are, what our solutions"
+    },
+    {
+      "start": 2144.61,
+      "end": 2149.01,
+      "text": "look like, how our solutions pair up with other things they're looking at in the market"
+    },
+    {
+      "start": 2149.81,
+      "end": 2157.57,
+      "text": "before they're going to move forward. So I don't think this is a full stop. I do think it is a"
+    },
+    {
+      "start": 2157.57,
+      "end": 2163.65,
+      "text": "pause to see what this looks like and then a quick resumption, hopefully, of those conversations."
+    },
+    {
+      "start": 2165.33,
+      "end": 2170.13,
+      "text": "Got it. Okay. Perfect. And then just maybe, Joe, follow up. There's obviously a substantial"
+    },
+    {
+      "start": 2170.13,
+      "end": 2175.81,
+      "text": "amount of cash to allocate, $5 billion buyback authorized, $8.4 billion of free cash through"
+    },
+    {
+      "start": 2175.81,
+      "end": 2181.81,
+      "text": "27 and even higher run rate thereafter. How does that kind of tie into the 50 cents of upside"
+    },
+    {
+      "start": 2181.81,
+      "end": 2186.85,
+      "text": "sensitivity? And do you anticipate incremental investment opportunity to be more creative versus"
+    },
+    {
+      "start": 2186.85,
+      "end": 2192.21,
+      "text": "the 50 cents? Are the alternatives on asset acquisitions limited at this point? Just given"
+    },
+    {
+      "start": 2192.21,
+      "end": 2197.57,
+      "text": "market power, just an overall capital allocation update would be great. Thanks. Sure. I'm going to"
+    },
+    {
+      "start": 2197.57,
+      "end": 2204.05,
+      "text": "turn it over to Shane. Look, I don't know that I don't see it as a competition given our free cash"
+    },
+    {
+      "start": 2204.05,
+      "end": 2211.65,
+      "text": "flow capability at the company. We're going to have organic investment opportunities over 10% IRRs."
+    },
+    {
+      "start": 2212.61,
+      "end": 2218.05,
+      "text": "We've talked about a number of those things, like the up rates on prior calls. Those things"
+    },
+    {
+      "start": 2218.05,
+      "end": 2223.65,
+      "text": "are going to move forward. But we're also going to be in a position where if our stock is trading"
+    },
+    {
+      "start": 2223.65,
+      "end": 2230.93,
+      "text": "at a level that we think is inconsistent from a value standpoint with the future that we think"
+    },
+    {
+      "start": 2230.93,
+      "end": 2235.41,
+      "text": "we're going to be able to accomplish with all the different levers that are in front of us and"
+    },
+    {
+      "start": 2235.41,
+      "end": 2240.05,
+      "text": "capabilities, then we're not afraid to buy back our shares. But I think at the end of the day,"
+    },
+    {
+      "start": 2240.05,
+      "end": 2244.93,
+      "text": "it's going to be a mixture of all those things. Shane? Yeah, Joe, you said it well. I think,"
+    },
+    {
+      "start": 2244.93,
+      "end": 2249.17,
+      "text": "Shar, what I would say about the 50 cents is where we wanted to ensure that there was"
+    },
+    {
+      "start": 2249.17,
+      "end": 2254.53,
+      "text": "a range or some flexibility is the nature that those investments could take. To the extent that"
+    },
+    {
+      "start": 2254.53,
+      "end": 2259.25,
+      "text": "you're bringing development online, it obviously has a longer period of time until it becomes"
+    },
+    {
+      "start": 2259.25,
+      "end": 2264.85,
+      "text": "accretive. Whereas if it's M&A, obviously in the case of Calpine, of being of scale and you're"
+    },
+    {
+      "start": 2264.85,
+      "end": 2271.49,
+      "text": "adding $2 per share of EPS a year later. So I think we just wanted to be thoughtful and measured"
+    },
+    {
+      "start": 2271.49,
+      "end": 2277.25,
+      "text": "and help people think through what the range of outcomes would be as you deploy capital at the"
+    },
+    {
+      "start": 2277.25,
+      "end": 2283.01,
+      "text": "right return profile. And that could take a number of different shapes and sizes. But the 50 cents"
+    },
+    {
+      "start": 2283.01,
+      "end": 2287.57,
+      "text": "was intended to be illustrative based on assumptions you could make on that capital allocation."
+    },
+    {
+      "start": 2288.85,
+      "end": 2291.73,
+      "text": "Got it. Super helpful caller, guys. Thanks so much. Appreciate it."
+    },
+    {
+      "start": 2295.84,
+      "end": 2302.56,
+      "text": "Thank you. Our next question comes from Nicholas Campanella with Barclays. Your line is open."
+    },
+    {
+      "start": 2304.75,
+      "end": 2309.55,
+      "text": "Hey, good morning. Thanks for taking the questions and all the updates. I wanted to ask,"
+    },
+    {
+      "start": 2309.55,
+      "end": 2315.79,
+      "text": "I appreciate the free cash flow clarity out to 29. I mean, could you maybe just talk a little bit"
+    },
+    {
+      "start": 2315.79,
+      "end": 2321.39,
+      "text": "about the cash conversion between EBITDA and free cash through 29? And as you get some of these"
+    },
+    {
+      "start": 2322.35,
+      "end": 2326.03,
+      "text": "projects up and running, like Crane is going to ramp and a few other things in the back end"
+    },
+    {
+      "start": 2326.03,
+      "end": 2334.16,
+      "text": "of the plan, how do you kind of think about cash conversion? I mean, it's not going to change"
+    },
+    {
+      "start": 2334.16,
+      "end": 2339.28,
+      "text": "materially from what you've seen historically with regard to the nature that most of the cash"
+    },
+    {
+      "start": 2339.28,
+      "end": 2345.2,
+      "text": "contribution is from the nuclear fleet. So if you think about the appropriate assumptions around"
+    },
+    {
+      "start": 2345.2,
+      "end": 2352.72,
+      "text": "cash tax, maintenance capex, how you're accounting for fuel, the conversion won't look significantly"
+    },
+    {
+      "start": 2352.88,
+      "end": 2357.44,
+      "text": "different than historical. What I would highlight is to the extent we're able to"
+    },
+    {
+      "start": 2357.44,
+      "end": 2363.12,
+      "text": "execute those levers identified in that conversion between the EPS and free cash flow,"
+    },
+    {
+      "start": 2363.12,
+      "end": 2367.52,
+      "text": "a lot of that you'll see drops to the bottom line. Those aren't requiring incremental"
+    },
+    {
+      "start": 2367.52,
+      "end": 2373.44,
+      "text": "investments. And so a lot of those are really just a tax adjustment from the earnings to cash flow."
+    },
+    {
+      "start": 2375.6,
+      "end": 2380.72,
+      "text": "Okay. No, thanks for that. And then I wanted to ask just on the new capacity resources,"
+    },
+    {
+      "start": 2380.72,
+      "end": 2387.76,
+      "text": "you're highlighting about 5 gigawatts into the interconnect queue between upgrades and natural"
+    },
+    {
+      "start": 2387.76,
+      "end": 2392.16,
+      "text": "gas and battery storage. And just how does that kind of compare to where you were in the March"
+    },
+    {
+      "start": 2392.16,
+      "end": 2397.28,
+      "text": "31st update? I know you spoke about some idle turbines then, and are you willing to kind of"
+    },
+    {
+      "start": 2397.28,
+      "end": 2402.0,
+      "text": "commit to more new build in this plan here? And how should we kind of think about the threshold"
+    },
+    {
+      "start": 2402.0,
+      "end": 2409.6,
+      "text": "for that? Thanks. Look, I think it probably is a good bit more just because we're adding in some"
+    },
+    {
+      "start": 2409.6,
+      "end": 2418.0,
+      "text": "of the calpine capability. But at the end of the day, in terms of how we're going to utilize it"
+    },
+    {
+      "start": 2418.0,
+      "end": 2423.28,
+      "text": "or what's going to move forward, I think we're also waiting to see a little bit more from PJM"
+    },
+    {
+      "start": 2423.28,
+      "end": 2430.4,
+      "text": "in terms of what projects will qualify and also where they are in the queue process."
+    },
+    {
+      "start": 2431.36,
+      "end": 2439.04,
+      "text": "But I don't know that at this point we're in a position to commit anything until we get a little"
+    },
+    {
+      "start": 2439.04,
+      "end": 2447.04,
+      "text": "bit more detail from PJM on the backstop proposal and obviously get further along on contracts that"
+    },
+    {
+      "start": 2447.04,
+      "end": 2452.56,
+      "text": "might call for some of our resources as part of the bilateral agreements we enter into."
+    },
+    {
+      "start": 2454.24,
+      "end": 2465.06,
+      "text": "Thanks for the thoughts. Thank you. Our next question comes from Julian DeMullen Smith with"
+    },
+    {
+      "start": 2465.06,
+      "end": 2471.22,
+      "text": "Jefferies. Your line is open. Hi, Julian. Hey, good morning, team. Hey, thanks for the time."
+    },
+    {
+      "start": 2471.22,
+      "end": 2475.06,
+      "text": "Appreciate it, Joe, team. Just maybe to follow up a little bit about the conversation we were"
+    },
+    {
+      "start": 2475.06,
+      "end": 2481.06,
+      "text": "having about the cadence of things, how do you think about Calvert here versus Limerick or versus"
+    },
+    {
+      "start": 2481.06,
+      "end": 2485.22,
+      "text": "any other permutation? Is there sort of given the evolution of the regulatory dialogues you've had,"
+    },
+    {
+      "start": 2485.22,
+      "end": 2489.38,
+      "text": "is there a specific direction? Obviously, we heard more about Calvert in recent weeks from you all"
+    },
+    {
+      "start": 2489.38,
+      "end": 2493.38,
+      "text": "at the analyst day. How would you just set expectations around that? And then to go back"
+    },
+    {
+      "start": 2493.38,
+      "end": 2497.3,
+      "text": "a little bit to this conversation, is there like a specific ratio that you guys think about,"
+    },
+    {
+      "start": 2497.54,
+      "end": 2502.5,
+      "text": "in terms of additionality, or how does the curtailment demand response piece, you know,"
+    },
+    {
+      "start": 2502.5,
+      "end": 2506.02,
+      "text": "you guys just did this net metering thing in Texas, for instance, but how does that play out"
+    },
+    {
+      "start": 2506.02,
+      "end": 2510.66,
+      "text": "into kind of firming up a specific process to be able to move forward on this? Yeah, Julian,"
+    },
+    {
+      "start": 2510.66,
+      "end": 2515.46,
+      "text": "I'm going to give you a bit of a non-answer on the first one on who's going to get through the"
+    },
+    {
+      "start": 2515.46,
+      "end": 2523.86,
+      "text": "finish line first as between any different site. We mentioned Calvert because as folks probably"
+    },
+    {
+      "start": 2523.86,
+      "end": 2529.46,
+      "text": "undoubtedly saw later on during the course of the day when we did the business outlook, there"
+    },
+    {
+      "start": 2529.46,
+      "end": 2534.98,
+      "text": "was a newspaper article on it. And so we wanted to share some thoughts before the newspaper article"
+    },
+    {
+      "start": 2534.98,
+      "end": 2542.02,
+      "text": "came out. But otherwise, we're going to let our customers announce transactions when they're"
+    },
+    {
+      "start": 2542.02,
+      "end": 2548.1,
+      "text": "ready to announce transactions as opposed to us doing it here. In terms of how folks are going"
+    },
+    {
+      "start": 2548.1,
+      "end": 2555.06,
+      "text": "to manage it, Julian, and what the ratio of new to existing might be, I think we're going to see"
+    },
+    {
+      "start": 2555.06,
+      "end": 2562.9,
+      "text": "a mix is my personal opinion. We talked a little bit about the Texas deals during our prepared"
+    },
+    {
+      "start": 2562.9,
+      "end": 2569.54,
+      "text": "remarks today. And I think that's a pretty good indicator of how wide this range could be from"
+    },
+    {
+      "start": 2569.54,
+      "end": 2575.94,
+      "text": "folks who are completely comfortable with using backup generation or other curtailment tools that"
+    },
+    {
+      "start": 2575.94,
+      "end": 2582.9,
+      "text": "they might have to manage. Keep in mind that these are sophisticated buyers that in many instances"
+    },
+    {
+      "start": 2582.9,
+      "end": 2588.58,
+      "text": "are already out there buying things like battery storage and solar and other things. So sometimes"
+    },
+    {
+      "start": 2588.58,
+      "end": 2596.66,
+      "text": "they're coming into these transactions with some existing contracts. And you remember when Jim"
+    },
+    {
+      "start": 2596.66,
+      "end": 2602.9,
+      "text": "McHugh was talking a couple of years ago about our CFE, our original CFE agreements, the first one"
+    },
+    {
+      "start": 2602.9,
+      "end": 2608.5,
+      "text": "with Microsoft, in fact, is exactly that situation where somebody came in through the door and said,"
+    },
+    {
+      "start": 2608.5,
+      "end": 2614.82,
+      "text": "look, we've got this big portfolio. We want you to manage it and then set it up so that we have"
+    },
+    {
+      "start": 2615.46,
+      "end": 2622.18,
+      "text": "really around the clock 24 seven environmental attributes. So we have clients that'll walk in"
+    },
+    {
+      "start": 2622.18,
+      "end": 2626.82,
+      "text": "with that capability, I think all the way to clients that are going to want things like demand"
+    },
+    {
+      "start": 2626.82,
+      "end": 2633.14,
+      "text": "response and backup generation. But the mix is going to be interesting because I think it's going"
+    },
+    {
+      "start": 2633.14,
+      "end": 2638.26,
+      "text": "to be different for different customers in terms of their ability to handle curtailment"
+    },
+    {
+      "start": 2638.98,
+      "end": 2644.34,
+      "text": "and their willingness to handle curtailment. I'll make another point. And I think the data"
+    },
+    {
+      "start": 2644.34,
+      "end": 2652.18,
+      "text": "centers themselves are going to increasingly be able to manage some of the curtailment risk by"
+    },
+    {
+      "start": 2652.18,
+      "end": 2660.18,
+      "text": "moving data economy jobs around. So as you think about the US as data centers proliferate"
+    },
+    {
+      "start": 2660.18,
+      "end": 2667.22,
+      "text": "in different regions, I think it's going to give them the ability to identify jobs that don't"
+    },
+    {
+      "start": 2667.22,
+      "end": 2673.7,
+      "text": "either have to happen at peak hours of energy consumption or to be shipped away to other data"
+    },
+    {
+      "start": 2673.7,
+      "end": 2680.42,
+      "text": "centers in different regions of the country that might not be experiencing a reliability issue"
+    },
+    {
+      "start": 2680.5,
+      "end": 2685.46,
+      "text": "at that moment in time. So I just think the landscape is changing. And I think we're going"
+    },
+    {
+      "start": 2685.46,
+      "end": 2692.18,
+      "text": "to see a mixture of solution sets that is going to be really broad, all the way from people being"
+    },
+    {
+      "start": 2692.18,
+      "end": 2697.62,
+      "text": "able to manage curtailment by shifting jobs and doing that sort of thing, depending on that data"
+    },
+    {
+      "start": 2697.62,
+      "end": 2703.7,
+      "text": "center, all the way to people who are going to need backup generation for every single megawatt"
+    },
+    {
+      "start": 2703.7,
+      "end": 2709.62,
+      "text": "of the data center in terms of peaking capacity. And so I just think any attempt to kind of"
+    },
+    {
+      "start": 2709.62,
+      "end": 2715.62,
+      "text": "generically say this is the ratio is kind of a fool's errand at this point based on what we know"
+    },
+    {
+      "start": 2715.62,
+      "end": 2721.3,
+      "text": "of the market. Yeah, I totally hear you. I respect that. And just as a quick follow-up,"
+    },
+    {
+      "start": 2721.3,
+      "end": 2726.1,
+      "text": "you talk about clarity a lot in the prepared remarks and otherwise here. Is there a specific"
+    },
+    {
+      "start": 2726.1,
+      "end": 2730.58,
+      "text": "threshold docket you're looking for to really unlock things? At the same time, I heard you in"
+    },
+    {
+      "start": 2730.58,
+      "end": 2735.7,
+      "text": "the Q&A comments saying, look, other customers are working for it on this anyway. Is there a moment"
+    },
+    {
+      "start": 2735.7,
+      "end": 2739.62,
+      "text": "that you think that you get this docket resolved and that could have unleashed some of this? Or"
+    },
+    {
+      "start": 2739.62,
+      "end": 2744.26,
+      "text": "again, as you suggested earlier, some of them and some may or may not be waiting for said deadlines?"
+    },
+    {
+      "start": 2744.9,
+      "end": 2751.14,
+      "text": "Yeah, again, I don't want to speak for all of them. I think just the mirror filing will be clarity"
+    },
+    {
+      "start": 2751.14,
+      "end": 2757.46,
+      "text": "for some because they'll anticipate given where the FERC has been on. And I think the FERC clearly"
+    },
+    {
+      "start": 2757.46,
+      "end": 2764.98,
+      "text": "has an appetite for moving quickly here. So I think the details of the filing themselves have"
+    },
+    {
+      "start": 2764.98,
+      "end": 2772.1,
+      "text": "been helpful already. But I don't know. At some point in time, some of these guys may wait"
+    },
+    {
+      "start": 2772.1,
+      "end": 2779.86,
+      "text": "all the way to the end of the backstop proceeding. If they have a co-location idea that they're"
+    },
+    {
+      "start": 2779.86,
+      "end": 2786.5,
+      "text": "working on, it might need to wait for the co-location filings and for FERC's final order"
+    },
+    {
+      "start": 2786.5,
+      "end": 2792.58,
+      "text": "on that. The important thing is we're seeing speed here that is really, I've been doing this"
+    },
+    {
+      "start": 2792.58,
+      "end": 2799.06,
+      "text": "20 plus years with PJM. And I'm seeing this stuff move at a speed that is really unprecedented."
+    },
+    {
+      "start": 2799.06,
+      "end": 2806.58,
+      "text": "The only other time I saw anything move with this kind of speed was when we had some of the"
+    },
+    {
+      "start": 2806.58,
+      "end": 2813.62,
+      "text": "RPM changes when PJM first adopted the internal rules that allowed them to move forward in an"
+    },
+    {
+      "start": 2813.62,
+      "end": 2821.06,
+      "text": "expedited way without a stakeholder vote. So we're seeing a commission that anxiously wants to"
+    },
+    {
+      "start": 2821.06,
+      "end": 2826.1,
+      "text": "solve this. They understand the importance of getting this right, but also the importance of"
+    },
+    {
+      "start": 2826.1,
+      "end": 2832.66,
+      "text": "the data economy to America. And that's very, very clear. The administration is clearly focused"
+    },
+    {
+      "start": 2832.66,
+      "end": 2839.3,
+      "text": "on this. And we're seeing PJM act very quickly here. I would like to see the co-location"
+    },
+    {
+      "start": 2839.3,
+      "end": 2846.34,
+      "text": "implementation date, which PJM had indicated was 2029. I'd like to see that moved up."
+    },
+    {
+      "start": 2847.3,
+      "end": 2852.02,
+      "text": "And I think on that we're aligned with the signals that are coming out of FERC,"
+    },
+    {
+      "start": 2852.02,
+      "end": 2857.14,
+      "text": "but stuff is moving very quickly and I expect we'll have clarity on all these issues by the"
+    },
+    {
+      "start": 2857.14,
+      "end": 2870.21,
+      "text": "end of the year. Yeah, absolutely. Appreciate it. Good luck. Yeah, thanks. Thank you. Our next"
+    },
+    {
+      "start": 2870.21,
+      "end": 2882.24,
+      "text": "question comes from Jeremy Tonette with JP Morgan Securities. Your line is open. Hi, thanks. Thanks"
+    },
+    {
+      "start": 2882.32,
+      "end": 2885.92,
+      "text": "for all the details today. I was wondering if I could ask a question, a bit of a high level"
+    },
+    {
+      "start": 2885.92,
+      "end": 2890.56,
+      "text": "to start off here. You know, looking at the white paper last week out of PJM powering reliability"
+    },
+    {
+      "start": 2890.56,
+      "end": 2897.2,
+      "text": "through market design. And wondering if you were able to provide any initial reactions to paths A,"
+    },
+    {
+      "start": 2897.2,
+      "end": 2904.0,
+      "text": "B, and C. Just any high level thoughts would be welcome. Let me turn it over to David Dardis"
+    },
+    {
+      "start": 2904.0,
+      "end": 2910.56,
+      "text": "for his thoughts on that. Yeah, hey Jeremy, thanks. So, you know, we certainly appreciate PJM"
+    },
+    {
+      "start": 2910.72,
+      "end": 2916.96,
+      "text": "issuing the white paper and acknowledging the need to revisit its market rules and frankly,"
+    },
+    {
+      "start": 2916.96,
+      "end": 2923.44,
+      "text": "its commitment to competitive markets for ensuring reliability. You know, a lot of what's"
+    },
+    {
+      "start": 2923.44,
+      "end": 2927.84,
+      "text": "in that white paper are things we've talked to PJM for a number of years about, including in"
+    },
+    {
+      "start": 2927.84,
+      "end": 2934.0,
+      "text": "particular optimizing the energy and reserve markets together and as much reliance as it's had"
+    },
+    {
+      "start": 2934.0,
+      "end": 2943.07,
+      "text": "on capacity markets for a number of years. So we think that's very positive. In addition,"
+    },
+    {
+      "start": 2943.79,
+      "end": 2948.35,
+      "text": "we've been very supportive. We've been talking for at least two years to anyone who will listen"
+    },
+    {
+      "start": 2948.35,
+      "end": 2953.79,
+      "text": "to us about bilaterally contracting and firming up their supply given what we saw on the horizon"
+    },
+    {
+      "start": 2953.79,
+      "end": 2959.71,
+      "text": "around rising energy prices. And so we think that's also quite positive. As it relates to option B"
+    },
+    {
+      "start": 2959.71,
+      "end": 2964.27,
+      "text": "and the differential reliability, I think that one needs some more, we need some more time to"
+    },
+    {
+      "start": 2964.27,
+      "end": 2969.07,
+      "text": "digest that and think about what that could potentially mean. We certainly agree with the"
+    },
+    {
+      "start": 2969.07,
+      "end": 2973.79,
+      "text": "flexibility of load being a very important solution going forward in the marketplace."
+    },
+    {
+      "start": 2974.35,
+      "end": 2978.91,
+      "text": "But, you know, as some sort of a permanently, you know, put in the rules,"
+    },
+    {
+      "start": 2979.79,
+      "end": 2987.95,
+      "text": "discriminatory treatment of different loads around their reliability, there's some real legal"
+    },
+    {
+      "start": 2987.95,
+      "end": 2999.76,
+      "text": "questions embedded in that one and that's going to require some more consideration. And the reserve"
+    },
+    {
+      "start": 2999.76,
+      "end": 3005.92,
+      "text": "market and co-optimizing that, that we see is quite positive. And Jeremy, that's something we've"
+    },
+    {
+      "start": 3006.0,
+      "end": 3012.64,
+      "text": "urged them to do for a long, long time. And frankly, something that PJM has put on the"
+    },
+    {
+      "start": 3012.64,
+      "end": 3018.32,
+      "text": "back burner to its detriment. Look, there are two things that got us into the pickle we're in."
+    },
+    {
+      "start": 3018.32,
+      "end": 3025.84,
+      "text": "One is capacity prices were ridiculously low because we weren't considering the actual"
+    },
+    {
+      "start": 3025.84,
+      "end": 3034.48,
+      "text": "capacity capabilities of the resources adequately. That has changed. And we saw a pop-up in capacity"
+    },
+    {
+      "start": 3034.48,
+      "end": 3038.16,
+      "text": "prices that should have been managed better all along. The other thing that should have been"
+    },
+    {
+      "start": 3038.16,
+      "end": 3043.6,
+      "text": "managed better all along is that more of the revenue should have been recognized in the energy"
+    },
+    {
+      "start": 3043.6,
+      "end": 3049.92,
+      "text": "market, putting less strain on the capacity market, which, you know, as we've learned could"
+    },
+    {
+      "start": 3049.92,
+      "end": 3057.76,
+      "text": "be punitive to residential customers. So it's good to see in this white paper that these issues"
+    },
+    {
+      "start": 3057.76,
+      "end": 3064.16,
+      "text": "are back in front of PJM. That's where they need to be. Competitive market solutions are going to"
+    },
+    {
+      "start": 3064.16,
+      "end": 3072.4,
+      "text": "be the right answer. These markets need to enable that quickly. And so, you know, hopefully PJM"
+    },
+    {
+      "start": 3072.4,
+      "end": 3078.56,
+      "text": "actually follows up with real action on the white paper, but they're going to be pressed. I mean,"
+    },
+    {
+      "start": 3078.56,
+      "end": 3084.32,
+      "text": "I think this commission is very hot to trot on getting clarity and getting this stuff settled"
+    },
+    {
+      "start": 3084.32,
+      "end": 3087.76,
+      "text": "very quickly. And so PJM's got to keep moving this issue forward."
+    },
+    {
+      "start": 3089.87,
+      "end": 3093.71,
+      "text": "Got it. That's very helpful. Pricing scarcity is difficult. That's it for me. Thanks."
+    },
+    {
+      "start": 3093.71,
+      "end": 3095.63,
+      "text": "It is."
+    },
+    {
+      "start": 3100.66,
+      "end": 3108.5,
+      "text": "Thank you. Our final question comes from Nick Amakuchi with Evercore ISI. Your line is open."
+    },
+    {
+      "start": 3110.34,
+      "end": 3118.34,
+      "text": "Hey, guys. Thanks. Good morning. How are you guys? Just wanted to get a sense just on the"
+    },
+    {
+      "start": 3118.34,
+      "end": 3125.46,
+      "text": "near-term kind of nuclear upgrades. How near-term are those? And when are we kind of – well, what's"
+    },
+    {
+      "start": 3125.54,
+      "end": 3130.66,
+      "text": "kind of baked into the 2029 assumptions?"
+    },
+    {
+      "start": 3132.26,
+      "end": 3138.66,
+      "text": "All right. So the ones that are in plan are Byron and Bravewood as a general rule."
+    },
+    {
+      "start": 3139.7,
+      "end": 3142.34,
+      "text": "And is there anything else in the plan right now?"
+    },
+    {
+      "start": 3143.78,
+      "end": 3148.74,
+      "text": "None of the upgrades – the capital is out the door, but nothing is showing up as EPS"
+    },
+    {
+      "start": 3148.74,
+      "end": 3153.7,
+      "text": "secretion in 2029. 2030 is the earliest that they'll add to EPS."
+    },
+    {
+      "start": 3155.94,
+      "end": 3159.86,
+      "text": "Except for Byron and Bravewood, the turbines that are better in plan."
+    },
+    {
+      "start": 3159.86,
+      "end": 3167.23,
+      "text": "That's perfect. And then just giving kind of the strong results in the first quarter,"
+    },
+    {
+      "start": 3167.23,
+      "end": 3171.79,
+      "text": "right? You guys have mentioned they were relatively in line with your expectations,"
+    },
+    {
+      "start": 3171.79,
+      "end": 3177.63,
+      "text": "but historically we've seen kind of the biggest question mark around the first quarter. So just"
+    },
+    {
+      "start": 3177.63,
+      "end": 3184.27,
+      "text": "wanted to get a sense, I guess, where – what would you guys need to see kind of going forward"
+    },
+    {
+      "start": 3184.27,
+      "end": 3188.75,
+      "text": "to get kind of more confidence in the upper half of the range? And understanding, you know,"
+    },
+    {
+      "start": 3188.75,
+      "end": 3195.47,
+      "text": "you just spoke a little over a month ago. Oh, look, at least another quarter. We – when"
+    },
+    {
+      "start": 3195.47,
+      "end": 3199.55,
+      "text": "you think about the timing of our business update call, we were well into the first quarter,"
+    },
+    {
+      "start": 3199.55,
+      "end": 3204.27,
+      "text": "so we had a pretty good sense of how the quarter was going to come out when we set guidance initially."
+    },
+    {
+      "start": 3206.91,
+      "end": 3214.61,
+      "text": "Great. Well, thanks, guys. All right. Operator,"
+    },
+    {
+      "start": 3214.61,
+      "end": 3217.73,
+      "text": "are there any additional calls or questions? Excuse me."
+    },
+    {
+      "start": 3217.73,
+      "end": 3223.49,
+      "text": "Thank you. I'm showing no further questions at this time. This does conclude the question"
+    },
+    {
+      "start": 3223.49,
+      "end": 3228.37,
+      "text": "and answer session. I would now like to turn it back to Joe Dominguez for closing remarks."
+    },
+    {
+      "start": 3229.25,
+      "end": 3233.89,
+      "text": "Well, just thanks again, everybody, for your interest in Constellation. We had a good first"
+    },
+    {
+      "start": 3233.89,
+      "end": 3239.09,
+      "text": "quarter. Thanks to our folks. We'll continue to strive to execute through the balance of 26,"
+    },
+    {
+      "start": 3239.09,
+      "end": 3243.09,
+      "text": "and we'll talk again in about 90 days. Operator, we'll end the call."
+    },
+    {
+      "start": 3245.15,
+      "end": 3250.91,
+      "text": "Ladies and gentlemen, thank you for participating on today's call."
+    },
+    {
+      "start": 3250.91,
+      "end": 3255.87,
+      "text": "This concludes today's program. You may disconnect. Everyone, have a great day."
+    }
+  ],
+  "duration": 3256.0645625
+}
