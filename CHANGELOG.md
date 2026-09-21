@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **`form10q` — 10-Q filings from EDGAR into the queue** (`tenq` CLI):
+  the matrix layer's queue feeder for companies whose quarterly
+  reports have no IR PDF (PLTR's 10-Qs were IR-site links; CEG's live
+  only as EDGAR iXBRL HTML). Submissions API → 10-Q list (a `10-Q/A`
+  amendment supersedes the original for its period; calendar quarter
+  ends only — odd fiscal periods are skipped, not mis-tagged) →
+  primary-document HTML → text (the 8-K exhibit extractor) →
+  text-layer PDF (the webcast transcript renderer) landed as
+  `{TICKER}_{Q#}_{YYYY}_10Q.pdf`, idempotent until `--refresh`. The
+  digest stage rides the standard per-page channel (resumable page
+  cache, `--digest-latest N` to bill only the newest filings,
+  `--no-digest` to land PDFs only). Injectable getters + pdf_writer
+  keep tests fully offline (11 new). Live run 2026-09-21: CEG since
+  2025-01-01 → 5 queue PDFs (Q1–Q3'25, Q1–Q2'26; Q4 has no 10-Q by
+  design — the 10-K backcast covers it), Q2'26 digested: 78 pages →
+  320 verified cards, segment-revenue anchor table (six reportable
+  segments incl. Calpine from the 2026 merger) intact in the text
+  layer.
+
 ## [0.22.2] - 2026-09-19
 
 ### Added

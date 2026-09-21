@@ -236,6 +236,32 @@ def cmd_webcast(args):
           + ")")
 
 
+def cmd_tenq(args):
+    from .form10q import digest_10q, queue_10q
+    from .llm_digest import make_glm_backend
+
+    filings = queue_10q(args.ticker, Path(args.queue_dir),
+                        since=args.since, refresh=args.refresh)
+    for f in filings:
+        print(f"{'+' if f['landed'] else '='} {Path(f['pdf']).name} "
+              f"({f['form']} {f['report_date']})")
+    print(f"queue: {sum(1 for f in filings if f['landed'])} landed, "
+          f"{sum(1 for f in filings if not f['landed'])} already present")
+    if args.no_digest or not filings:
+        return
+    todo = filings
+    if args.digest_latest:
+        todo = filings[-args.digest_latest:]
+    backend = make_glm_backend()   # ZHIPU_API_KEY (env or secrets loader)
+    r = digest_10q(todo, backend, queue_dir=Path(args.queue_dir))
+    cards = r["cards"]
+    print(f"digest -> {len(cards)} cards, {len(r['voided'])} voided "
+          f"across {len(r['documents'])} filings")
+    for name, d in r["documents"].items():
+        print(f"  {name}: {d['pages']} pages ({d['cached']} cached) "
+              f"-> {d['cards']} cards, {d['voided']} voided")
+
+
 def _render_excel(model, output):
     try:
         from .excel_builder import build_excel
@@ -413,6 +439,26 @@ def build_parser():
                            help="reuse the audio already on disk "
                                 "(workspace/webcast/)")
     p_webcast.set_defaults(func=cmd_webcast)
+
+    p_tenq = sub.add_parser(
+        "tenq", help="10-Q filings (EDGAR HTML) -> text-layer PDFs into "
+                     "the queue + digest (matrix-layer feeder)")
+    p_tenq.add_argument("ticker", help="ticker symbol, e.g. CEG")
+    p_tenq.add_argument("--queue-dir", required=True,
+                        help="workspace queue directory")
+    p_tenq.add_argument("--since", default=None,
+                        help="only filings on/after this ISO date "
+                             "(e.g. 2025-01-01)")
+    p_tenq.add_argument("--refresh", action="store_true",
+                        help="re-download and rewrite existing PDFs")
+    p_tenq.add_argument("--no-digest", action="store_true",
+                        help="only land PDFs in the queue, skip the "
+                             "per-page digest")
+    p_tenq.add_argument("--digest-latest", type=int, default=0,
+                        help="digest only the newest N filings "
+                             "(0 = all fetched; bulk pages bill per "
+                             "token, so batch wisely)")
+    p_tenq.set_defaults(func=cmd_tenq)
 
     return parser
 
