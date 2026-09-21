@@ -15,3 +15,6 @@ site/
 
 # PLTR live-drill workspace (PDF queue + digest cache, rebuilt 2026-09-14)
 examples/pltr_demo/workspace/
+# CEG second-company workspace (same rule: rebuilt, not committed —
+# queue PDFs / digest caches / webcast media, 26MB+ incl. one mp4)
+examples/ceg_demo/workspace/
