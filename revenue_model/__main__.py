@@ -133,17 +133,22 @@ def cmd_matrix(args):
     else:
         seg_order = [k for k in spec.cells
                      if k not in ("reportable", "other", "consolidated")]
+
+        def _v(v, k, width):
+            return (f"{v[k]:{width}.0f}" if v.get(k) is not None
+                    else "--".rjust(width))
+
         body = "\n".join(
             f"{t}: " + "  ".join(
-                (f"{k}={v[k]:7.0f}" if v.get(k) is not None else
-                 f"{k}=   --  ") for k in seg_order)
-            + f"  | reportable={v['reportable']:6.0f} +other="
-            f"{v['other']:5.0f} = {v['consolidated']:6.0f}"
+                (f"{k}={_v(v, k, 7)}" for k in seg_order))
+            + f"  | reportable={_v(v, 'reportable', 6)} +other="
+            f"{_v(v, 'other', 5)} = {_v(v, 'consolidated', 6)}"
             for t, v in rows.items())
         print(body)
         print("closed loops: S (segments == Total Reportable Segments) "
               "and C (+Other == Total Consolidated Results) verified "
-              "per quarter")
+              "per quarter (Q4 backcast row included when its 10-K "
+              "anchors parsed)")
     if args.output:
         out = Path(args.output)
         out.write_text(body + "\n", encoding="utf-8")
@@ -253,11 +258,17 @@ def cmd_webcast(args):
 
 
 def cmd_tenq(args):
-    from .form10q import digest_10q, queue_10q
+    from .form10q import digest_filings, queue_10k, queue_10q
     from .llm_digest import make_glm_backend
 
-    filings = queue_10q(args.ticker, Path(args.queue_dir),
-                        since=args.since, refresh=args.refresh)
+    filings = []
+    if args.forms in ("q", "both"):
+        filings += queue_10q(args.ticker, Path(args.queue_dir),
+                             since=args.since, refresh=args.refresh)
+    if args.forms in ("k", "both"):
+        filings += queue_10k(args.ticker, Path(args.queue_dir),
+                             since=args.since, refresh=args.refresh)
+    filings.sort(key=lambda f: f["report_date"])   # chronological
     for f in filings:
         print(f"{'+' if f['landed'] else '='} {Path(f['pdf']).name} "
               f"({f['form']} {f['report_date']})")
@@ -269,7 +280,7 @@ def cmd_tenq(args):
     if args.digest_latest:
         todo = filings[-args.digest_latest:]
     backend = make_glm_backend()   # ZHIPU_API_KEY (env or secrets loader)
-    r = digest_10q(todo, backend, queue_dir=Path(args.queue_dir))
+    r = digest_filings(todo, backend, queue_dir=Path(args.queue_dir))
     cards = r["cards"]
     print(f"digest -> {len(cards)} cards, {len(r['voided'])} voided "
           f"across {len(r['documents'])} filings")
@@ -457,11 +468,15 @@ def build_parser():
     p_webcast.set_defaults(func=cmd_webcast)
 
     p_tenq = sub.add_parser(
-        "tenq", help="10-Q filings (EDGAR HTML) -> text-layer PDFs into "
-                     "the queue + digest (matrix-layer feeder)")
+        "tenq", help="10-Q/10-K filings (EDGAR HTML) -> text-layer PDFs "
+                     "into the queue + digest (matrix-layer feeder)")
     p_tenq.add_argument("ticker", help="ticker symbol, e.g. CEG")
     p_tenq.add_argument("--queue-dir", required=True,
                         help="workspace queue directory")
+    p_tenq.add_argument("--forms", default="both", choices=["q", "k", "both"],
+                        help="which filings to land: 10-Qs (q), 10-Ks (k), "
+                             "or both (default) — the 10-K feeds the "
+                             "matrix Q4 backcast")
     p_tenq.add_argument("--since", default=None,
                         help="only filings on/after this ISO date "
                              "(e.g. 2025-01-01)")

@@ -253,12 +253,35 @@ def ceg_texts():
         "Other Power Regions": (964, -400, 564, 1178, -380, 798),
         "Calpine": (2147, -700, 1447, 200, -60, 140),
     }, (260, -100, 160, 580, -180, 400), "plain")
+    # FY2025 10-K: same 5-column vintage as the 2025 10-Qs, FY totals
+    # = Q1+Q2+Q3 (from the rows above) + the chosen Q4 values; a 2024
+    # year-table sits below as the occurrence decoy
+    t["CEG_FY2025_10K.pdf"] = ceg_note_text({
+        "Mid-Atlantic": (6476, 400, 6876, -3076, 3800),
+        "Midwest": (5218, 1200, 6418, -2102, 4316),
+        "New York": (2255, 200, 2455, -590, 1865),
+        "ERCOT": (1890, 500, 2390, -767, 1623),
+        "Other Power Regions": (5277, 900, 6177, -4764, 1413),
+    }, (3143, 700, 3843, -3382, 461), "foot") + (
+        "2024\n"
+        "Mid-Atlantic$5,429 $93 $5,522 $(2,442)$3,080\n"
+        "Midwest3,848 957 4,805 (1,603)3,202\n"
+        "New York1,937 113 2,050 (597)1,453\n"
+        "ERCOT1,053 497 1,550 (503)1,047\n"
+        "Other Power Regions4,749 757 5,506 (4,238)1,268\n"
+        "Total Reportable Segments\n"
+        "17,016 2,417 19,433 (9,383)10,050\n"
+        "Other(b)\n"
+        "1,948 2,187 4,135 (2,036)2,099\n"
+        "Total Consolidated Results\n"
+        "$18,964 $4,604 $23,568 $(11,419)$12,149\n")
     return t
 
 
 def test_ceg_matrix_all_quarters_all_loops():
     rows = build_from_texts(ceg_texts(), ceg_spec())
-    assert list(rows) == ["Q1_25", "Q2_25", "Q3_25", "Q1_26", "Q2_26"]
+    assert list(rows) == ["Q1_25", "Q2_25", "Q3_25", "Q4_25",
+                          "Q1_26", "Q2_26"]    # Q4 backcast inserted
     q1 = rows["Q1_25"]
     assert q1["mid_atlantic"] == 1665 and q1["ercot"] == 398
     assert "calpine" not in q1                      # absent, not garbage
@@ -271,6 +294,32 @@ def test_ceg_matrix_all_quarters_all_loops():
     q5 = rows["Q2_26"]
     assert q5["mid_atlantic"] == 1555 and q5["calpine"] == 2147
     assert q5["reportable"] == 7244 and q5["consolidated"] == 7504
+
+
+def test_ceg_q4_backcast_math_and_year_table_decoy():
+    rows = build_from_texts(ceg_texts(), ceg_spec())
+    q4 = rows["Q4_25"]
+    # FY − (Q1+Q2+Q3): e.g. Mid-Atlantic 6876 − (1665+1448+1763) = 2000
+    assert q4["mid_atlantic"] == 2000 and q4["new_york"] == 800
+    assert q4["midwest"] == 2100 and q4["ercot"] == 900
+    assert q4["other_power"] == 1900
+    # from the FY2025 table's occurrence-1, never the 2024 decoy below
+    # (Mid-Atlantic FY2024 5,522 − 4,876 = 646 would be the wrong Q4)
+    assert q4["mid_atlantic"] != 646
+    # best-effort extras let both loops close on the backcast row
+    assert q4["reportable"] == 7700 and q4["other"] == 1000
+    assert q4["consolidated"] == 8700
+    assert q4["total"] == 7700
+
+
+def test_ceg_backcast_loop_broken_raises():
+    texts = ceg_texts()
+    # corrupt the FY2025 Mid-Atlantic row: total 6,876 -> 7,000 makes
+    # the Q4 backcast sum miss the backcast reportable (loop S)
+    texts["CEG_FY2025_10K.pdf"] = texts["CEG_FY2025_10K.pdf"].replace(
+        "Mid-Atlantic6,476 400 6,876", "Mid-Atlantic6,476 400 7,000", 1)
+    with pytest.raises(MatrixLoopError, match="Q4_25: loop S"):
+        build_from_texts(texts, ceg_spec())
 
 
 def test_ceg_loop_broken_raises():

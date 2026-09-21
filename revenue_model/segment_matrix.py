@@ -97,12 +97,23 @@ class QuarterSpec:
 
 @dataclass(frozen=True)
 class BackcastSpec:
-    """The missing quarter derived as FY 10-K minus filed quarters."""
+    """The missing quarter derived as FY 10-K minus filed quarters.
+
+    ``cells`` are required anchors read from the 10-K (segment
+    values); ``extras`` are best-effort anchors (loop totals like
+    CEG's "reportable") — parsed when present so the closed loops
+    also validate the backcast row, skipped silently when not.
+    ``shape`` is the (k, idx) row width for reading the 10-K tables
+    (a 10-K note carries its own vintage — e.g. CEG's FY2025 note is
+    the 5-column revenue-components table, value = 3rd number).
+    """
     tag: str
     fy_filing: str
     cells: tuple                  # anchor cells read from the 10-K
     covered: tuple                # filed quarter tags subtracted
     constants: dict = field(default_factory=dict)
+    shape: Optional[tuple] = None  # (k, idx) for the 10-K rows
+    extras: tuple = ()            # best-effort loop-total anchors
 
 
 @dataclass(frozen=True)
@@ -255,15 +266,25 @@ def build_from_texts(texts: Mapping[str, str], spec: MatrixSpec) -> Dict[str, di
             hits = list(re.finditer(spec.scope, ktext))
             if hits:
                 start = hits[-1].end()
+        k_over, idx_over = bc.shape if bc.shape else (1, 0)
         row = dict(bc.constants)
         for key in bc.cells:
             cell = spec.cells[key]
-            nums = _cell_row(ktext, cell, spec.min_v, 1, 0, start)
+            nums = _cell_row(ktext, cell, spec.min_v, k_over, idx_over,
+                             start)
             if not nums:
                 raise MatrixLoopError("10-K extraction failed "
                                       f"({key}) — check the filing")
-            row[key] = nums[0] / spec.unit_div    # raw; rounded once
-        for key in bc.cells:                      # after subtraction
+            row[key] = nums[idx_over] / spec.unit_div   # raw; rounded
+        for key in bc.extras:                          # best effort
+            cell = spec.cells[key]
+            nums = _cell_row(ktext, cell, spec.min_v, k_over, idx_over,
+                             start)
+            if nums:
+                row[key] = nums[idx_over] / spec.unit_div
+        for key in (*bc.cells, *bc.extras):            # after subtraction
+            if key not in row:
+                continue
             covered_sum = sum(rows[t][key] for t in bc.covered)
             row[key] = round(row[key] - covered_sum, 1)
         for d in spec.derived:
@@ -271,6 +292,24 @@ def build_from_texts(texts: Mapping[str, str], spec: MatrixSpec) -> Dict[str, di
                 minus = row.get(d.minus, 0.0) if d.minus else 0.0
                 row[d.key] = round(row[d.base] - (minus or 0.0), 1)
         row["total"] = round(sum(row[k_] for k_ in bc.cells), 1)
+        # the closed loops validate the backcast row too. Per-quarter
+        # segment cells may be legitimately absent (CEG's Calpine
+        # before the 2026 merger) and are filtered like quarterly rows;
+        # any other missing part means the anchor never parsed — skip
+        # that loop rather than fail it on incomplete data.
+        optional = set(spec.segment_cells)
+        for lp in spec.loops:
+            if lp.equals not in row:
+                continue
+            if any(row.get(p) is None and p not in optional
+                   for p in lp.parts):
+                continue
+            s = round(sum(row[p] for p in lp.parts
+                          if row.get(p) is not None), 1)
+            if abs(s - row[lp.equals]) >= lp.tol:
+                raise MatrixLoopError(
+                    f"{bc.tag}: loop {lp.name} broken (sum {s:,.1f} vs "
+                    f"{lp.equals} {row[lp.equals]:,.1f})")
         # chronological insertion: right after the last covered quarter
         rebuilt = {}
         for t, v in rows.items():
@@ -324,11 +363,13 @@ def pltr_spec() -> MatrixSpec:
 
 def ceg_spec() -> MatrixSpec:
     """Constellation Energy (2026-09 generalization): regional segments
-    straight from the 10-Q segment note (Note "N. Segment Information").
+    straight from the 10-Q segment note (Note "5. Segment Information").
     2025 quarters file five segments in 5-column RNF rows (value =
     3rd number); 2026 quarters add Calpine (Jan 7 merger) in 3/6-column
     rows (value = 1st number). Loops: segments vs Total Reportable
-    Segments; + Other vs Total Consolidated Results."""
+    Segments; + Other vs Total Consolidated Results. Q4'25 never gets a
+    10-Q — backcast from the FY2025 10-K, whose note is the same
+    5-column vintage (2025 table first, then 2024/2023)."""
     seg = [
         CellSpec("mid_atlantic", r"Mid-Atlantic", mode="row"),
         CellSpec("midwest", r"Midwest", mode="row"),
@@ -361,6 +402,11 @@ def ceg_spec() -> MatrixSpec:
             LoopSpec("S", seg_keys, "reportable"),
             LoopSpec("C", ("reportable", "other"), "consolidated"),
         ),
+        backcast=BackcastSpec(
+            "Q4_25", "CEG_FY2025_10K.pdf", five,
+            ("Q1_25", "Q2_25", "Q3_25"),
+            shape=(5, 2),       # FY2025 note: same 5-column vintage
+            extras=("reportable", "other", "consolidated")),
         min_v=1.0, unit_div=1.0,
         segment_cells=seg_keys,
         scope=r"(?m)^\d+\.\s+Segment Information\s*$",
