@@ -108,29 +108,45 @@ def cmd_akshare(args):
 
 def cmd_matrix(args):
     try:
-        from .segment_matrix import build_matrix, pltr_spec, yoy_summary
+        from .segment_matrix import (build_matrix, ceg_spec, pltr_spec,
+                                     yoy_summary)
     except ImportError as exc:
         raise SystemExit(
             "The 'matrix' command needs PyMuPDF. Install the [pdf] extra:\n"
             "    pip install revenue-model-builder[pdf]"
         ) from exc
-    spec = pltr_spec() if args.preset == "pltr" else None
+    spec = {"pltr": pltr_spec, "ceg": ceg_spec}.get(args.preset)
     if spec is None:
         raise SystemExit(f"unknown preset: {args.preset}")
+    spec = spec()
     rows = build_matrix(args.queue_dir, spec)
-    body = "\n".join(
-        f"{t}: US_Comm {v['usc']:6.0f}  Int_Comm {v['icomm']:6.1f}  "
-        f"US_Gov {v['usg']:6.0f}  Int_Gov {v['igov']:6.1f}  "
-        f"sum={v['total']:7.1f}" for t, v in rows.items())
-    print(body)
-    print("\nY/Y by segment:")
-    print(yoy_summary(rows))
-    print("closed loops: A (US branches == geographic US) and "
-          "B (sum4 == total) verified per quarter")
+    if args.preset == "pltr":
+        body = "\n".join(
+            f"{t}: US_Comm {v['usc']:6.0f}  Int_Comm {v['icomm']:6.1f}  "
+            f"US_Gov {v['usg']:6.0f}  Int_Gov {v['igov']:6.1f}  "
+            f"sum={v['total']:7.1f}" for t, v in rows.items())
+        print(body)
+        print("\nY/Y by segment:")
+        print(yoy_summary(rows))
+        print("closed loops: A (US branches == geographic US) and "
+              "B (sum4 == total) verified per quarter")
+    else:
+        seg_order = [k for k in spec.cells
+                     if k not in ("reportable", "other", "consolidated")]
+        body = "\n".join(
+            f"{t}: " + "  ".join(
+                (f"{k}={v[k]:7.0f}" if v.get(k) is not None else
+                 f"{k}=   --  ") for k in seg_order)
+            + f"  | reportable={v['reportable']:6.0f} +other="
+            f"{v['other']:5.0f} = {v['consolidated']:6.0f}"
+            for t, v in rows.items())
+        print(body)
+        print("closed loops: S (segments == Total Reportable Segments) "
+              "and C (+Other == Total Consolidated Results) verified "
+              "per quarter")
     if args.output:
         out = Path(args.output)
-        out.write_text(body + "\n\nY/Y by segment:\n" + yoy_summary(rows)
-                       + "\n", encoding="utf-8")
+        out.write_text(body + "\n", encoding="utf-8")
         print(f"saved {out}")
 
 
@@ -330,7 +346,7 @@ def build_parser():
         "matrix", help="four-segment quarterly matrix, double closed-loop "
                        "checked (needs [pdf] extra)")
     p_matrix.add_argument("queue_dir", help="directory holding the queue PDFs")
-    p_matrix.add_argument("--preset", default="pltr", choices=["pltr"],
+    p_matrix.add_argument("--preset", default="pltr", choices=["pltr", "ceg"],
                           help="company configuration (default: pltr)")
     p_matrix.add_argument("-o", "--output", default=None,
                           help="optional output .txt path")

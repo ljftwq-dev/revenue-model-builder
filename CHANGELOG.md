@@ -7,6 +7,30 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- **Declarative matrix generalization — `matrix --preset ceg`**: the
+  segment-revenue matrix engine no longer knows a company. What was
+  PLTR-shaped (Gov/Comm four-cell split, hard-coded anchors, loops
+  A/B) is now spec data: `CellSpec` anchors (window mode = the
+  original span semantics for PDF text layers that put every number
+  on its own line; row mode = row-width-qualified table matching),
+  `DerivedSpec` (Intl = segment − US), `LoopSpec` equations,
+  per-quarter shapes and constants, `segment_cells` for segments
+  whose existence is per-quarter, and an optional scope regex. CEG
+  preset: six regional segments straight from the 10-Q segment note
+  (Calpine appears with the 2026 merger; 2025 quarters correctly show
+  it absent, never garbage-parsed), loops S (segments == Total
+  Reportable Segments) and C (+Other == Total Consolidated Results),
+  both vintages of note rows (2025 five-column, 2026 three/six-
+  column). Live 2026-09-21: all five quarters tie, Q2'26 cross-
+  verified against the MD&A table (7,244/7,504). Real traps the row
+  matcher survives, each frozen in a test: the notes-index scope
+  decoy (scope takes the LAST heading match), prose wrapping numbers
+  onto an anchor's next line (label-to-number gap must be word-free),
+  footnote markers like `Other(b)(c)`, and same-named rows in other
+  tables (ERCOT's ISO-contracts life). PLTR live regression: 4/6
+  quarters bit-identical, 2 differ by 0.1 $M of rounding order
+  (raw anchor precision vs accumulated derived rounding; loops
+  verified within tolerance either way).
 - **`form10q` — 10-Q filings from EDGAR into the queue** (`tenq` CLI):
   the matrix layer's queue feeder for companies whose quarterly
   reports have no IR PDF (PLTR's 10-Qs were IR-site links; CEG's live
