@@ -27,6 +27,22 @@ class TestCard:
     def test_verify_false_on_invented_quote(self):
         assert not card(quote="CFO said growth will double").verify(PAGE).verified
 
+    def test_verify_tolerates_asr_timestamps_in_page(self):
+        # ASR transcript PDFs embed [00:02:43.98] markers mid-sentence;
+        # a quote spanning one is still verbatim
+        ts_page = ("Revenue grew [00:01:02.35] +93% Y/Y to $1.94 billion "
+                   "this quarter.")
+        assert card(quote="grew +93% Y/Y to $1.94 billion") \
+            .verify(ts_page).verified
+
+    def test_verify_strips_timestamps_symmetrically(self):
+        # a quote that itself carries the marker still verifies against
+        # a page carrying a different one
+        ts_page = "The board [00:04:10] approved a new buyback program."
+        assert card(quote="approved a new [00:09:59.99] buyback",
+                    clue="buyback", ring="self") \
+            .verify(ts_page).verified
+
     def test_bad_ring_rejected(self):
         with pytest.raises(ValueError, match="ring"):
             card(ring="gossip")

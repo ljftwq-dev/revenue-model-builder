@@ -7,8 +7,8 @@ self-judgment (the Gate H protocol).
 
 Hard constraints, enforced structurally:
 - a card is only *verified* if its quote appears verbatim (modulo
-  whitespace) in the anchored page's text — unverified cards cannot enter
-  a chain;
+  whitespace and ASR timestamp artifacts) in the anchored page's text
+  — unverified cards cannot enter a chain;
 - a chain needs >= 2 verified cards, a verdict, a parameter, and a valid
   authority — chainless parameter revisions never reach the report.
 """
@@ -25,6 +25,17 @@ def _norm_ws(s: str) -> str:
     """Collapse all whitespace runs to single spaces (PDF text keeps
     line breaks mid-sentence; a verbatim quote may differ only in ws)."""
     return re.sub(r"\s+", " ", s).strip()
+
+
+_ASR_TS = re.compile(r"\[\d{1,2}:\d{2}:\d{2}(?:[.,]\d+)?\]\s*")
+"""Whisper-style timestamps rendered inline in ASR transcript PDFs
+(``[00:02:43.98]`` mid-sentence). They are a rendering artifact, not
+content: a quote that spans one must still verify."""
+
+
+def _norm_asr(s: str) -> str:
+    """Strip inline ASR timestamps before the verbatim comparison."""
+    return _norm_ws(_ASR_TS.sub(" ", s))
 
 
 @dataclass(frozen=True)
@@ -58,8 +69,15 @@ class EvidenceCard:
             raise ValueError(f"confidence must be one of {CONFIDENCES}")
 
     def verify(self, page_text: str) -> "EvidenceCard":
-        """Return a copy with verified set by verbatim quote search."""
-        return replace(self, verified=_norm_ws(self.quote) in _norm_ws(page_text))
+        """Return a copy with verified set by verbatim quote search.
+
+        The match is verbatim modulo whitespace and ASR timestamp
+        artifacts (transcript PDFs embed ``[00:02:43.98]`` markers;
+        stripping them symmetrically keeps the gate anti-hallucination
+        without punishing quotes that span one).
+        """
+        return replace(self, verified=_norm_asr(self.quote)
+                       in _norm_asr(page_text))
 
     def anchor(self) -> str:
         return f"{self.anchor_file}·p{self.anchor_page}"
