@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.22.3] - 2026-09-21
 
 ### Added
 - **Declarative matrix generalization — `matrix --preset ceg`**: the
@@ -49,6 +49,36 @@ All notable changes to this project are documented here. The format is based on
   320 verified cards, segment-revenue anchor table (six reportable
   segments incl. Calpine from the 2026 merger) intact in the text
   layer.
+- **10-Ks into the queue + the CEG Q4'25 backcast**: `tenq --forms
+  {q,k,both}` (default both) lands the FY twin next to the 10-Qs —
+  `10-K/A` amendments supersede per period, calendar year-ends tag
+  `FY{YYYY}`, files land as `{TICKER}_FY{YYYY}_10K.pdf` (the PLTR
+  queue convention). `BackcastSpec` grows `shape` (the 10-K note's
+  own row vintage) and `extras` (best-effort loop-total anchors), and
+  backcast rows now run the closed loops too — per-quarter segment
+  cells may be legitimately absent (Calpine pre-2026) and are
+  filtered like quarterly rows. Live 2026-09-21: CEG Q4'25 = FY2025
+  10-K − Q1–Q3 sums, six cells cross-verified against Note 5 (the
+  2025 year-table is occurrence-1; 2024/2023 tables below are
+  decoys), loops S and C close on the backcast row (5,352 + 722 =
+  6,074). PLTR live regression: bit-identical.
+
+### Fixed
+- **Verbatim gate vs ASR timestamp artifacts** (`evidence.verify`):
+  whisper transcript PDFs embed `[00:02:43.98]` markers mid-sentence;
+  quotes spanning one died the exact-substring match (Q1'26 call kept
+  6 of 64 cards — 58 voided on words that were all there). The gate
+  now strips the markers symmetrically (quote and page text) before
+  comparing: rendering artifact, not content. Recovered offline over
+  existing page caches, zero re-digest cost: Q1'26 6 → 58 cards,
+  Q2'26 14 → 52. The gate stays hallucination-strict — paraphrased
+  Q&A cleanup and case variants still void (spot-checked).
+
+### Changed
+- **CEG demo workspace untracked** (align with PLTR): queue PDFs,
+  digest caches, and webcast media (26MB+, one mp4 alone 25.7MB) are
+  pipeline output, rebuilt by the four commands now documented in
+  `examples/ceg_demo/README.md`.
 
 ## [0.22.2] - 2026-09-19
 
