@@ -65,7 +65,13 @@ def _load_cache_only_documents(cache: Path,
     """Documents living purely in the page cache (no queue PDF). Each
     page cache carries its own ``text`` so the verbatim gate re-verifies
     offline; legacy caches without ``text`` are skipped (the owning
-    source path can still read them)."""
+    source path can still read them).
+
+    Pages are discovered by glob, NOT by counting up from ``_p1`` — a
+    backend failure leaves a gap with no cache file, and a contiguity
+    walk would silently drop every page after the gap (the 2026-09-21
+    audit caught exactly that: one failed page hid 33 good cards).
+    """
     if not cache.exists():
         return []
     from .llm_digest import _sanitize
@@ -75,16 +81,17 @@ def _load_cache_only_documents(cache: Path,
         stem = p1.name[:-len("_p1.json")]
         if stem in pdf_stems or stem.startswith("."):
             continue
-        i = 1
-        while (cache / f"{stem}_p{i}.json").exists():
+        pages = sorted(cache.glob(f"{stem}_p*.json"),
+                       key=lambda p: int(p.stem.rsplit("_p", 1)[1]))
+        for pfile in pages:
+            i = int(pfile.stem.rsplit("_p", 1)[1])
             try:
-                d = json.loads((cache / f"{stem}_p{i}.json").read_text(
-                    encoding="utf-8"))
+                d = json.loads(pfile.read_text(encoding="utf-8"))
             except (json.JSONDecodeError, OSError):
-                break
+                continue
             text = d.get("text")
             if text is None:
-                break                    # legacy cache: no offline verify
+                continue               # legacy cache: no offline verify
             conf = d.get("confidence", "single")
             for cand in d.get("raw", []):
                 card = _sanitize(cand, f"{stem}.htm", i)
@@ -94,7 +101,6 @@ def _load_cache_only_documents(cache: Path,
                     from dataclasses import replace
                     cards.append(replace(card, verified=True,
                                          confidence=conf))
-            i += 1
     return cards
 
 

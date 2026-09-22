@@ -237,3 +237,30 @@ def test_load_queue_cards_skips_legacy_cache_without_text(tmp_path):
                              "ring": "core", "segment": ""}]}),
         encoding="utf-8")
     assert load_queue_cards(queue) == []
+
+
+def test_load_queue_cards_cache_only_gap_keeps_later_pages(tmp_path):
+    """A backend failure leaves a gap with NO cache file (nothing is
+    written for the page). Page discovery must be by glob, not a
+    contiguity walk — otherwise every page after the gap is silently
+    dropped (2026-09-21 audit: one failed page hid 33 good cards)."""
+    from revenue_model.chains_cli import load_queue_cards
+
+    queue = tmp_path / "queue"
+    cache = queue / "digest_cache"
+    cache.mkdir(parents=True)
+
+    def page(i, marker):
+        return {"raw": [{"clue": f"page {i} clue", "quote": marker,
+                         "ring": "core", "segment": ""}],
+                "text": f"header\n{marker}\nfooter", "confidence": "primary"}
+
+    (cache / "8K_demo_p1.json").write_text(
+        json.dumps(page(1, "first page marker")), encoding="utf-8")
+    # p2 never written (transient backend error); p3 must still browse
+    (cache / "8K_demo_p3.json").write_text(
+        json.dumps(page(3, "third page marker")), encoding="utf-8")
+
+    cards = load_queue_cards(queue)
+    assert sorted(c.anchor_page for c in cards) == [1, 3]
+    assert all(c.verified and c.confidence == "primary" for c in cards)

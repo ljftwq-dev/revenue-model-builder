@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **`cards` browse no longer drops pages after a cache gap** (found by
+  the 2026-09-21 post-release audit): a transient backend failure
+  leaves a page with no cache file, and the cache-only loader's
+  contiguity walk silently stopped the whole document there — one
+  failed page hid 33 good cards (8-K exhibits lost everything after
+  p5/p11). Page discovery is now by glob; gaps just skip. The audit
+  also backfilled the three never-digested pages and one missed Aug-5
+  8-K exhibit: the CEG workspace settled at 2,734 verified cards.
+
 ## [0.22.3] - 2026-09-21
 
 ### Added
